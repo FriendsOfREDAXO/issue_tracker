@@ -1,0 +1,54 @@
+package: issue_tracker
+version: '1.0.0'
+author: Thomas Skerbis
+supportpage: https://github.com/FriendsOfREDAXO/issue_tracker
+
+requires:
+    redaxo: '^5.15'
+    php:
+        version: '>=8.1'
+    packages:
+        phpmailer: '^2.0'
+
+
+page:
+    title: Issue Tracker
+    perm: issue_tracker[]
+    icon: rex-icon fa-tasks
+    block: system
+    subpages:
+        dashboard:
+            title: Issue Tracker
+            icon: rex-icon fa-dashboard
+        issues:
+            title: 'translate:issue_tracker_issues'
+            icon: rex-icon fa-ticket
+            subpages:
+                list:
+                    title: 'translate:issue_tracker_issues_list'
+                view:
+                    title: 'translate:issue_tracker_issues_view'
+                    hidden: true
+                create:
+                    title: 'translate:issue_tracker_issues_create'
+                edit:
+                    title: 'translate:issue_tracker_issues_edit'
+                    hidden: true
+        preferences:
+            title: 'translate:issue_tracker_preferences'
+            icon: rex-icon fa-user
+        settings:
+            title: 'translate:issue_tracker_settings'
+            icon: rex-icon fa-wrench
+            perm: admin
+            subpages:
+                general:
+                    title: 'translate:issue_tracker_settings_general'
+                email_templates:
+                    title: 'translate:issue_tracker_email_templates'
+                backup:
+                    title: Backup/Export
+        help:
+            title: 'translate:issue_tracker_help'
+            icon: rex-icon fa-question-circle
+            itemclass: pull-right

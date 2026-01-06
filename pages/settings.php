@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * Settings Hauptseite
+ * 
+ * @package issue_tracker
+ */
+
+$package = rex_addon::get('issue_tracker');
+
+echo rex_view::title($package->i18n('issue_tracker_settings'));
+
+rex_be_controller::includeCurrentPageSubPath();

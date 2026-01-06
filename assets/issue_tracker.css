@@ -1,0 +1,486 @@
+/**
+ * Issue Tracker CSS
+ * 
+ * @package issue_tracker
+ */
+
+/* Dashboard Statistiken */
+.issue-tracker-dashboard .panel-body h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+/* Issue Liste */
+.issue-tracker-list .label {
+    display: inline-block;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.issue-tracker-list .panel-title .btn {
+    margin-top: -5px;
+}
+
+/* Issue Formular */
+.issue-tracker-form .checkbox-inline {
+    margin-right: 15px;
+}
+
+.issue-tracker-form .issue-tracker-comment {
+    position: relative;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.issue-tracker-form .issue-tracker-comment:hover {
+    background-color: #f0f0f0;
+}
+
+/* Issue Title Header */
+.issue-tracker-title-header {
+    background: linear-gradient(135deg, #308bd3 0%, #1c5a8a 100%);
+    color: #fff !important;
+    border: none !important;
+}
+
+.issue-tracker-title-header h2 {
+    color: #fff !important;
+}
+
+.issue-tracker-title-header .label-default {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Issue Comment Cards */
+.issue-tracker-comment-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+    border: 1px solid #e9ecef;
+}
+
+.issue-tracker-comment-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+.issue-tracker-comment-card .media-heading {
+    margin-top: 0;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.issue-tracker-comment-content {
+    line-height: 1.6;
+    color: #333;
+}
+
+.issue-tracker-comment-content p {
+    margin-bottom: 10px;
+}
+
+.issue-tracker-comment-content code {
+    background: #f4f4f4;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.issue-tracker-comment-content pre {
+    background: #f4f4f4;
+    padding: 12px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+/* Modern Badge Colors */
+.issue-tracker-view .label-warning {
+    background-color: #ff9800 !important;
+}
+
+.issue-tracker-view .label-info {
+    background-color: #2196f3 !important;
+}
+
+.issue-tracker-view .label-danger {
+    background-color: #f44336 !important;
+}
+
+.issue-tracker-view .label-success {
+    background-color: #4caf50 !important;
+}
+
+.issue-tracker-list .label-warning {
+    background-color: #ff9800 !important;
+}
+
+.issue-tracker-list .label-info {
+    background-color: #2196f3 !important;
+}
+
+.issue-tracker-list .label-danger {
+    background-color: #f44336 !important;
+}
+
+.issue-tracker-list .label-success {
+    background-color: #4caf50 !important;
+}
+
+/* Einstellungen */
+.issue-tracker-settings .category-row {
+    margin-bottom: 10px;
+}
+
+.issue-tracker-settings .remove-category {
+    min-width: 40px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .issue-tracker-dashboard .panel-body h3 {
+        font-size: 24px;
+    }
+    
+    .issue-tracker-list table {
+        font-size: 12px;
+    }
+}
+
+/* ========================================
+   Dark Theme Support
+   ======================================== */
+
+/* EasyMDE Editor - Dark Theme */
+.rex-theme-dark .EasyMDEContainer .CodeMirror {
+    background: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.rex-theme-dark .EasyMDEContainer .CodeMirror-gutters {
+    background: #1a1a1a;
+    border-color: #444;
+}
+
+.rex-theme-dark .EasyMDEContainer .CodeMirror-linenumber {
+    color: #999;
+}
+
+.rex-theme-dark .EasyMDEContainer .CodeMirror-cursor {
+    border-color: #e0e0e0;
+}
+
+.rex-theme-dark .EasyMDEContainer .CodeMirror-selected {
+    background: #4a4a4a;
+}
+
+.rex-theme-dark .EasyMDEContainer .CodeMirror-line::selection,
+.rex-theme-dark .EasyMDEContainer .CodeMirror-line > span::selection,
+.rex-theme-dark .EasyMDEContainer .CodeMirror-line > span > span::selection {
+    background: #4a4a4a;
+}
+
+.rex-theme-dark .editor-toolbar {
+    background: #1e1e1e;
+    border-color: #333;
+}
+
+.rex-theme-dark .editor-toolbar a {
+    color: #64b5f6 !important;
+}
+
+.rex-theme-dark .editor-toolbar a:hover,
+.rex-theme-dark .editor-toolbar a.active {
+    background: #2d2d2d;
+    border-color: #444;
+    color: #90caf9 !important;
+}
+
+.rex-theme-dark .editor-toolbar a.active {
+    background: #1976d2 !important;
+    color: #fff !important;
+}
+
+.rex-theme-dark .editor-toolbar i.separator {
+    border-left-color: #444;
+    border-right-color: #444;
+}
+
+.rex-theme-dark .editor-toolbar.disabled-for-preview a:not(.no-disable) {
+    background: #1e1e1e;
+    border-color: #333;
+    color: #888 !important;
+}
+
+.rex-theme-dark .editor-preview,
+.rex-theme-dark .editor-preview-side {
+    background: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.rex-theme-dark .editor-preview pre,
+.rex-theme-dark .editor-preview-side pre {
+    background: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.rex-theme-dark .editor-statusbar {
+    background: #1e1e1e;
+    border-color: #444;
+    color: #999;
+}
+
+/* Issue Comments - Dark Theme */
+.rex-theme-dark .issue-tracker-form .issue-tracker-comment {
+    background-color: #2b2b2b;
+    border: 1px solid #444;
+    color: #e0e0e0;
+}
+
+.rex-theme-dark .issue-tracker-form .issue-tracker-comment:hover {
+    background-color: #333;
+}
+
+.rex-theme-dark .issue-tracker-comment .text-muted {
+    color: #999 !important;
+}
+
+/* Issue Title Header - Dark Theme */
+.rex-theme-dark .issue-tracker-title-header {
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    color: #e0e0e0 !important;
+}
+
+.rex-theme-dark .issue-tracker-title-header h2 {
+    color: #e0e0e0 !important;
+}
+
+/* Comment Cards - Dark Theme */
+.rex-theme-dark .issue-tracker-comment-card {
+    background: #2b2b2b;
+    border-color: #444;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.rex-theme-dark .issue-tracker-comment-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    background: #303030;
+}
+
+.rex-theme-dark .issue-tracker-comment-card .media-heading {
+    border-bottom-color: #444;
+    color: #e0e0e0;
+}
+
+.rex-theme-dark .issue-tracker-comment-content {
+    color: #ccc;
+}
+
+.rex-theme-dark .issue-tracker-comment-content code {
+    background: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.rex-theme-dark .issue-tracker-comment-content pre {
+    background: #1e1e1e;
+    color: #e0e0e0;
+}
+
+/* Panel & Card Dark Theme */
+.rex-theme-dark .panel-heading {
+    background-color: #2b2b2b;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+.rex-theme-dark .panel {
+    background-color: #1b232c;
+    border-color: #444;
+}
+
+.rex-theme-dark .panel-body {
+    background-color: #1b232c;
+    color: #e0e0e0;
+}
+
+.rex-theme-dark .panel-default > .panel-heading {
+    background-color: #2b2b2b;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+/* ========================================
+   Auto Theme - System Preference Support
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    /* EasyMDE Editor - Auto Dark */
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .EasyMDEContainer .CodeMirror {
+        background: #1e1e1e;
+        color: #e0e0e0;
+        border-color: #444;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .EasyMDEContainer .CodeMirror-gutters {
+        background: #1a1a1a;
+        border-color: #444;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .EasyMDEContainer .CodeMirror-linenumber {
+        color: #999;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .EasyMDEContainer .CodeMirror-cursor {
+        border-color: #e0e0e0;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .EasyMDEContainer .CodeMirror-selected {
+        background: #4a4a4a;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .EasyMDEContainer .CodeMirror-line::selection,
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .EasyMDEContainer .CodeMirror-line > span::selection,
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .EasyMDEContainer .CodeMirror-line > span > span::selection {
+        background: #4a4a4a;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .editor-toolbar {
+        background: #1e1e1e;
+        border-color: #333;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .editor-toolbar a {
+        color: #64b5f6 !important;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .editor-toolbar a:hover,
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .editor-toolbar a.active {
+        background: #2d2d2d;
+        border-color: #444;
+        color: #90caf9 !important;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .editor-toolbar a.active {
+        background: #1976d2 !important;
+        color: #fff !important;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .editor-toolbar i.separator {
+        border-left-color: #444;
+        border-right-color: #444;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .editor-toolbar.disabled-for-preview a:not(.no-disable) {
+        background: #1e1e1e;
+        border-color: #333;
+        color: #888 !important;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .editor-preview,
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .editor-preview-side {
+        background: #1e1e1e;
+        color: #e0e0e0;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .editor-preview pre,
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .editor-preview-side pre {
+        background: #1e1e1e;
+        color: #e0e0e0;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .editor-statusbar {
+        background: #1e1e1e;
+        border-color: #444;
+        color: #999;
+    }
+
+    /* Issue Comments - Auto Dark */
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-form .issue-tracker-comment {
+        background-color: #2b2b2b;
+        border: 1px solid #444;
+        color: #e0e0e0;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-form .issue-tracker-comment:hover {
+        background-color: #333;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-comment .text-muted {
+        color: #999 !important;
+    }
+
+    /* Issue Title Header - Auto Dark */
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-title-header {
+        background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        color: #e0e0e0 !important;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-title-header h2 {
+        color: #e0e0e0 !important;
+    }
+
+    /* Comment Cards - Auto Dark */
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-comment-card {
+        background: #2b2b2b;
+        border-color: #444;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-comment-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        background: #303030;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-comment-card .media-heading {
+        border-bottom-color: #444;
+        color: #e0e0e0;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-comment-content {
+        color: #ccc;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-comment-content code {
+        background: #1e1e1e;
+        color: #e0e0e0;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-comment-content pre {
+        background: #1e1e1e;
+        color: #e0e0e0;
+    }
+
+    /* Panel & Card Auto Dark */
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .panel-heading {
+        background-color: #2b2b2b;
+        border-color: #444;
+        color: #e0e0e0;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .panel {
+        background-color: #1b232c;
+        border-color: #444;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .panel-body {
+        background-color: #1b232c;
+        color: #e0e0e0;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .panel-default > .panel-heading {
+        background-color: #2b2b2b;
+        border-color: #444;
+        color: #e0e0e0;
+    }
+}

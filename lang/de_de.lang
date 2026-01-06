@@ -1,0 +1,264 @@
+# Issue Tracker - Deutsch
+
+# Allgemein
+issue_tracker_title = Issue Tracker
+issue_tracker_description = Verwaltung von Anfragen, Problemen und Vorschlägen
+
+# Navigation
+issue_tracker_dashboard = Dashboard
+issue_tracker_issues = Issues
+issue_tracker_issues_list = Übersicht
+issue_tracker_issues_view = Issue anzeigen
+issue_tracker_issues_create = Neues Issue
+issue_tracker_issues_edit = Issue bearbeiten
+issue_tracker_preferences = Benachrichtigungen
+issue_tracker_settings = Einstellungen
+issue_tracker_help = Hilfe
+
+# Dashboard
+issue_tracker_status_open = Offen
+issue_tracker_status_in_progress = In Arbeit
+issue_tracker_status_planned = Geplant
+issue_tracker_status_rejected = Abgelehnt
+issue_tracker_status_closed = Erledigt
+issue_tracker_closed_30_days = Erledigt (30 Tage)
+issue_tracker_by_category = Nach Kategorie
+issue_tracker_recent_issues = Aktuelle Issues
+issue_tracker_count = Anzahl
+
+# Issues
+issue_tracker_title = Titel
+issue_tracker_description = Beschreibung
+issue_tracker_category = Kategorie
+issue_tracker_status = Status
+issue_tracker_priority = Priorität
+issue_tracker_assigned = Zugewiesen
+issue_tracker_assigned_user = Zugewiesener User
+issue_tracker_assigned_addon = Zugewiesenes AddOn
+issue_tracker_addon = AddOn
+issue_tracker_version = Version
+issue_tracker_tags = Tags
+issue_tracker_created_at = Erstellt am
+issue_tracker_created_by = Erstellt von
+issue_tracker_updated_at = Aktualisiert am
+issue_tracker_actions = Aktionen
+
+# Prioritäten
+issue_tracker_priority_low = Niedrig
+issue_tracker_priority_normal = Normal
+issue_tracker_priority_high = Hoch
+issue_tracker_priority_urgent = Dringend
+
+# Status
+issue_tracker_status_open = Offen
+issue_tracker_status_in_progress = In Arbeit
+issue_tracker_status_planned = Geplant
+issue_tracker_status_rejected = Abgelehnt
+issue_tracker_status_closed = Erledigt
+issue_tracker_all_active = Alle aktiven
+issue_tracker_open = Offen
+issue_tracker_in_progress = In Arbeit
+issue_tracker_planned = Geplant
+issue_tracker_rejected = Abgelehnt
+issue_tracker_closed = Erledigt
+
+# Formular
+issue_tracker_create_new = Neues Issue erstellen
+issue_tracker_edit_issue = Issue bearbeiten
+issue_tracker_please_select = Bitte auswählen
+issue_tracker_not_assigned = Nicht zugewiesen
+issue_tracker_save = Speichern
+issue_tracker_cancel = Abbrechen
+
+# Kommentare
+issue_tracker_comments = Kommentare
+issue_tracker_no_comments = Noch keine Kommentare vorhanden
+issue_tracker_add_comment = Kommentar hinzufügen
+issue_tracker_comment_placeholder = Kommentar schreiben...
+issue_tracker_comment_added = Kommentar wurde hinzugefügt
+issue_tracker_internal = Intern
+issue_tracker_internal_comment = Interner Kommentar (nur für Admins sichtbar)
+
+# Dateianhänge
+issue_tracker_attachments = Dateianhänge
+issue_tracker_attachments_help = Screenshots, Dokumente oder andere Dateien (max. 10 Dateien, max. 20 MB pro Datei)
+issue_tracker_download = Herunterladen
+issue_tracker_no_attachments = Keine Dateianhänge vorhanden
+issue_tracker_attachment_deleted = Dateianhang wurde gelöscht
+issue_tracker_delete_attachment_confirm = Möchten Sie diesen Anhang wirklich löschen?
+
+# Filter & Suche
+issue_tracker_filter = Filter
+issue_tracker_search = Suche
+issue_tracker_search_placeholder = Nach Titel oder Beschreibung suchen...
+issue_tracker_filter_apply = Filtern
+issue_tracker_filter_reset = Zurücksetzen
+issue_tracker_all = Alle
+
+# Aktionen
+issue_tracker_actions = Aktionen
+issue_tracker_edit = Bearbeiten
+issue_tracker_delete = Löschen
+issue_tracker_back_to_list = Zurück zur Liste
+issue_tracker_change_status = Status ändern
+issue_tracker_status_changed = Status wurde geändert
+
+# Meldungen
+issue_tracker_no_issues = Keine Issues gefunden
+issue_tracker_issue_created = Issue wurde erfolgreich erstellt
+issue_tracker_issue_updated = Issue wurde erfolgreich aktualisiert
+issue_tracker_issue_deleted = Issue wurde erfolgreich gelöscht
+issue_tracker_issue_save_error = Fehler beim Speichern des Issues
+issue_tracker_comment_added = Kommentar wurde hinzugefügt
+issue_tracker_delete_confirm = Möchten Sie dieses Issue wirklich löschen?
+issue_tracker_no_permission = Sie haben keine Berechtigung für diese Aktion
+issue_tracker_issue_not_found = Issue wurde nicht gefunden
+
+# Einstellungen
+issue_tracker_categories = Kategorien
+issue_tracker_add_category = Kategorie hinzufügen
+issue_tracker_email_settings = E-Mail-Einstellungen
+issue_tracker_email_enabled = E-Mail-Benachrichtigungen aktiviert
+issue_tracker_email_from_name = Absender-Name
+issue_tracker_settings_saved = Einstellungen wurden gespeichert
+issue_tracker_settings_general = Allgemein
+issue_tracker_email_templates = E-Mail-Templates
+issue_tracker_email_templates_help = Hier können Sie die E-Mail-Templates in Deutsch und Englisch anpassen
+issue_tracker_available_placeholders = Verfügbare Platzhalter
+issue_tracker_template_new_issue = Neues Issue
+issue_tracker_template_new_comment = Neuer Kommentar
+issue_tracker_template_status_change = Status-Änderung
+issue_tracker_template_assignment = Zuweisung
+
+# Tags
+issue_tracker_tags = Tags
+issue_tracker_tag_name = Tag-Name
+issue_tracker_tag_color = Farbe
+issue_tracker_tag_preview = Vorschau
+issue_tracker_add_tag = Tag hinzufügen
+issue_tracker_no_tags = Keine Tags vorhanden
+issue_tracker_tag_saved = Tag wurde gespeichert
+issue_tracker_tag_deleted = Tag wurde gelöscht
+issue_tracker_tag_name_required = Bitte einen Tag-Namen eingeben
+issue_tracker_tag_delete_confirm = Möchten Sie diesen Tag wirklich löschen?
+
+# Broadcast
+issue_tracker_broadcast = Broadcast-Nachricht
+issue_tracker_broadcast_info = Senden Sie eine Nachricht an alle berechtigten Benutzer
+issue_tracker_subject = Betreff
+issue_tracker_message = Nachricht
+issue_tracker_send_broadcast = Broadcast senden
+issue_tracker_broadcast_sent = Broadcast wurde an %d Benutzer gesendet
+issue_tracker_broadcast_error = Bitte füllen Sie alle Felder aus
+issue_tracker_broadcast_confirm = Möchten Sie wirklich eine Broadcast-Nachricht an alle Benutzer senden?
+
+# Permissions
+issue_tracker[] = Issue Tracker
+issue_tracker[issuer] = Issue Tracker - Issuer
+issue_tracker_no_permission = Sie haben keine Berechtigung für diese Aktion
+issue_tracker_perm_issuer = Issue Tracker - Issuer (kann Issues erstellen und kommentieren)
+issue_tracker_perm_admin = Issue Tracker - Administration (volle Rechte)
+
+# E-Mail Templates
+issue_tracker_email_new_issue_subject = Neues Issue: {0}
+issue_tracker_email_new_comment_subject = Neuer Kommentar zu Issue #{0}: {1}
+issue_tracker_email_status_change_subject = Status geändert: Issue #{0}: {1}
+issue_tracker_email_assignment_subject = Issue zugewiesen: #{0}: {1}
+
+# Benutzer-Einstellungen
+issue_tracker_email_notifications = E-Mail-Benachrichtigungen
+issue_tracker_email_on_new = Bei neuen Issues
+issue_tracker_email_on_new_desc = Ich möchte benachrichtigt werden, wenn ein neues Issue erstellt wird
+issue_tracker_email_on_comment = Bei neuen Kommentaren
+issue_tracker_email_on_comment_desc = Ich möchte benachrichtigt werden, wenn ein Kommentar zu einem Issue hinzugefügt wird
+issue_tracker_email_on_status_change = Bei Status-Änderungen
+issue_tracker_email_on_status_change_desc = Ich möchte benachrichtigt werden, wenn sich der Status eines Issues ändert
+issue_tracker_email_on_assignment = Bei Zuweisung
+issue_tracker_email_on_assignment_desc = Ich möchte benachrichtigt werden, wenn mir ein Issue zugewiesen wird
+issue_tracker_save_preferences = Einstellungen speichern
+issue_tracker_preferences_saved = Ihre Einstellungen wurden gespeichert
+issue_tracker_preferences_error = Fehler beim Speichern der Einstellungen
+# Issue-Templates & Hilfe
+issue_tracker_select_template = Vorlage wählen (optional)
+issue_tracker_template_bug = Bug / Fehler
+issue_tracker_template_feature = Feature-Request
+issue_tracker_template_content = Redaktionelle Änderung
+issue_tracker_template_question = Frage
+issue_tracker_help_title = Hilfe: Wie erstelle ich ein gutes Issue?
+issue_tracker_help_what_is = Was ist ein Issue?
+issue_tracker_help_what_is_text = Ein Issue ist eine Anfrage, ein Problem oder ein Vorschlag. Es dient dazu, Probleme zu dokumentieren, Verbesserungen vorzuschlagen oder Fragen zu stellen.
+issue_tracker_help_one_topic = Nur ein Thema pro Issue!
+issue_tracker_help_one_topic_text = Bitte erstellen Sie für jedes Problem ein eigenes Issue. Wenn Sie mehrere unterschiedliche Probleme haben, erstellen Sie mehrere Issues. So können die einzelnen Punkte besser nachverfolgt und bearbeitet werden.
+issue_tracker_help_good_example = Gute Beispiele
+issue_tracker_help_good_1 = <strong>"Bug: Kontaktformular sendet keine E-Mails"</strong> - Ein spezifisches Problem mit klarer Beschreibung
+issue_tracker_help_good_2 = <strong>"Feature: Newsletter-Anmeldung auf Startseite"</strong> - Ein konkreter Verbesserungsvorschlag
+issue_tracker_help_good_3 = <strong>"Inhalt: Öffnungszeiten auf Kontaktseite aktualisieren"</strong> - Eine klare redaktionelle Aufgabe
+issue_tracker_help_bad_example = Schlechte Beispiele (nicht machen!)
+issue_tracker_help_bad_1 = <strong>"Verschiedene Probleme auf der Website"</strong> - Zu vage, mehrere Themen vermischt
+issue_tracker_help_bad_2 = <strong>"Kontaktformular funktioniert nicht + Newsletter + Öffnungszeiten ändern"</strong> - Drei verschiedene Themen in einem Issue
+issue_tracker_help_important_info = Wichtige Informationen für das technische Team
+issue_tracker_help_tip_1 = <strong>Was genau ist das Problem?</strong> Beschreiben Sie konkret, was nicht funktioniert oder was Sie benötigen.
+issue_tracker_help_tip_2 = <strong>Wo tritt das Problem auf?</strong> Geben Sie an, auf welcher Seite oder in welchem Bereich das Problem auftritt.
+issue_tracker_help_tip_3 = <strong>Wie kann man das Problem nachvollziehen?</strong> Beschreiben Sie Schritt für Schritt, wie man das Problem selbst sehen kann.
+issue_tracker_help_tip_4 = <strong>Screenshots helfen!</strong> Fügen Sie wenn möglich Screenshots hinzu - ein Bild sagt mehr als tausend Worte.
+issue_tracker_close = Schließen
+
+# Deadline/Fälligkeit
+issue_tracker_due_date = Fälligkeit
+issue_tracker_overdue = Überfällig
+issue_tracker_due_soon = Fällig bald
+
+# History/Aktivitätsverlauf
+issue_tracker_history = Aktivitätsverlauf
+issue_tracker_history_created = Issue erstellt
+issue_tracker_history_updated = Issue aktualisiert
+issue_tracker_history_commented = Kommentar hinzugefügt
+issue_tracker_history_closed = Issue geschlossen
+issue_tracker_no_history = Noch keine Aktivitäten
+
+# Gespeicherte Filter
+issue_tracker_saved_filters = Gespeicherte Filter
+issue_tracker_save_filter = Filter speichern
+issue_tracker_filter_name = Filter-Name
+issue_tracker_filter_saved = Filter wurde gespeichert
+issue_tracker_filter_deleted = Filter wurde gelöscht
+issue_tracker_no_saved_filters = Keine gespeicherten Filter
+issue_tracker_load_filter = Filter laden
+issue_tracker_delete_filter = Filter löschen
+issue_tracker_set_as_default = Als Standard setzen
+issue_tracker_is_default = Standard
+
+# Kommentar-Aktionen
+issue_tracker_pinned = Angepinnt
+issue_tracker_solution = Lösung
+issue_tracker_highlighted_answers = Hervorgehobene Antworten
+issue_tracker_all_comments = Alle Kommentare
+issue_tracker_reply = Antworten
+issue_tracker_reply_placeholder = Antwort schreiben...
+issue_tracker_send_reply = Antwort senden
+issue_tracker_replies = Antworten
+
+# Backup/Export
+issue_tracker_backup = Backup & Export
+issue_tracker_backup_export_description = Exportieren Sie alle Issues, Kommentare und Tags als JSON-Datei. Diese kann bei Bedarf manuell wieder importiert werden.
+issue_tracker_backup_export_note = Hinweis:
+issue_tracker_backup_export_note_attachments = Attachments werden nicht exportiert (müssen manuell gesichert werden)
+issue_tracker_backup_export_note_userids = User-IDs bleiben erhalten (müssen bei Import ggf. angepasst werden)
+issue_tracker_backup_export_note_tokens = E-Mail-Tokens und Einstellungen werden nicht exportiert
+issue_tracker_backup_export_button = JSON Export erstellen
+issue_tracker_backup_manual_db = Manuelle Datenbank-Sicherung
+issue_tracker_backup_manual_tables = Alternativ können Sie die Tabellen auch manuell sichern:
+issue_tracker_backup_attachment_dir = Attachment-Verzeichnis
+issue_tracker_backup_attachment_dir_info = Das Attachment-Verzeichnis finden Sie hier:
+issue_tracker_backup_import = Import
+issue_tracker_backup_import_description = Importieren Sie eine zuvor exportierte JSON-Datei.
+issue_tracker_backup_import_warning = Achtung:
+issue_tracker_backup_import_warning_newids = Der Import erstellt neue Issues mit neuen IDs
+issue_tracker_backup_import_warning_userids = Bestehende User-IDs müssen im System vorhanden sein
+issue_tracker_backup_import_warning_attachments = Attachments müssen manuell ins Datenverzeichnis kopiert werden
+issue_tracker_backup_import_warning_duplicates = Es werden keine Duplikate geprüft - ggf. mehrfach importieren vermeiden!
+issue_tracker_backup_import_file = JSON-Datei auswählen
+issue_tracker_backup_import_button = Jetzt importieren
+issue_tracker_backup_import_success = Issues erfolgreich importiert
+issue_tracker_backup_import_error = Fehler beim Import:
+issue_tracker_backup_invalid_json = Ungültige JSON-Datei

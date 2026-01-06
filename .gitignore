@@ -1,0 +1,23 @@
+# REDAXO Issue Tracker .gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Composer
+/vendor/
+composer.lock
+
+# NPM
+node_modules/
+package-lock.json
+
+# Logs
+*.log

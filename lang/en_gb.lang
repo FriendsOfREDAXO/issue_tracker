@@ -1,0 +1,263 @@
+# Issue Tracker - English
+
+# General
+issue_tracker_title = Issue Tracker
+issue_tracker_description = Management of requests, problems and suggestions
+
+# Navigation
+issue_tracker_dashboard = Dashboard
+issue_tracker_issues = Issues
+issue_tracker_issues_list = Overview
+issue_tracker_issues_view = View issue
+issue_tracker_issues_create = New Issue
+issue_tracker_issues_edit = Edit Issue
+issue_tracker_preferences = Notifications
+issue_tracker_settings = Settings
+issue_tracker_help = Help
+
+# Dashboard
+issue_tracker_status_open = Open
+issue_tracker_status_in_progress = In Progress
+issue_tracker_status_planned = Planned
+issue_tracker_status_rejected = Rejected
+issue_tracker_status_closed = Closed
+issue_tracker_closed_30_days = Closed (30 days)
+issue_tracker_by_category = By Category
+issue_tracker_recent_issues = Recent Issues
+issue_tracker_count = Count
+
+# Issues
+issue_tracker_title = Title
+issue_tracker_description = Description
+issue_tracker_category = Category
+issue_tracker_status = Status
+issue_tracker_priority = Priority
+issue_tracker_assigned = Assigned
+issue_tracker_assigned_user = Assigned User
+issue_tracker_assigned_addon = Assigned AddOn
+issue_tracker_addon = AddOn
+issue_tracker_version = Version
+issue_tracker_tags = Tags
+issue_tracker_created_at = Created at
+issue_tracker_created_by = Created by
+issue_tracker_updated_at = Updated at
+issue_tracker_actions = Actions
+
+# Priorities
+issue_tracker_priority_low = Low
+issue_tracker_priority_normal = Normal
+issue_tracker_priority_high = High
+issue_tracker_priority_urgent = Urgent
+
+# Status
+issue_tracker_status_open = Open
+issue_tracker_status_in_progress = In Progress
+issue_tracker_status_planned = Planned
+issue_tracker_status_rejected = Rejected
+issue_tracker_status_closed = Closed
+issue_tracker_all_active = All active
+issue_tracker_open = Open
+issue_tracker_in_progress = In Progress
+issue_tracker_planned = Planned
+issue_tracker_rejected = Rejected
+issue_tracker_closed = Closed
+
+# Form
+issue_tracker_create_new = Create New Issue
+issue_tracker_edit_issue = Edit Issue
+issue_tracker_please_select = Please select
+issue_tracker_not_assigned = Not assigned
+issue_tracker_save = Save
+issue_tracker_cancel = Cancel
+
+# Comments
+issue_tracker_comments = Comments
+issue_tracker_no_comments = No comments yet
+issue_tracker_add_comment = Add Comment
+issue_tracker_comment_placeholder = Write a comment...
+issue_tracker_comment_added = Comment was added
+issue_tracker_internal = Internal
+issue_tracker_internal_comment = Internal comment (visible to admins only)
+
+# Attachments
+issue_tracker_attachments = Attachments
+issue_tracker_attachments_help = Screenshots, documents or other files (max. 10 files, max. 20 MB per file)
+issue_tracker_download = Download
+issue_tracker_no_attachments = No attachments
+issue_tracker_attachment_deleted = Attachment deleted
+issue_tracker_delete_attachment_confirm = Do you really want to delete this attachment?
+
+# Filter & Search
+issue_tracker_filter = Filter
+issue_tracker_search = Search
+issue_tracker_search_placeholder = Search by title or description...
+issue_tracker_filter_apply = Apply Filter
+issue_tracker_filter_reset = Reset
+issue_tracker_all = All
+
+# Actions
+issue_tracker_actions = Actions
+issue_tracker_edit = Edit
+issue_tracker_delete = Delete
+issue_tracker_back_to_list = Back to list
+issue_tracker_change_status = Change status
+issue_tracker_status_changed = Status changed
+
+# Messages
+issue_tracker_no_issues = No issues found
+issue_tracker_issue_created = Issue was successfully created
+issue_tracker_issue_updated = Issue was successfully updated
+issue_tracker_issue_deleted = Issue was successfully deleted
+issue_tracker_issue_save_error = Error saving issue
+issue_tracker_comment_added = Comment was added
+issue_tracker_delete_confirm = Do you really want to delete this issue?
+issue_tracker_no_permission = You do not have permission for this action
+issue_tracker_issue_not_found = Issue not found
+
+# Settings
+issue_tracker_categories = Categories
+issue_tracker_add_category = Add Category
+issue_tracker_email_settings = Email Settings
+issue_tracker_email_enabled = Email notifications enabled
+issue_tracker_email_from_name = Sender Name
+issue_tracker_settings_saved = Settings were saved
+issue_tracker_settings_general = General
+issue_tracker_email_templates = Email Templates
+issue_tracker_email_templates_help = Here you can customize the email templates in German and English
+issue_tracker_available_placeholders = Available placeholders
+issue_tracker_template_new_issue = New Issue
+issue_tracker_template_new_comment = New Comment
+issue_tracker_template_status_change = Status Change
+issue_tracker_template_assignment = Assignment
+
+# Tags
+issue_tracker_tags = Tags
+issue_tracker_tag_name = Tag Name
+issue_tracker_tag_color = Color
+issue_tracker_tag_preview = Preview
+issue_tracker_add_tag = Add Tag
+issue_tracker_no_tags = No tags available
+issue_tracker_tag_saved = Tag was saved
+issue_tracker_tag_deleted = Tag was deleted
+issue_tracker_tag_name_required = Please enter a tag name
+issue_tracker_tag_delete_confirm = Do you really want to delete this tag?
+
+# Broadcast
+issue_tracker_broadcast = Broadcast Message
+issue_tracker_broadcast_info = Send a message to all authorized users
+issue_tracker_subject = Subject
+issue_tracker_message = Message
+issue_tracker_send_broadcast = Send Broadcast
+issue_tracker_broadcast_sent = Broadcast was sent to %d users
+issue_tracker_broadcast_error = Please fill in all fields
+issue_tracker_broadcast_confirm = Do you really want to send a broadcast message to all users?
+
+# Permissions
+issue_tracker[] = Issue Tracker
+issue_tracker[issuer] = Issue Tracker - Issuer
+issue_tracker_no_permission = You do not have permission for this action
+issue_tracker_perm_issuer = Issue Tracker - Issuer (can create and comment on issues)
+issue_tracker_perm_admin = Issue Tracker - Administration (full rights)
+
+# E-Mail Templates
+issue_tracker_email_new_issue_subject = New Issue: {0}
+issue_tracker_email_new_comment_subject = New Comment on Issue #{0}: {1}
+issue_tracker_email_status_change_subject = Status Changed: Issue #{0}: {1}
+issue_tracker_email_assignment_subject = Issue Assigned: #{0}: {1}
+
+# User Preferences
+issue_tracker_email_notifications = Email Notifications
+issue_tracker_email_on_new = New Issues
+issue_tracker_email_on_new_desc = I want to be notified when a new issue is created
+issue_tracker_email_on_comment = New Comments
+issue_tracker_email_on_comment_desc = I want to be notified when a comment is added to an issue
+issue_tracker_email_on_status_change = Status Changes
+issue_tracker_email_on_status_change_desc = I want to be notified when the status of an issue changes
+issue_tracker_email_on_assignment = Assignment
+issue_tracker_email_on_assignment_desc = I want to be notified when an issue is assigned to me
+issue_tracker_save_preferences = Save Preferences
+issue_tracker_preferences_saved = Your preferences were saved
+issue_tracker_preferences_error = Error saving preferences
+# Issue Templates & Help
+issue_tracker_select_template = Select Template (optional)
+issue_tracker_template_bug = Bug / Error
+issue_tracker_template_feature = Feature Request
+issue_tracker_template_content = Content Change
+issue_tracker_template_question = Question
+issue_tracker_help_title = Help: How to create a good issue?
+issue_tracker_help_what_is = What is an issue?
+issue_tracker_help_what_is_text = An issue is a request, problem, or suggestion. It serves to document problems, suggest improvements, or ask questions.
+issue_tracker_help_one_topic = Only one topic per issue!
+issue_tracker_help_one_topic_text = Please create a separate issue for each problem. If you have multiple different problems, create multiple issues. This way, individual points can be better tracked and processed.
+issue_tracker_help_good_example = Good Examples
+issue_tracker_help_good_1 = <strong>"Bug: Contact form doesn't send emails"</strong> - A specific problem with clear description
+issue_tracker_help_good_2 = <strong>"Feature: Newsletter signup on homepage"</strong> - A concrete improvement suggestion
+issue_tracker_help_good_3 = <strong>"Content: Update opening hours on contact page"</strong> - A clear editorial task
+issue_tracker_help_bad_example = Bad Examples (don't do this!)
+issue_tracker_help_bad_1 = <strong>"Various problems on the website"</strong> - Too vague, multiple topics mixed
+issue_tracker_help_bad_2 = <strong>"Contact form doesn't work + newsletter + change opening hours"</strong> - Three different topics in one issue
+issue_tracker_help_important_info = Important Information for the Technical Team
+issue_tracker_help_tip_1 = <strong>What exactly is the problem?</strong> Describe specifically what doesn't work or what you need.
+issue_tracker_help_tip_2 = <strong>Where does the problem occur?</strong> Indicate on which page or in which area the problem occurs.
+issue_tracker_help_tip_3 = <strong>How can the problem be reproduced?</strong> Describe step by step how to see the problem yourself.
+issue_tracker_help_tip_4 = <strong>Screenshots help!</strong> Add screenshots if possible - a picture is worth a thousand words.
+issue_tracker_close = Close
+
+# Deadline/Due Date
+issue_tracker_due_date = Due Date
+issue_tracker_overdue = Overdue
+issue_tracker_due_soon = Due Soon
+
+# History/Activity Log
+issue_tracker_history = Activity Log
+issue_tracker_history_created = Issue created
+issue_tracker_history_updated = Issue updated
+issue_tracker_history_commented = Comment added
+issue_tracker_history_closed = Issue closed
+issue_tracker_no_history = No activities yet
+
+# Saved Filters
+issue_tracker_saved_filters = Saved Filters
+issue_tracker_save_filter = Save Filter
+issue_tracker_filter_name = Filter Name
+issue_tracker_filter_saved = Filter was saved
+issue_tracker_filter_deleted = Filter was deleted
+issue_tracker_no_saved_filters = No saved filters
+issue_tracker_load_filter = Load Filter
+issue_tracker_delete_filter = Delete Filter
+issue_tracker_set_as_default = Set as Default
+issue_tracker_is_default = Default
+# Comment Actions
+issue_tracker_pinned = Pinned
+issue_tracker_solution = Solution
+issue_tracker_highlighted_answers = Highlighted Answers
+issue_tracker_all_comments = All Comments
+issue_tracker_reply = Reply
+issue_tracker_reply_placeholder = Write a reply...
+issue_tracker_send_reply = Send Reply
+issue_tracker_replies = Replies
+
+# Backup/Export
+issue_tracker_backup = Backup & Export
+issue_tracker_backup_export_description = Export all issues, comments and tags as a JSON file. This can be manually re-imported if needed.
+issue_tracker_backup_export_note = Note:
+issue_tracker_backup_export_note_attachments = Attachments are not exported (must be backed up manually)
+issue_tracker_backup_export_note_userids = User IDs are preserved (may need to be adjusted during import)
+issue_tracker_backup_export_note_tokens = Email tokens and settings are not exported
+issue_tracker_backup_export_button = Create JSON Export
+issue_tracker_backup_manual_db = Manual Database Backup
+issue_tracker_backup_manual_tables = Alternatively, you can back up the tables manually:
+issue_tracker_backup_attachment_dir = Attachment Directory
+issue_tracker_backup_attachment_dir_info = You can find the attachment directory here:
+issue_tracker_backup_import = Import
+issue_tracker_backup_import_description = Import a previously exported JSON file.
+issue_tracker_backup_import_warning = Warning:
+issue_tracker_backup_import_warning_newids = Import creates new issues with new IDs
+issue_tracker_backup_import_warning_userids = Existing user IDs must be present in the system
+issue_tracker_backup_import_warning_attachments = Attachments must be manually copied to the data directory
+issue_tracker_backup_import_warning_duplicates = No duplicate check - avoid importing multiple times!
+issue_tracker_backup_import_file = Select JSON file
+issue_tracker_backup_import_button = Import now
+issue_tracker_backup_import_success = issues successfully imported
+issue_tracker_backup_import_error = Import error:
+issue_tracker_backup_invalid_json = Invalid JSON file
