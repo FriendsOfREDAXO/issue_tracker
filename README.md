@@ -237,9 +237,6 @@ Bei Fragen oder Problemen:
 - Dateianhang-Verwaltung
 - Backup/Export und Import-Funktion
 
-## Credits
-
-**Issue Tracker** wurde von **[Thomas Skerbis](https://github.com/skerbis)** für **REDAXO CMS** entwickelt.
 
 ## Lizenz
 
@@ -247,6 +244,11 @@ MIT License - siehe [LICENSE.md](LICENSE.md)
 
 ## Autor
 
-**Thomas Skerbis**
-- GitHub: [@skerbis](https://github.com/skerbis)
-- REDAXO Slack: @skerbis
+**Friends Of REDAXO**
+
+* http://www.redaxo.org
+* https://github.com/FriendsOfREDAXO
+
+## Projektleitung
+
+[Thomas Skerbis](https://github.com/skerbis)
