@@ -370,7 +370,7 @@ $priorityClass = [
                     $commentAttachments = \FriendsOfREDAXO\IssueTracker\Attachment::getByComment($comment->getId());
                     $replies = $comment->getReplies();
                 ?>
-                <div class="issue-tracker-comment-card <?= $comment->isSolution() ? 'border-success' : ($comment->isPinned() ? 'border-info' : '') ?>" style="<?= $comment->isSolution() ? 'border-left: 4px solid #5cb85c;' : ($comment->isPinned() ? 'border-left: 4px solid #5bc0de;' : '') ?>">
+                <div class="issue-tracker-comment-card <?= $comment->isSolution() ? 'border-success' : ($comment->isPinned() ? 'border-info' : '') ?>" id="comment-<?= $comment->getId() ?>" style="<?= $comment->isSolution() ? 'border-left: 4px solid #5cb85c;' : ($comment->isPinned() ? 'border-left: 4px solid #5bc0de;' : '') ?>">
                     <div class="media-body">
                         <h5 class="media-heading">
                             <?php if ($comment->isSolution()): ?>
@@ -476,7 +476,7 @@ $priorityClass = [
                                 $replyUser = $reply->getCreator();
                                 $replyAttachments = \FriendsOfREDAXO\IssueTracker\Attachment::getByComment($reply->getId());
                             ?>
-                            <div style="margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-radius: 4px;">
+                            <div style="margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-radius: 4px;" id="comment-<?= $reply->getId() ?>">
                                 <div>
                                     <strong><?= $replyUser ? rex_escape($replyUser->getValue('name')) : 'Unknown' ?></strong>
                                     <small class="text-muted"> - <?= $reply->getCreatedAt() ? $reply->getCreatedAt()->format('d.m.Y H:i') : '-' ?></small>
@@ -554,6 +554,24 @@ function toggleReplyForm(commentId) {
         form.style.display = 'none';
     }
 }
+
+// Zum Kommentar scrollen wenn Hash vorhanden
+jQuery(function($) {
+    if (window.location.hash) {
+        var target = $(window.location.hash);
+        if (target.length) {
+            setTimeout(function() {
+                $('html, body').animate({
+                    scrollTop: target.offset().top - 100
+                }, 500);
+                target.css('box-shadow', '0 0 15px rgba(255, 193, 7, 0.8)');
+                setTimeout(function() {
+                    target.css('box-shadow', '');
+                }, 2000);
+            }, 100);
+        }
+    }
+});
 </script>
 
 <!-- Modal: Aktivitätsverlauf -->

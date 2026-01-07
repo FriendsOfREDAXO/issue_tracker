@@ -139,7 +139,12 @@ if (rex_post('add_comment', 'int', 0) === 1) {
             // Benachrichtigung senden
             NotificationService::notifyNewComment($comment, $issue);
             
-            echo rex_view::success($package->i18n('issue_tracker_comment_added'));
+            // Redirect zur aktuellen Seite mit Anker zum neuen Kommentar
+            $redirectUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]);
+            $redirectUrl = html_entity_decode($redirectUrl, ENT_QUOTES, 'UTF-8');
+            $redirectUrl .= '#comment-' . $comment->getId();
+            header('Location: ' . $redirectUrl);
+            exit;
         }
     }
 }
