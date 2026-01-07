@@ -89,6 +89,10 @@ issue_tracker_no_attachments = Keine Dateianhänge vorhanden
 issue_tracker_attachment_deleted = Dateianhang wurde gelöscht
 issue_tracker_delete_attachment_confirm = Möchten Sie diesen Anhang wirklich löschen?
 
+# Privat/Sichtbarkeit
+issue_tracker_private_issue = Privates Issue (nur für Admins sichtbar)
+issue_tracker_private_issue_help = Wenn aktiviert, ist dieses Issue nur für Sie als Ersteller und für Admins sichtbar
+
 # Filter & Suche
 issue_tracker_filter = Filter
 issue_tracker_search = Suche

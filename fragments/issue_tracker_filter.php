@@ -10,9 +10,11 @@ $package = rex_addon::get('issue_tracker');
 $categories = $this->getVar('categories', []);
 $statuses = $this->getVar('statuses', []);
 $allTags = $this->getVar('allTags', []);
+$users = $this->getVar('users', []);
 $filterStatus = $this->getVar('filterStatus', '');
 $filterCategory = $this->getVar('filterCategory', '');
 $filterTag = $this->getVar('filterTag', 0);
+$filterCreatedBy = $this->getVar('filterCreatedBy', 0);
 $searchTerm = $this->getVar('searchTerm', '');
 ?>
 
@@ -109,6 +111,18 @@ $searchTerm = $this->getVar('searchTerm', '');
             </div>
 
             <div class="form-group">
+                <label for="filter_created_by"><?= $package->i18n('issue_tracker_created_by') ?></label>
+                <select name="filter_created_by" id="filter_created_by" class="form-control selectpicker" data-live-search="true">
+                    <option value="0"><?= $package->i18n('issue_tracker_all') ?></option>
+                    <?php foreach ($users as $userId => $userName): ?>
+                    <option value="<?= $userId ?>" <?= $filterCreatedBy === $userId ? 'selected' : '' ?>>
+                        <?= rex_escape($userName) ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="search"><?= $package->i18n('issue_tracker_search') ?></label>
                 <input type="text" name="search" id="search" class="form-control" value="<?= rex_escape($searchTerm) ?>" placeholder="<?= $package->i18n('issue_tracker_search_placeholder') ?>">
             </div>
@@ -137,6 +151,7 @@ $searchTerm = $this->getVar('searchTerm', '');
                 <input type="hidden" name="filter_status" value="<?= rex_escape($filterStatus) ?>" />
                 <input type="hidden" name="filter_category" value="<?= rex_escape($filterCategory) ?>" />
                 <input type="hidden" name="filter_tag" value="<?= $filterTag ?>" />
+                <input type="hidden" name="filter_created_by" value="<?= $filterCreatedBy ?>" />
                 <input type="hidden" name="search" value="<?= rex_escape($searchTerm) ?>" />
                 
                 <div class="modal-header">
@@ -176,6 +191,9 @@ $searchTerm = $this->getVar('searchTerm', '');
                                 ?>
                                 <li><?= $package->i18n('issue_tracker_tags') ?>: <span class="label" style="background-color: <?= rex_escape($selectedTag->getColor()) ?>"><?= rex_escape($selectedTag->getName()) ?></span></li>
                                 <?php endif; ?>
+                            <?php endif; ?>
+                            <?php if ($filterCreatedBy > 0 && isset($users[$filterCreatedBy])): ?>
+                                <li><?= $package->i18n('issue_tracker_created_by') ?>: <?= rex_escape($users[$filterCreatedBy]) ?></li>
                             <?php endif; ?>
                             <?php if ($searchTerm): ?>
                                 <li><?= $package->i18n('issue_tracker_search') ?>: "<?= rex_escape($searchTerm) ?>"</li>

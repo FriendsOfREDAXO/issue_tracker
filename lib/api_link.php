@@ -11,7 +11,7 @@ use FriendsOfREDAXO\IssueTracker\Issue;
 
 class rex_api_issue_tracker_link extends rex_api_function
 {
-    protected $published = false; // Öffentlich zugänglich
+    protected $published = true; // Öffentlich zugänglich
     
     public function execute()
     {

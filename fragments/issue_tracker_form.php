@@ -184,6 +184,17 @@ $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
                     <p class="help-block"><?= $package->i18n('issue_tracker_attachments_help') ?></p>
                 </div>
 
+                <!-- Privat (nur für Admins) -->
+                <?php if (rex::getUser()->isAdmin()): ?>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="is_private" value="1" <?= $issue->getIsPrivate() ? 'checked' : '' ?>>
+                        <?= $package->i18n('issue_tracker_private_issue') ?>
+                        <span class="help-block" style="margin: 0;"><?= $package->i18n('issue_tracker_private_issue_help') ?></span>
+                    </label>
+                </div>
+                <?php endif; ?>
+
                 <!-- Buttons -->
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">

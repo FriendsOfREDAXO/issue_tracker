@@ -89,6 +89,10 @@ issue_tracker_no_attachments = No attachments
 issue_tracker_attachment_deleted = Attachment deleted
 issue_tracker_delete_attachment_confirm = Do you really want to delete this attachment?
 
+# Privacy/Visibility
+issue_tracker_private_issue = Private issue (visible to admins only)
+issue_tracker_private_issue_help = When enabled, this issue is only visible to you as the creator and to admins
+
 # Filter & Search
 issue_tracker_filter = Filter
 issue_tracker_search = Search

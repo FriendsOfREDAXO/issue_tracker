@@ -80,6 +80,7 @@ if (rex_post('save', 'int', 0) === 1) {
     $issue->setAssignedUserId(rex_post('assigned_user_id', 'int', null));
     $issue->setAssignedAddon(rex_post('assigned_addon', 'string', null));
     $issue->setVersion(rex_post('version', 'string', null));
+    $issue->setIsPrivate(rex_post('is_private', 'int', 0) === 1);
     
     // Due Date verarbeiten
     $dueDateInput = rex_post('due_date', 'string', '');

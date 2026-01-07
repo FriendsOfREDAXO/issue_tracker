@@ -25,6 +25,7 @@ class Issue
     private ?string $assignedAddon = null;
     private ?string $version = null;
     private ?DateTime $dueDate = null;
+    private bool $isPrivate = false;
     private bool $notified = false;
     private int $createdBy = 0;
     private ?DateTime $createdAt = null;
@@ -94,6 +95,7 @@ class Issue
         $issue->assignedUserId = $sql->hasValue('assigned_user_id') && $sql->getValue('assigned_user_id') ? (int) $sql->getValue('assigned_user_id') : null;
         $issue->assignedAddon = $sql->hasValue('assigned_addon') && $sql->getValue('assigned_addon') ? (string) $sql->getValue('assigned_addon') : null;
         $issue->version = $sql->hasValue('version') && $sql->getValue('version') ? (string) $sql->getValue('version') : null;
+        $issue->isPrivate = (bool) $sql->getValue('is_private');
         $issue->notified = (bool) $sql->getValue('notified');
         $issue->createdBy = (int) $sql->getValue('created_by');
         $issue->createdAt = new DateTime((string) $sql->getValue('created_at'));
@@ -127,6 +129,7 @@ class Issue
         $sql->setValue('assigned_addon', $this->assignedAddon);
         $sql->setValue('version', $this->version);
         $sql->setValue('due_date', $this->dueDate ? $this->dueDate->format('Y-m-d H:i:s') : null);
+        $sql->setValue('is_private', $this->isPrivate ? 1 : 0);
         $sql->setValue('notified', $this->notified ? 1 : 0);
         $sql->setValue('updated_at', date('Y-m-d H:i:s'));
 
@@ -321,6 +324,16 @@ class Issue
     public function setVersion(?string $version): void
     {
         $this->version = $version;
+    }
+
+    public function getIsPrivate(): bool
+    {
+        return $this->isPrivate;
+    }
+
+    public function setIsPrivate(bool $isPrivate): void
+    {
+        $this->isPrivate = $isPrivate;
     }
 
     public function isNotified(): bool

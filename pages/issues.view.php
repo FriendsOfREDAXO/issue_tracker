@@ -28,6 +28,13 @@ if (!$issue) {
     return;
 }
 
+// Berechtigungsprüfung für private Issues
+$currentUser = rex::getUser();
+if ($issue->getIsPrivate() && !$currentUser->isAdmin() && $issue->getCreatedBy() !== $currentUser->getId()) {
+    echo rex_view::error($package->i18n('issue_tracker_no_permission'));
+    return;
+}
+
 // Kommentar löschen (nur Admins)
 if (rex_post('delete_comment', 'int', 0) > 0) {
     $commentId = rex_post('delete_comment', 'int', 0);

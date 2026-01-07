@@ -9,6 +9,24 @@
 // Update: comment_id Spalte zur Attachments-Tabelle hinzufügen
 $sql = rex_sql::factory();
 
+// Prüfen ob is_private Spalte bereits existiert
+$issuesColumns = $sql->getArray('SHOW COLUMNS FROM ' . rex::getTable('issue_tracker_issues'));
+$hasIsPrivate = false;
+
+foreach ($issuesColumns as $column) {
+    if ($column['Field'] === 'is_private') {
+        $hasIsPrivate = true;
+        break;
+    }
+}
+
+if (!$hasIsPrivate) {
+    // is_private Spalte hinzufügen
+    rex_sql_table::get(rex::getTable('issue_tracker_issues'))
+        ->ensureColumn(new rex_sql_column('is_private', 'tinyint(1)', false, '0'), 'due_date')
+        ->alter();
+}
+
 // Prüfen ob comment_id Spalte bereits existiert
 $columns = $sql->getArray('SHOW COLUMNS FROM ' . rex::getTable('issue_tracker_attachments'));
 $hasCommentId = false;
