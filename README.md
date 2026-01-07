@@ -37,7 +37,28 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 
 1. Addon-Ordner nach `/redaxo/src/addons/issue_tracker/` kopieren
 2. Im REDAXO-Backend unter "AddOns" das AddOn installieren und aktivieren
-3. Berechtigungen für Benutzer einrichten (siehe unten)
+3. **Media Manager Typen erstellen** (wichtig für Dateianhänge!)
+4. Berechtigungen für Benutzer einrichten (siehe unten)
+
+### Media Manager Typen einrichten
+
+Das Issue Tracker AddOn benötigt zwei Media Manager Typen für die Anzeige von Dateianhängen:
+
+#### 1. `issue_tracker_attachment` (Vollansicht)
+
+Gehe zu "Media Manager" → "Medientypen" → "Typ hinzufügen":
+- **Name**: `issue_tracker_attachment`
+- **Effekt hinzufügen**: "Issue Tracker Attachment"
+- Optional weitere Effekte wie "resize" oder "compress" hinzufügen
+
+#### 2. `issue_tracker_thumbnail` (Vorschaubilder)
+
+Gehe zu "Media Manager" → "Medientypen" → "Typ hinzufügen":
+- **Name**: `issue_tracker_thumbnail`
+- **Effekt 1**: "Issue Tracker Attachment"
+- **Effekt 2**: "resize" (Breite: 300px, Höhe: 300px, Modus: fit)
+
+**Hinweis**: Der Effekt "Issue Tracker Attachment" wird automatisch beim Installieren des AddOns registriert.
 
 ## Konfiguration
 
