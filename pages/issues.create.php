@@ -181,6 +181,13 @@ if (rex_post('save', 'int', 0) === 1) {
         
         echo rex_view::success($package->i18n($isNew ? 'issue_tracker_issue_created' : 'issue_tracker_issue_updated'));
         
+        // LocalStorage-Draft löschen
+        echo '<script>
+            if (typeof localStorage !== "undefined") {
+                localStorage.removeItem("smde_issue_description");
+            }
+        </script>';
+        
         // Redirect zur Liste
         header('Location: ' . rex_url::backendPage('issue_tracker/issues'));
         exit;

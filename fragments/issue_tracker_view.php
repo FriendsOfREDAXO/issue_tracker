@@ -296,12 +296,17 @@ $priorityClass = [
                                 <?php endif; ?>
                                 <strong><?= $commentUser ? rex_escape($commentUser->getValue('name')) : 'Unknown' ?></strong>
                                 <small class="text-muted"> - <?= $comment->getCreatedAt() ? $comment->getCreatedAt()->format('d.m.Y H:i') : '-' ?></small>
+                                <?php if ($comment->getUpdatedAt()): ?>
+                                    <small class="text-muted" style="font-style: italic;"> (<?= $package->i18n('issue_tracker_edited') ?> <?= $comment->getUpdatedAt()->format('d.m.Y H:i') ?>)</small>
+                                <?php endif; ?>
                                 <?php 
                                 $currentUser = rex::getUser();
                                 $canModerate = $currentUser->isAdmin() || $issue->getCreatedBy() === $currentUser->getId();
-                                if ($canModerate): 
+                                $canEdit = $currentUser->isAdmin() || $comment->getCreatedBy() === $currentUser->getId();
+                                if ($canModerate || $canEdit): 
                                 ?>
                                 <div class="pull-right">
+                                    <?php if ($canModerate): ?>
                                     <form method="post" style="display: inline-block; margin: 0;">
                                         <input type="hidden" name="toggle_pin" value="<?= $comment->getId() ?>" />
                                         <button type="submit" class="btn btn-xs <?= $comment->isPinned() ? 'btn-info' : 'btn-default' ?>" 
@@ -316,10 +321,41 @@ $priorityClass = [
                                             <i class="rex-icon fa-check-circle"></i>
                                         </button>
                                     </form>
+                                    <?php endif; ?>
+                                    <?php if ($canEdit): ?>
+                                    <button type="button" class="btn btn-xs btn-default" onclick="toggleEditForm(<?= $comment->getId() ?>)" title="<?= $package->i18n('issue_tracker_edit') ?>">
+                                        <i class="rex-icon fa-edit"></i>
+                                    </button>
+                                    <?php endif; ?>
+                                    <?php if ($currentUser->isAdmin()): ?>
+                                    <form method="post" style="display: inline-block; margin: 0;" onsubmit="return confirm('<?= $package->i18n('issue_tracker_delete_comment_confirm') ?>');">
+                                        <input type="hidden" name="delete_comment" value="<?= $comment->getId() ?>" />
+                                        <button type="submit" class="btn btn-xs btn-danger" title="<?= $package->i18n('issue_tracker_delete') ?>">
+                                            <i class="rex-icon fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    <?php endif; ?>
                                 </div>
                                 <?php endif; ?>
                             </h5>
-                            <div class="issue-tracker-comment-content"><?= rex_markdown::factory()->parse($comment->getComment()) ?></div>
+                            
+                            <!-- Edit-Formular (versteckt) -->
+                            <div id="edit-form-<?= $comment->getId() ?>" style="display: none; margin-bottom: 15px; padding: 15px; background: #fffbcc; border-radius: 4px; border: 1px solid #e5d700;">
+                                <form method="post">
+                                    <input type="hidden" name="edit_comment" value="<?= $comment->getId() ?>" />
+                                    <div class="form-group">
+                                        <textarea name="comment_text" class="form-control" rows="4"><?= rex_escape($comment->getComment()) ?></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        <i class="rex-icon fa-save"></i> <?= $package->i18n('issue_tracker_save') ?>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-default" onclick="toggleEditForm(<?= $comment->getId() ?>)">
+                                        <?= $package->i18n('issue_tracker_cancel') ?>
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <div class="issue-tracker-comment-content" id="comment-content-<?= $comment->getId() ?>"><?= rex_markdown::factory()->parse($comment->getComment()) ?></div>
                         
                             <?php if (!empty($commentAttachments)): ?>
                             <div class="row" style="margin-top: 10px;">
@@ -384,12 +420,17 @@ $priorityClass = [
                             <?php endif; ?>
                             <strong><?= $commentUser ? rex_escape($commentUser->getValue('name')) : 'Unknown' ?></strong>
                             <small class="text-muted"> - <?= $comment->getCreatedAt() ? $comment->getCreatedAt()->format('d.m.Y H:i') : '-' ?></small>
+                            <?php if ($comment->getUpdatedAt()): ?>
+                                <small class="text-muted" style="font-style: italic;"> (<?= $package->i18n('issue_tracker_edited') ?> <?= $comment->getUpdatedAt()->format('d.m.Y H:i') ?>)</small>
+                            <?php endif; ?>
                             <?php 
                             $currentUser = rex::getUser();
                             $canModerate = $currentUser->isAdmin() || $issue->getCreatedBy() === $currentUser->getId();
-                            if ($canModerate): 
+                            $canEdit = $currentUser->isAdmin() || $comment->getCreatedBy() === $currentUser->getId();
+                            if ($canModerate || $canEdit): 
                             ?>
                             <div class="pull-right">
+                                <?php if ($canModerate): ?>
                                 <form method="post" style="display: inline-block; margin: 0;">
                                     <input type="hidden" name="toggle_pin" value="<?= $comment->getId() ?>" />
                                     <button type="submit" class="btn btn-xs <?= $comment->isPinned() ? 'btn-info' : 'btn-default' ?>" 
@@ -404,10 +445,41 @@ $priorityClass = [
                                         <i class="rex-icon fa-check-circle"></i>
                                     </button>
                                 </form>
+                                <?php endif; ?>
+                                <?php if ($canEdit): ?>
+                                <button type="button" class="btn btn-xs btn-default" onclick="toggleEditForm(<?= $comment->getId() ?>)" title="<?= $package->i18n('issue_tracker_edit') ?>">
+                                    <i class="rex-icon fa-edit"></i>
+                                </button>
+                                <?php endif; ?>
+                                <?php if ($currentUser->isAdmin()): ?>
+                                <form method="post" style="display: inline-block; margin: 0;" onsubmit="return confirm('<?= $package->i18n('issue_tracker_delete_comment_confirm') ?>');">
+                                    <input type="hidden" name="delete_comment" value="<?= $comment->getId() ?>" />
+                                    <button type="submit" class="btn btn-xs btn-danger" title="<?= $package->i18n('issue_tracker_delete') ?>">
+                                        <i class="rex-icon fa-trash"></i>
+                                    </button>
+                                </form>
+                                <?php endif; ?>
                             </div>
                             <?php endif; ?>
                         </h5>
-                        <div class="issue-tracker-comment-content"><?= rex_markdown::factory()->parse($comment->getComment()) ?></div>
+                        
+                        <!-- Edit-Formular (versteckt) -->
+                        <div id="edit-form-<?= $comment->getId() ?>" style="display: none; margin-bottom: 15px; padding: 15px; background: #fffbcc; border-radius: 4px; border: 1px solid #e5d700;">
+                            <form method="post">
+                                <input type="hidden" name="edit_comment" value="<?= $comment->getId() ?>" />
+                                <div class="form-group">
+                                    <textarea name="comment_text" class="form-control" rows="4"><?= rex_escape($comment->getComment()) ?></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="rex-icon fa-save"></i> <?= $package->i18n('issue_tracker_save') ?>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-default" onclick="toggleEditForm(<?= $comment->getId() ?>)">
+                                    <?= $package->i18n('issue_tracker_cancel') ?>
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <div class="issue-tracker-comment-content" id="comment-content-<?= $comment->getId() ?>"><?= rex_markdown::factory()->parse($comment->getComment()) ?></div>
                         
                         <?php if (!empty($commentAttachments)): ?>
                         <div class="row" style="margin-top: 10px;">
@@ -453,7 +525,7 @@ $priorityClass = [
                         </div>
                         
                         <!-- Antwort-Formular (versteckt) -->
-                        <div id="reply-form-<?= $comment->getId() ?>" style="display: none; margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+                        <div id="reply-form-<?= $comment->getId() ?>" class="issue-tracker-reply-form" style="display: none; margin-top: 15px; padding: 15px; border-radius: 4px;">
                             <form method="post">
                                 <input type="hidden" name="add_comment" value="1" />
                                 <input type="hidden" name="parent_comment_id" value="<?= $comment->getId() ?>" />
@@ -471,12 +543,12 @@ $priorityClass = [
                         
                         <!-- Antworten anzeigen -->
                         <?php if (!empty($replies)): ?>
-                        <div style="margin-top: 15px; margin-left: 30px; padding-left: 15px; border-left: 3px solid #ddd;">
+                        <div class="issue-tracker-replies-container" style="margin-top: 15px; margin-left: 30px; padding-left: 15px;">
                             <?php foreach ($replies as $reply):
                                 $replyUser = $reply->getCreator();
                                 $replyAttachments = \FriendsOfREDAXO\IssueTracker\Attachment::getByComment($reply->getId());
                             ?>
-                            <div style="margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-radius: 4px;" id="comment-<?= $reply->getId() ?>">
+                            <div class="issue-tracker-reply-comment" style="margin-bottom: 15px; padding: 10px; border-radius: 4px;" id="comment-<?= $reply->getId() ?>">
                                 <div>
                                     <strong><?= $replyUser ? rex_escape($replyUser->getValue('name')) : 'Unknown' ?></strong>
                                     <small class="text-muted"> - <?= $reply->getCreatedAt() ? $reply->getCreatedAt()->format('d.m.Y H:i') : '-' ?></small>
@@ -550,8 +622,49 @@ function toggleReplyForm(commentId) {
     var form = document.getElementById('reply-form-' + commentId);
     if (form.style.display === 'none') {
         form.style.display = 'block';
+        // EasyMDE für Reply-Textarea initialisieren
+        var textarea = form.querySelector('textarea[name="comment"]');
+        if (textarea && !textarea.nextSibling?.classList?.contains('EasyMDEContainer')) {
+            if (typeof EasyMDE !== 'undefined') {
+                new EasyMDE({
+                    element: textarea,
+                    spellChecker: false,
+                    toolbar: ["bold", "italic", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "|", "preview", "guide"],
+                    status: false,
+                    placeholder: "Antwort schreiben...",
+                    minHeight: "120px"
+                });
+            }
+        }
     } else {
         form.style.display = 'none';
+    }
+}
+
+function toggleEditForm(commentId) {
+    var form = document.getElementById('edit-form-' + commentId);
+    var content = document.getElementById('comment-content-' + commentId);
+    if (form.style.display === 'none') {
+        form.style.display = 'block';
+        if (content) content.style.display = 'none';
+        
+        // EasyMDE für Edit-Textarea initialisieren
+        var textarea = form.querySelector('textarea[name="comment_text"]');
+        if (textarea && !textarea.nextSibling?.classList?.contains('EasyMDEContainer')) {
+            if (typeof EasyMDE !== 'undefined') {
+                new EasyMDE({
+                    element: textarea,
+                    spellChecker: false,
+                    toolbar: ["bold", "italic", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "|", "preview", "guide"],
+                    status: false,
+                    placeholder: "Kommentar bearbeiten...",
+                    minHeight: "150px"
+                });
+            }
+        }
+    } else {
+        form.style.display = 'none';
+        if (content) content.style.display = 'block';
     }
 }
 

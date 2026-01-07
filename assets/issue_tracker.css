@@ -483,4 +483,53 @@
         border-color: #444;
         color: #e0e0e0;
     }
+
+    /* Reply-Kommentare im Dark Mode */
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-reply-comment {
+        background-color: #252a2f !important;
+        border-left: 3px solid #444;
+        color: #e0e0e0;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-reply-comment:hover {
+        background-color: #2d3338 !important;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-replies-container {
+        border-left: 3px solid #444;
+    }
+
+    .rex-has-theme:not(.rex-theme-light):not(.rex-theme-dark) .issue-tracker-reply-form {
+        background-color: #252a2f !important;
+        border: 1px solid #444;
+    }
+
+    /* Light Theme */
+    .rex-theme-light .issue-tracker-reply-comment {
+        background-color: #f9f9f9 !important;
+        border-left: 3px solid #ddd;
+    }
+
+    .rex-theme-light .issue-tracker-replies-container {
+        border-left: 3px solid #ddd;
+    }
+
+    .rex-theme-light .issue-tracker-reply-form {
+        background-color: #f9f9f9 !important;
+        border: 1px solid #e0e0e0;
+    }
 }
+
+/* Fallback für Browser ohne Theme-Unterstützung */
+.issue-tracker-reply-comment {
+    background-color: #f9f9f9;
+    border-left: 3px solid #ddd;
+}
+
+.issue-tracker-replies-container {
+    border-left: 3px solid #ddd;
+}
+
+.issue-tracker-reply-form {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;

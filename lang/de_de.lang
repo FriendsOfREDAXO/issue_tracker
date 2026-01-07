@@ -78,6 +78,8 @@ issue_tracker_comment_placeholder = Kommentar schreiben...
 issue_tracker_comment_added = Kommentar wurde hinzugefügt
 issue_tracker_internal = Intern
 issue_tracker_internal_comment = Interner Kommentar (nur für Admins sichtbar)
+issue_tracker_delete_comment_confirm = Möchten Sie diesen Kommentar wirklich löschen?
+issue_tracker_edited = bearbeitet am
 
 # Dateianhänge
 issue_tracker_attachments = Dateianhänge

@@ -24,6 +24,7 @@ class Comment
     private bool $isSolution = false;
     private int $createdBy = 0;
     private ?DateTime $createdAt = null;
+    private ?DateTime $updatedAt = null;
 
     /**
      * Lädt einen Kommentar
@@ -74,6 +75,7 @@ class Comment
         $comment->isSolution = (bool) $sql->getValue('is_solution');
         $comment->createdBy = (int) $sql->getValue('created_by');
         $comment->createdAt = new DateTime((string) $sql->getValue('created_at'));
+        $comment->updatedAt = $sql->getValue('updated_at') ? new DateTime((string) $sql->getValue('updated_at')) : null;
 
         return $comment;
     }
@@ -94,6 +96,7 @@ class Comment
         $sql->setValue('is_solution', $this->isSolution ? 1 : 0);
 
         if ($this->id > 0) {
+            $sql->setValue('updated_at', date('Y-m-d H:i:s'));
             $sql->setWhere(['id' => $this->id]);
             $sql->update();
         } else {
@@ -207,6 +210,11 @@ class Comment
     public function getCreatedAt(): ?DateTime
     {
         return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updatedAt;
     }
 
     public function isPinned(): bool

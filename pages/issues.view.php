@@ -28,6 +28,70 @@ if (!$issue) {
     return;
 }
 
+// Kommentar löschen (nur Admins)
+if (rex_post('delete_comment', 'int', 0) > 0) {
+    $commentId = rex_post('delete_comment', 'int', 0);
+    $comment = Comment::get($commentId);
+    
+    if ($comment && $comment->getIssueId() === $issue->getId()) {
+        $currentUser = rex::getUser();
+        
+        if ($currentUser->isAdmin()) {
+            if ($comment->delete()) {
+                // History-Eintrag
+                HistoryService::add(
+                    $issue->getId(),
+                    $currentUser->getId(),
+                    'comment_deleted',
+                    'comment',
+                    null,
+                    null
+                );
+                
+                $redirectUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]);
+                $redirectUrl = html_entity_decode($redirectUrl, ENT_QUOTES, 'UTF-8');
+                header('Location: ' . $redirectUrl);
+                exit;
+            }
+        }
+    }
+}
+
+// Kommentar bearbeiten (Ersteller oder Admin)
+if (rex_post('edit_comment', 'int', 0) > 0) {
+    $commentId = rex_post('edit_comment', 'int', 0);
+    $comment = Comment::get($commentId);
+    
+    if ($comment && $comment->getIssueId() === $issue->getId()) {
+        $currentUser = rex::getUser();
+        $canEdit = $currentUser->isAdmin() || $comment->getCreatedBy() === $currentUser->getId();
+        
+        if ($canEdit) {
+            $newText = rex_post('comment_text', 'string', '');
+            if ($newText !== '') {
+                $comment->setComment($newText);
+                if ($comment->save()) {
+                    // History-Eintrag
+                    HistoryService::add(
+                        $issue->getId(),
+                        $currentUser->getId(),
+                        'comment_edited',
+                        'comment',
+                        null,
+                        null
+                    );
+                    
+                    $redirectUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]);
+                    $redirectUrl = html_entity_decode($redirectUrl, ENT_QUOTES, 'UTF-8');
+                    $redirectUrl .= '#comment-' . $comment->getId();
+                    header('Location: ' . $redirectUrl);
+                    exit;
+                }
+            }
+        }
+    }
+}
+
 // Kommentar pinnen/unpinnen
 if (rex_post('toggle_pin', 'int', 0) > 0) {
     $commentId = rex_post('toggle_pin', 'int', 0);
