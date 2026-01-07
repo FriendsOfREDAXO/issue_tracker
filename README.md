@@ -11,13 +11,16 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - ✅ **Prioritäten**: Niedrig, Normal, Hoch, Kritisch
 - ✅ **Kategorien**: Redaktion, Technik, AddOn, Support, Medien, Struktur (erweiterbar)
 - ✅ **Tags**: Flexible Tag-Verwaltung mit Farbcodierung
+- ✅ **Private Issues**: Issues können als privat markiert werden (nur für Ersteller und Admins sichtbar)
 - ✅ **Kommentare**: Diskussion und Feedback zu jedem Issue
+- ✅ **Interne Kommentare**: Kommentare können als intern markiert werden (nur für Admins sichtbar)
 - ✅ **Zuweisungen**: Issues können Benutzern und AddOns zugeordnet werden
 - ✅ **Versionsverwaltung**: Issues können einer Version zugeordnet werden
 - ✅ **Fälligkeitsdatum**: Issues können mit Deadlines versehen werden, überfällige Issues werden markiert
 - ✅ **Aktivitätsverlauf**: Vollständiges Tracking aller Änderungen an Issues
 - ✅ **Dateianhänge**: Upload von Bildern, Dokumenten und anderen Dateien zu Issues
 - ✅ **Gespeicherte Filter**: Häufig verwendete Filtereinstellungen speichern und als Standard festlegen
+- ✅ **Erweiterte Filter**: Nach Status, Kategorie, Tags, Ersteller und Text durchsuchbar
 - ✅ **Sortierbare Listen**: Alle Spalten können aufsteigend/absteigend sortiert werden
 
 ### E-Mail-Benachrichtigungen
@@ -25,13 +28,16 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - ✅ Benachrichtigungen bei neuen Kommentaren
 - ✅ Benachrichtigungen bei Status-Änderungen
 - ✅ Benachrichtigungen bei Zuweisungen
+- ✅ **HTML E-Mail Templates** mit professionellem Design
+- ✅ **Deep Links** mit One-Time-Token (30 Tage gültig)
+- ✅ Mehrsprachige Templates (Deutsch/Englisch)
 - ✅ Broadcast-Nachrichten an alle Benutzer (nur Admins)
 - ✅ Individuelle Benachrichtigungseinstellungen pro Benutzer
 
 ### Berechtigungen
 - **issue_tracker[]**: Basis-Berechtigung für Zugriff auf den Issue Tracker
 - **issue_tracker[issuer]**: Erweiterte Berechtigung für das Erstellen und Kommentieren von Issues
-- **admin**: Vollzugriff inkl. Einstellungen, Löschen und Broadcast-Nachrichten
+- **admin**: Vollzugriff inkl. Einstellungen, Löschen, Private Issues erstellen und Broadcast-Nachrichten
 
 ## Installation
 
@@ -98,7 +104,16 @@ Gehe zu "Media Manager" → "Medientypen" → "Typ hinzufügen":
    - **Zuweisungen**: Optional User oder AddOn zuweisen
    - **Tags**: Optional Tags hinzufügen
    - **Dateianhänge**: Optional Dateien hochladen (Bilder, PDFs, Dokumente)
+   - **Privat** (nur Admins): Markiere das Issue als privat, sodass es nur du und andere Admins sehen können
 3. Klicke auf "Speichern"
+
+### Private Issues (nur Admins)
+
+Admins können Issues als privat markieren. Private Issues sind:
+- Nur für den Ersteller sichtbar
+- Nur für Admins sichtbar
+- In der Liste und Detail-Ansicht geschützt
+- Ideal für sensible Themen oder interne Notizen
 
 ### Issue bearbeiten
 
@@ -137,10 +152,13 @@ Das Dashboard zeigt:
 ## Filter und Suche
 
 In der Issues-Liste kannst du:
-- Nach Status filtern
+- Nach Status filtern (Offen, In Arbeit, Geplant, etc.)
 - Nach Kategorie filtern
+- Nach Tags filtern
+- Nach Ersteller filtern ("Erstellt von")
 - Nach Titel oder Beschreibung suchen
-- Filter kombinieren
+- Filter kombinieren und speichern
+- Gespeicherte Filter als Standard festlegen
 
 ## Benachrichtigungen
 
