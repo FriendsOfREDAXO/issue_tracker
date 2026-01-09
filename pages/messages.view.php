@@ -31,17 +31,19 @@ if (!$message->hasAccess($currentUser->getId())) {
     return;
 }
 
-// Als gelesen markieren wenn Empfänger
-if ($message->getRecipientId() === $currentUser->getId() && !$message->isRead()) {
-    $message->markAsRead();
-}
-
 // Konversation laden
 $partnerId = $message->getSenderId() === $currentUser->getId() 
     ? $message->getRecipientId() 
     : $message->getSenderId();
 
 $conversation = Message::getConversation($currentUser->getId(), $partnerId);
+
+// Alle ungelesenen Nachrichten in der Konversation als gelesen markieren
+foreach ($conversation as $convMessage) {
+    if ($convMessage->getRecipientId() === $currentUser->getId() && !$convMessage->isRead()) {
+        $convMessage->markAsRead();
+    }
+}
 
 // Fragment einbinden
 $fragment = new rex_fragment();

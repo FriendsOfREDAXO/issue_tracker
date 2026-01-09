@@ -59,7 +59,7 @@ if (rex_post('send', 'int', 0) === 1) {
         $message->setMessage($messageText);
         
         if ($message->save()) {
-            rex_response::sendRedirect(rex_url::backendPage('issue_tracker/messages/sent'));
+            rex_response::sendRedirect(rex_url::backendPage('issue_tracker/messages/sent', [], false));
         } else {
             echo rex_view::error($package->i18n('issue_tracker_message_send_error'));
         }

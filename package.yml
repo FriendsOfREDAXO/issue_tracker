@@ -51,16 +51,21 @@ page:
         messages:
             title: 'translate:issue_tracker_messages'
             icon: rex-icon fa-envelope
+            pjax: false
             subpages:
                 inbox:
                     title: 'translate:issue_tracker_messages_inbox'
+                    pjax: false
                 sent:
                     title: 'translate:issue_tracker_messages_sent'
+                    pjax: false
                 view:
                     title: 'translate:issue_tracker_messages_view'
                     hidden: true
+                    pjax: false
                 compose:
                     title: 'translate:issue_tracker_messages_compose'
+                    pjax: false
         preferences:
             title: 'translate:issue_tracker_preferences'
             icon: rex-icon fa-user
