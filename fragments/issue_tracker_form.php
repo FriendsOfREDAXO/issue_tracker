@@ -15,6 +15,7 @@ $priorities = $this->getVar('priorities', []);
 $allTags = $this->getVar('allTags', []);
 $users = $this->getVar('users', []);
 $addons = $this->getVar('addons', []);
+$projects = $this->getVar('projects', []);
 
 // Sicherstellen, dass $issue ein Objekt ist
 if (!$issue) {
@@ -58,6 +59,22 @@ $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
                     <textarea class="form-control" id="issue-description" name="description" 
                               rows="8"><?= rex_escape($issue->getDescription()) ?></textarea>
                 </div>
+
+                <!-- Projekt -->
+                <?php if (!empty($projects)): ?>
+                <div class="form-group">
+                    <label for="issue-project"><?= $package->i18n('issue_tracker_project') ?></label>
+                    <select class="form-control selectpicker" id="issue-project" name="project_id" data-live-search="true">
+                        <option value=""><?= $package->i18n('issue_tracker_no_project') ?></option>
+                        <?php foreach ($projects as $projectId => $projectName): ?>
+                        <option value="<?= $projectId ?>" <?= $issue->getProjectId() === $projectId ? 'selected' : '' ?>>
+                            <?= rex_escape($projectName) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="help-block"><?= $package->i18n('issue_tracker_project_help') ?></p>
+                </div>
+                <?php endif; ?>
 
                 <div class="row">
                     <!-- Kategorie -->

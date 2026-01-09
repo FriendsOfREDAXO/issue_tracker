@@ -11,6 +11,7 @@ use FriendsOfREDAXO\IssueTracker\Comment;
 use FriendsOfREDAXO\IssueTracker\Tag;
 use FriendsOfREDAXO\IssueTracker\Attachment;
 use FriendsOfREDAXO\IssueTracker\NotificationService;
+use FriendsOfREDAXO\IssueTracker\Project;
 
 $package = rex_addon::get('issue_tracker');
 
@@ -60,6 +61,15 @@ if (!$issue) {
     $issue = new Issue();
     $issue->setCreatedBy(rex::getUser()->getId());
     $isNew = true;
+    
+    // Projekt-ID aus Request übernehmen wenn vorhanden
+    $projectIdFromRequest = rex_request('project_id', 'int', 0);
+    if ($projectIdFromRequest > 0) {
+        $project = Project::get($projectIdFromRequest);
+        if ($project && $project->canWrite(rex::getUser()->getId())) {
+            $issue->setProjectId($projectIdFromRequest);
+        }
+    }
 }
 
 // Speichern
@@ -87,6 +97,10 @@ if (rex_post('save', 'int', 0) === 1) {
     $issue->setDomainIds(array_filter($domainIds, fn($v) => $v !== ''));
     $yformTables = rex_post('yform_tables', 'array', []);
     $issue->setYformTables(array_filter($yformTables, fn($v) => $v !== ''));
+    
+    // Projekt-ID
+    $projectId = rex_post('project_id', 'string', '');
+    $issue->setProjectId($projectId !== '' ? (int) $projectId : null);
     
     // Due Date verarbeiten
     $dueDateInput = rex_post('due_date', 'string', '');
@@ -233,10 +247,20 @@ foreach ($userSql as $row) {
     $users[(int) $row->getValue('id')] = $row->getValue('name');
 }
 
-// Verfügbare AddOns
+// Verfügbare Add
 $addons = [];
 foreach (rex_addon::getAvailableAddons() as $addon) {
     $addons[$addon->getName()] = $addon->getProperty('page')['title'] ?? $addon->getName();
+}
+
+// Verfügbare Projekte (nur wo User schreiben darf)
+$currentUser = rex::getUser();
+$allProjects = Project::getAll($currentUser->getId());
+$projects = [];
+foreach ($allProjects as $proj) {
+    if ($proj->canWrite($currentUser->getId())) {
+        $projects[$proj->getId()] = $proj->getName();
+    }
 }
 
 // Fragment ausgeben
@@ -249,4 +273,5 @@ $fragment->setVar('priorities', $priorities);
 $fragment->setVar('allTags', $allTags);
 $fragment->setVar('users', $users);
 $fragment->setVar('addons', $addons);
+$fragment->setVar('projects', $projects);
 echo $fragment->parse('issue_tracker_form.php');

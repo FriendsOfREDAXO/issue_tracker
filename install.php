@@ -29,6 +29,7 @@ rex_sql_table::get(rex::getTable('issue_tracker_issues'))
     ->ensureColumn(new rex_sql_column('notified', 'tinyint(1)', false, '0'))
     ->ensureColumn(new rex_sql_column('domain_ids', 'text', true, null))
     ->ensureColumn(new rex_sql_column('yform_tables', 'text', true, null))
+    ->ensureColumn(new rex_sql_column('project_id', 'int(10) unsigned', true))
     ->ensureColumn(new rex_sql_column('created_by', 'int(10) unsigned'))
     ->ensureColumn(new rex_sql_column('created_at', 'datetime'))
     ->ensureColumn(new rex_sql_column('updated_at', 'datetime'))
@@ -157,6 +158,35 @@ rex_sql_table::get(rex::getTable('issue_tracker_saved_filters'))
     ->ensureColumn(new rex_sql_column('is_default', 'tinyint(1)', false, '0'))
     ->ensureColumn(new rex_sql_column('created_at', 'datetime'))
     ->ensureIndex(new rex_sql_index('user_id', ['user_id']))
+    ->ensure();
+
+// Tabelle für Projekte
+rex_sql_table::get(rex::getTable('issue_tracker_projects'))
+    ->ensurePrimaryIdColumn()
+    ->ensureColumn(new rex_sql_column('name', 'varchar(255)'))
+    ->ensureColumn(new rex_sql_column('description', 'text', true))
+    ->ensureColumn(new rex_sql_column('status', 'varchar(20)', false, 'active'))
+    ->ensureColumn(new rex_sql_column('is_private', 'tinyint(1)', false, '0'))
+    ->ensureColumn(new rex_sql_column('due_date', 'datetime', true))
+    ->ensureColumn(new rex_sql_column('color', 'varchar(7)', false, '#007bff'))
+    ->ensureColumn(new rex_sql_column('created_by', 'int(10) unsigned'))
+    ->ensureColumn(new rex_sql_column('created_at', 'datetime'))
+    ->ensureColumn(new rex_sql_column('updated_at', 'datetime'))
+    ->ensureIndex(new rex_sql_index('status', ['status']))
+    ->ensureIndex(new rex_sql_index('created_by', ['created_by']))
+    ->ensure();
+
+// Tabelle für Projekt-Mitglieder
+rex_sql_table::get(rex::getTable('issue_tracker_project_users'))
+    ->ensurePrimaryIdColumn()
+    ->ensureColumn(new rex_sql_column('project_id', 'int(10) unsigned'))
+    ->ensureColumn(new rex_sql_column('user_id', 'int(10) unsigned'))
+    ->ensureColumn(new rex_sql_column('role', 'varchar(20)', false, 'member'))
+    ->ensureColumn(new rex_sql_column('created_at', 'datetime'))
+    ->ensureIndex(new rex_sql_index('project_user', ['project_id', 'user_id'], rex_sql_index::UNIQUE))
+    ->ensureForeignKey(
+        new rex_sql_foreign_key('fk_project_user_project', rex::getTable('issue_tracker_projects'), ['project_id' => 'id'], rex_sql_foreign_key::CASCADE, rex_sql_foreign_key::CASCADE)
+    )
     ->ensure();
 
 // Standard-Kategorien einfügen

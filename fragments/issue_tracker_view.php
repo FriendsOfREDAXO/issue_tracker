@@ -235,6 +235,21 @@ $priorityClass = [
                             <?php endforeach; ?>
                         </dd>
                         <?php endif; ?>
+
+                        <?php 
+                        // Projekt anzeigen
+                        $project = $issue->getProject();
+                        if ($project): 
+                        ?>
+                        <dt><?= $package->i18n('issue_tracker_project') ?>:</dt>
+                        <dd>
+                            <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId()]) ?>" 
+                               class="label" style="background-color: <?= rex_escape($project->getColor()) ?>; display: inline-block;">
+                                <?php if ($project->getIsPrivate()): ?><i class="rex-icon fa-lock"></i> <?php endif; ?>
+                                <i class="rex-icon fa-folder-open"></i> <?= rex_escape($project->getName()) ?>
+                            </a>
+                        </dd>
+                        <?php endif; ?>
                     </dl>
 
                     <!-- Tags -->

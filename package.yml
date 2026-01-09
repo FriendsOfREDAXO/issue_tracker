@@ -20,6 +20,20 @@ page:
         dashboard:
             title: Issue Tracker
             icon: rex-icon fa-dashboard
+        projects:
+            title: 'translate:issue_tracker_projects'
+            icon: rex-icon fa-folder-open
+            subpages:
+                list:
+                    title: 'translate:issue_tracker_projects_list'
+                view:
+                    title: 'translate:issue_tracker_projects_view'
+                    hidden: true
+                create:
+                    title: 'translate:issue_tracker_projects_create'
+                edit:
+                    title: 'translate:issue_tracker_projects_edit'
+                    hidden: true
         issues:
             title: 'translate:issue_tracker_issues'
             icon: rex-icon fa-ticket

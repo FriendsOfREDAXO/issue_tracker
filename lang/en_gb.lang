@@ -103,6 +103,7 @@ issue_tracker_all = All
 
 # Actions
 issue_tracker_actions = Actions
+issue_tracker_view = View
 issue_tracker_edit = Edit
 issue_tracker_delete = Delete
 issue_tracker_back_to_list = Back to list
@@ -170,6 +171,44 @@ issue_tracker_perm_admin = Issue Tracker - Administration (full rights)
 # YRewrite & YForm Integration
 issue_tracker_domain = Domain
 issue_tracker_yform_table = YForm Table
+
+# Projects
+issue_tracker_projects = Projects
+issue_tracker_projects_list = Project Overview
+issue_tracker_projects_view = View Project
+issue_tracker_projects_create = New Project
+issue_tracker_projects_edit = Edit Project
+issue_tracker_project = Project
+issue_tracker_project_name = Project Name
+issue_tracker_project_create = Create New Project
+issue_tracker_project_edit = Edit Project
+issue_tracker_project_deleted = Project was deleted
+issue_tracker_project_created = Project was created
+issue_tracker_project_updated = Project was updated
+issue_tracker_project_save_error = Error saving project
+issue_tracker_project_not_found = Project not found
+issue_tracker_project_delete_confirm = Do you really want to delete this project? The issues will be preserved.
+issue_tracker_no_projects = No projects available
+issue_tracker_no_project = No project
+issue_tracker_project_help = Optional: Assign this issue to a project
+issue_tracker_project_status_active = Active
+issue_tracker_project_status_completed = Completed
+issue_tracker_project_status_archived = Archived
+issue_tracker_project_color = Color
+issue_tracker_project_private = Private Project
+issue_tracker_project_private_help = Private projects are only visible to members
+issue_tracker_project_members = Members
+issue_tracker_project_members_help = These users will be added as members. You as the creator will automatically be added as owner.
+issue_tracker_role_owner = Owner
+issue_tracker_role_member = Member
+issue_tracker_role_viewer = Viewer
+issue_tracker_user_added = User was added
+issue_tracker_user_removed = User was removed
+issue_tracker_user_remove_confirm = Do you really want to remove this user from the project?
+issue_tracker_progress = Progress
+issue_tracker_total = Total
+issue_tracker_private = Private
+issue_tracker_markdown_supported = Markdown is supported
 
 # E-Mail Templates
 issue_tracker_email_new_issue_subject = New Issue: {0}

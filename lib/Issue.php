@@ -35,6 +35,7 @@ class Issue
     private array $domainIds = [];
     /** @var string[] */
     private array $yformTables = [];
+    private ?int $projectId = null;
 
     /**
      * Lädt ein Issue aus der Datenbank
@@ -125,6 +126,11 @@ class Issue
             $issue->yformTables = is_array($decoded) ? $decoded : [];
         }
 
+        // Project ID laden
+        if ($sql->hasValue('project_id') && $sql->getValue('project_id')) {
+            $issue->projectId = (int) $sql->getValue('project_id');
+        }
+
         return $issue;
     }
 
@@ -149,6 +155,7 @@ class Issue
         $sql->setValue('notified', $this->notified ? 1 : 0);
         $sql->setValue('domain_ids', !empty($this->domainIds) ? json_encode($this->domainIds) : null);
         $sql->setValue('yform_tables', !empty($this->yformTables) ? json_encode($this->yformTables) : null);
+        $sql->setValue('project_id', $this->projectId);
         $sql->setValue('updated_at', date('Y-m-d H:i:s'));
 
         if ($this->id > 0) {
@@ -434,5 +441,45 @@ class Issue
     public function setYformTables(array $yformTables): void
     {
         $this->yformTables = $yformTables;
+    }
+
+    public function getProjectId(): ?int
+    {
+        return $this->projectId;
+    }
+
+    public function setProjectId(?int $projectId): void
+    {
+        $this->projectId = $projectId;
+    }
+
+    /**
+     * Gibt das zugehörige Projekt zurück
+     */
+    public function getProject(): ?Project
+    {
+        if ($this->projectId === null) {
+            return null;
+        }
+        return Project::get($this->projectId);
+    }
+
+    /**
+     * Gibt alle Issues eines Projekts zurück
+     */
+    public static function getByProject(int $projectId): array
+    {
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'SELECT * FROM ' . rex::getTable('issue_tracker_issues') . ' WHERE project_id = ? ORDER BY created_at DESC',
+            [$projectId]
+        );
+
+        $issues = [];
+        foreach ($sql as $row) {
+            $issues[] = self::fromSql($row);
+        }
+
+        return $issues;
     }
 }

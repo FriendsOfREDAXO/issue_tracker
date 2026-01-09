@@ -103,6 +103,7 @@ issue_tracker_all = Alle
 
 # Aktionen
 issue_tracker_actions = Aktionen
+issue_tracker_view = Anzeigen
 issue_tracker_edit = Bearbeiten
 issue_tracker_delete = Löschen
 issue_tracker_back_to_list = Zurück zur Liste
@@ -170,6 +171,44 @@ issue_tracker_perm_admin = Issue Tracker - Administration (volle Rechte)
 # YRewrite & YForm Integration
 issue_tracker_domain = Domain
 issue_tracker_yform_table = YForm Tabelle
+
+# Projekte
+issue_tracker_projects = Projekte
+issue_tracker_projects_list = Projektübersicht
+issue_tracker_projects_view = Projekt anzeigen
+issue_tracker_projects_create = Neues Projekt
+issue_tracker_projects_edit = Projekt bearbeiten
+issue_tracker_project = Projekt
+issue_tracker_project_name = Projektname
+issue_tracker_project_create = Neues Projekt erstellen
+issue_tracker_project_edit = Projekt bearbeiten
+issue_tracker_project_deleted = Projekt wurde gelöscht
+issue_tracker_project_created = Projekt wurde erstellt
+issue_tracker_project_updated = Projekt wurde aktualisiert
+issue_tracker_project_save_error = Fehler beim Speichern des Projekts
+issue_tracker_project_not_found = Projekt wurde nicht gefunden
+issue_tracker_project_delete_confirm = Möchten Sie dieses Projekt wirklich löschen? Die Issues bleiben erhalten.
+issue_tracker_no_projects = Keine Projekte vorhanden
+issue_tracker_no_project = Kein Projekt
+issue_tracker_project_help = Optional: Ordnen Sie dieses Issue einem Projekt zu
+issue_tracker_project_status_active = Aktiv
+issue_tracker_project_status_completed = Abgeschlossen
+issue_tracker_project_status_archived = Archiviert
+issue_tracker_project_color = Farbe
+issue_tracker_project_private = Privates Projekt
+issue_tracker_project_private_help = Private Projekte sind nur für Mitglieder sichtbar
+issue_tracker_project_members = Mitglieder
+issue_tracker_project_members_help = Diese Benutzer werden als Mitglieder hinzugefügt. Sie als Ersteller werden automatisch als Owner hinzugefügt.
+issue_tracker_role_owner = Owner
+issue_tracker_role_member = Mitglied
+issue_tracker_role_viewer = Beobachter
+issue_tracker_user_added = Benutzer wurde hinzugefügt
+issue_tracker_user_removed = Benutzer wurde entfernt
+issue_tracker_user_remove_confirm = Möchten Sie diesen Benutzer wirklich aus dem Projekt entfernen?
+issue_tracker_progress = Fortschritt
+issue_tracker_total = Gesamt
+issue_tracker_private = Privat
+issue_tracker_markdown_supported = Markdown wird unterstützt
 
 # E-Mail Templates
 issue_tracker_email_new_issue_subject = Neues Issue: {0}
