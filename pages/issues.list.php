@@ -54,12 +54,48 @@ if (rex_request('set_default_filter', 'int', 0) > 0) {
     echo rex_view::success($package->i18n('issue_tracker_filter_saved'));
 }
 
-// Filter
-$filterStatus = rex_request('filter_status', 'string', '');
-$filterCategory = rex_request('filter_category', 'string', '');
-$filterTag = rex_request('filter_tag', 'int', 0);
-$filterCreatedBy = rex_request('filter_created_by', 'int', 0);
-$searchTerm = rex_request('search', 'string', '');
+// Session-Key für Filter
+$sessionKey = 'issue_tracker_filter';
+
+// Reset-Button
+if (rex_request('reset_filter', 'int', 0) === 1) {
+    rex_set_session($sessionKey, null);
+    // Redirect ohne Parameter
+    header('Location: ' . rex_url::backendPage('issue_tracker/issues/list'));
+    exit;
+}
+
+// Filter aus Request oder Session laden
+$hasFilterParams = rex_request('filter_status', 'string', null) !== null 
+                || rex_request('filter_category', 'string', null) !== null
+                || rex_request('filter_tag', 'int', null) !== null
+                || rex_request('filter_created_by', 'int', null) !== null
+                || rex_request('search', 'string', null) !== null;
+
+if ($hasFilterParams) {
+    // Filter aus Request - in Session speichern
+    $filterStatus = rex_request('filter_status', 'string', '');
+    $filterCategory = rex_request('filter_category', 'string', '');
+    $filterTag = rex_request('filter_tag', 'int', 0);
+    $filterCreatedBy = rex_request('filter_created_by', 'int', 0);
+    $searchTerm = rex_request('search', 'string', '');
+    
+    rex_set_session($sessionKey, [
+        'filter_status' => $filterStatus,
+        'filter_category' => $filterCategory,
+        'filter_tag' => $filterTag,
+        'filter_created_by' => $filterCreatedBy,
+        'search' => $searchTerm,
+    ]);
+} else {
+    // Filter aus Session laden
+    $sessionFilter = rex_session($sessionKey, 'array', []);
+    $filterStatus = $sessionFilter['filter_status'] ?? '';
+    $filterCategory = $sessionFilter['filter_category'] ?? '';
+    $filterTag = $sessionFilter['filter_tag'] ?? 0;
+    $filterCreatedBy = $sessionFilter['filter_created_by'] ?? 0;
+    $searchTerm = $sessionFilter['search'] ?? '';
+}
 
 // Löschaktion
 $func = rex_request('func', 'string', '');

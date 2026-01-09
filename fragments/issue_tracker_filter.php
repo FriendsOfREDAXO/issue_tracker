@@ -136,7 +136,7 @@ $searchTerm = $this->getVar('searchTerm', '');
                 <i class="rex-icon fa-search"></i> <?= $package->i18n('issue_tracker_filter_apply') ?>
             </button>
             
-            <a href="<?= rex_url::backendPage('issue_tracker/issues/list') ?>" class="btn btn-default">
+            <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['reset_filter' => 1]) ?>" class="btn btn-default">
                 <i class="rex-icon fa-times"></i> <?= $package->i18n('issue_tracker_filter_reset') ?>
             </a>
             

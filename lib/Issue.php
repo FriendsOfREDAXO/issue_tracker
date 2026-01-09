@@ -156,6 +156,7 @@ class Issue
         $sql->setValue('domain_ids', !empty($this->domainIds) ? json_encode($this->domainIds) : null);
         $sql->setValue('yform_tables', !empty($this->yformTables) ? json_encode($this->yformTables) : null);
         $sql->setValue('project_id', $this->projectId);
+        $sql->setValue('closed_at', $this->closedAt ? $this->closedAt->format('Y-m-d H:i:s') : null);
         $sql->setValue('updated_at', date('Y-m-d H:i:s'));
 
         if ($this->id > 0) {
@@ -308,7 +309,17 @@ class Issue
 
     public function setStatus(string $status): void
     {
+        $oldStatus = $this->status;
         $this->status = $status;
+        
+        // Wenn Status auf "closed" gesetzt wird, closedAt setzen
+        if ($status === 'closed' && $oldStatus !== 'closed') {
+            $this->closedAt = new \DateTime();
+        }
+        // Wenn Status von "closed" auf etwas anderes wechselt, closedAt löschen
+        elseif ($status !== 'closed' && $oldStatus === 'closed') {
+            $this->closedAt = null;
+        }
     }
 
     public function getPriority(): string
