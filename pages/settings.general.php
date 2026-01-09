@@ -25,17 +25,23 @@ if (rex_post('save_tag', 'int', 0) === 1) {
     $tagColor = rex_post('tag_color', 'string', '#007bff');
     
     if ($tagName) {
-        $tag = $tagId > 0 ? \FriendsOfREDAXO\IssueTracker\Tag::get($tagId) : new \FriendsOfREDAXO\IssueTracker\Tag();
-        
-        if ($tag || $tagId === 0) {
-            if (!$tag) {
-                $tag = new \FriendsOfREDAXO\IssueTracker\Tag();
-            }
-            $tag->setName($tagName);
-            $tag->setColor($tagColor);
-            $tag->save();
+        // Prüfen ob Tag-Name bereits existiert (außer beim Bearbeiten des gleichen Tags)
+        $existingTag = \FriendsOfREDAXO\IssueTracker\Tag::getByName($tagName);
+        if ($existingTag && $existingTag->getId() !== $tagId) {
+            echo rex_view::error($package->i18n('issue_tracker_tag_exists'));
+        } else {
+            $tag = $tagId > 0 ? \FriendsOfREDAXO\IssueTracker\Tag::get($tagId) : new \FriendsOfREDAXO\IssueTracker\Tag();
             
-            echo rex_view::success($package->i18n('issue_tracker_tag_saved'));
+            if ($tag || $tagId === 0) {
+                if (!$tag) {
+                    $tag = new \FriendsOfREDAXO\IssueTracker\Tag();
+                }
+                $tag->setName($tagName);
+                $tag->setColor($tagColor);
+                $tag->save();
+                
+                echo rex_view::success($package->i18n('issue_tracker_tag_saved'));
+            }
         }
     } else {
         echo rex_view::error($package->i18n('issue_tracker_tag_name_required'));
@@ -55,6 +61,13 @@ if ($func === 'delete_tag') {
 
 // Einstellungen speichern
 if (rex_post('save_settings', 'int', 0) === 1) {
+    // Menü-Titel
+    rex_sql::factory()
+        ->setTable(rex::getTable('issue_tracker_settings'))
+        ->setValue('setting_key', 'menu_title')
+        ->setValue('setting_value', rex_post('menu_title', 'string', ''))
+        ->insertOrUpdate();
+    
     // Kategorien
     $categories = array_filter(rex_post('categories', 'array', []), 'strlen');
     rex_sql::factory()
@@ -96,6 +109,9 @@ if (rex_post('send_broadcast', 'int', 0) === 1) {
 // Einstellungen laden
 $sql = rex_sql::factory();
 
+$sql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "menu_title"');
+$menuTitle = $sql->getRows() > 0 ? $sql->getValue('setting_value') : '';
+
 $sql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "categories"');
 $categories = $sql->getRows() > 0 ? json_decode($sql->getValue('setting_value'), true) : [];
 
@@ -117,6 +133,7 @@ if ($func === 'edit_tag') {
 
 // Fragment ausgeben
 $fragment = new rex_fragment();
+$fragment->setVar('menuTitle', $menuTitle);
 $fragment->setVar('categories', $categories);
 $fragment->setVar('emailEnabled', $emailEnabled);
 $fragment->setVar('emailFromName', $emailFromName);

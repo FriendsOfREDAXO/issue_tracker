@@ -108,14 +108,17 @@ $where = [];
 $joins = '';
 $escapeSql = rex_sql::factory();
 
-if ($filterStatus !== '') {
-    $where[] = 'i.status = "' . $escapeSql->escape($filterStatus) . '"';
+if ($filterStatus === '_all_') {
+    // Alle Issues anzeigen, kein Status-Filter
+} elseif ($filterStatus !== '') {
+    $where[] = "i.status = " . $escapeSql->escape($filterStatus);
 } else {
-    $where[] = 'i.status != "closed"';
+    // Standard: Nur aktive Issues (nicht geschlossen)
+    $where[] = "i.status != 'closed'";
 }
 
 if ($filterCategory !== '') {
-    $where[] = 'i.category = "' . $escapeSql->escape($filterCategory) . '"';
+    $where[] = 'i.category = ' . $escapeSql->escape($filterCategory);
 }
 
 if ($filterTag > 0) {
@@ -129,7 +132,9 @@ if ($filterCreatedBy > 0) {
 
 if ($searchTerm !== '') {
     $escapedTerm = $escapeSql->escape($searchTerm);
-    $where[] = '(i.title LIKE "%' . $escapedTerm . '%" OR i.description LIKE "%' . $escapedTerm . '%")';
+    // escape() fügt Anführungszeichen hinzu, für LIKE müssen wir sie entfernen
+    $escapedTermNoQuotes = trim($escapedTerm, "'");
+    $where[] = "(i.title LIKE '%" . $escapedTermNoQuotes . "%' OR i.description LIKE '%" . $escapedTermNoQuotes . "%')";
 }
 
 // Filter für private Issues: Nur Ersteller und Admins können private Issues sehen

@@ -35,6 +35,21 @@ class Tag
     }
 
     /**
+     * Lädt einen Tag anhand des Namens
+     */
+    public static function getByName(string $name): ?self
+    {
+        $sql = rex_sql::factory();
+        $sql->setQuery('SELECT * FROM ' . rex::getTable('issue_tracker_tags') . ' WHERE name = ?', [$name]);
+        
+        if ($sql->getRows() === 0) {
+            return null;
+        }
+
+        return self::fromSql($sql);
+    }
+
+    /**
      * Gibt alle Tags zurück
      */
     public static function getAll(): array

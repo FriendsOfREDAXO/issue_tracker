@@ -34,6 +34,19 @@ page:
                 edit:
                     title: 'translate:issue_tracker_projects_edit'
                     hidden: true
+        messages:
+            title: 'translate:issue_tracker_messages'
+            icon: rex-icon fa-envelope
+            subpages:
+                inbox:
+                    title: 'translate:issue_tracker_messages_inbox'
+                sent:
+                    title: 'translate:issue_tracker_messages_sent'
+                view:
+                    title: 'translate:issue_tracker_messages_view'
+                    hidden: true
+                compose:
+                    title: 'translate:issue_tracker_messages_compose'
         issues:
             title: 'translate:issue_tracker_issues'
             icon: rex-icon fa-ticket

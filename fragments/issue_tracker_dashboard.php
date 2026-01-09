@@ -14,6 +14,8 @@ $closedIssues = $this->getVar('closedIssues', 0);
 $priorityCounts = $this->getVar('priorityCounts', []);
 $recentIssues = $this->getVar('recentIssues', []);
 $recentActivities = $this->getVar('recentActivities', []);
+$unreadMessages = $this->getVar('unreadMessages', 0);
+$recentMessages = $this->getVar('recentMessages', []);
 
 // Status- und Prioritäts-Klassen
 $statusClasses = [
@@ -128,7 +130,7 @@ $priorityClasses = [
     <?php if (!empty($recentActivities)): ?>
     <!-- Letzte Aktivitäten bei meinen Issues -->
     <div class="row">
-        <div class="col-sm-12">
+        <div class="col-sm-8">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title"><i class="rex-icon fa-history"></i> Letzte Aktivitäten</h3>
@@ -175,6 +177,59 @@ $priorityClasses = [
                             </div>
                         </div>
                         <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Nachrichten-Panel -->
+        <div class="col-sm-4">
+            <div class="panel panel-<?= $unreadMessages > 0 ? 'primary' : 'default' ?>">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_messages') ?>
+                        <?php if ($unreadMessages > 0): ?>
+                        <span class="badge" style="background: #d9534f; color: #fff;"><?= $unreadMessages ?></span>
+                        <?php endif; ?>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <?php if ($unreadMessages > 0): ?>
+                    <p class="text-info" style="margin-bottom: 10px;">
+                        <i class="rex-icon fa-info-circle"></i>
+                        <?= sprintf($package->i18n('issue_tracker_unread_messages_info'), $unreadMessages) ?>
+                    </p>
+                    <?php endif; ?>
+                    
+                    <?php if (!empty($recentMessages)): ?>
+                    <ul class="list-unstyled" style="margin-bottom: 15px;">
+                        <?php foreach (array_slice($recentMessages, 0, 3) as $msg): ?>
+                        <li style="padding: 8px 0; border-bottom: 1px solid rgba(128,128,128,0.2); <?= !$msg->isRead() ? 'border-left: 3px solid #d9534f; margin: 0 -15px; padding-left: 12px; padding-right: 15px;' : '' ?>">
+                            <a href="<?= rex_url::backendPage('issue_tracker/messages/view', ['message_id' => $msg->getId()]) ?>" style="text-decoration: none; color: inherit;">
+                                <div style="<?= !$msg->isRead() ? 'font-weight: bold;' : '' ?>">
+                                    <i class="rex-icon fa-user-o"></i> <?= rex_escape($msg->getSenderName()) ?>
+                                    <?php if (!$msg->isRead()): ?><span class="label label-danger" style="font-size: 9px; margin-left: 5px;">NEU</span><?php endif; ?>
+                                    <span class="pull-right text-muted" style="font-size: 11px;"><?= $msg->getCreatedAt()->format('d.m. H:i') ?></span>
+                                </div>
+                                <small class="text-muted"><?= rex_escape(mb_substr($msg->getSubject(), 0, 25)) ?><?= mb_strlen($msg->getSubject()) > 25 ? '...' : '' ?></small>
+                            </a>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <?php else: ?>
+                    <p class="text-muted text-center">
+                        <i class="rex-icon fa-envelope-o" style="font-size: 24px;"></i><br>
+                        <?= $package->i18n('issue_tracker_no_messages_inbox') ?>
+                    </p>
+                    <?php endif; ?>
+                    
+                    <div class="text-center" style="margin-top: 10px;">
+                        <a href="<?= rex_url::backendPage('issue_tracker/messages/inbox') ?>" class="btn btn-default btn-sm">
+                            <i class="rex-icon fa-inbox"></i> <?= $package->i18n('issue_tracker_messages_inbox') ?>
+                        </a>
+                        <a href="<?= rex_url::backendPage('issue_tracker/messages/compose') ?>" class="btn btn-primary btn-sm">
+                            <i class="rex-icon fa-pencil"></i> Schreiben
+                        </a>
                     </div>
                 </div>
             </div>

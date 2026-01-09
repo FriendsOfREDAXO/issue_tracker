@@ -95,6 +95,10 @@ foreach ($sql as $row) {
     ];
 }
 
+// Nachrichten-Statistiken
+$unreadMessages = \FriendsOfREDAXO\IssueTracker\Message::getUnreadCount($userId);
+$recentMessages = \FriendsOfREDAXO\IssueTracker\Message::getInbox($userId, 5);
+
 // Dashboard ausgeben
 $fragment = new rex_fragment();
 $fragment->setVar('openIssues', $openIssues);
@@ -104,4 +108,6 @@ $fragment->setVar('closedIssues', $closedIssues);
 $fragment->setVar('priorityCounts', $priorityCounts);
 $fragment->setVar('recentIssues', $recentIssues);
 $fragment->setVar('recentActivities', $recentActivities);
+$fragment->setVar('unreadMessages', $unreadMessages);
+$fragment->setVar('recentMessages', $recentMessages);
 echo $fragment->parse('issue_tracker_dashboard.php');

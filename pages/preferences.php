@@ -19,6 +19,8 @@ if (rex_post('save_preferences', 'boolean')) {
     $sql->setValue('email_on_comment', rex_post('email_on_comment', 'int', 1));
     $sql->setValue('email_on_status_change', rex_post('email_on_status_change', 'int', 1));
     $sql->setValue('email_on_assignment', rex_post('email_on_assignment', 'int', 1));
+    $sql->setValue('email_on_message', rex_post('email_on_message', 'int', 1));
+    $sql->setValue('email_message_full_text', rex_post('email_message_full_text', 'int', 0));
     
     try {
         $sql->insertOrUpdate();
@@ -36,12 +38,16 @@ $emailOnNew = 1;
 $emailOnComment = 1;
 $emailOnStatusChange = 1;
 $emailOnAssignment = 1;
+$emailOnMessage = 1;
+$emailMessageFullText = 0;
 
 if ($sql->getRows() > 0) {
     $emailOnNew = $sql->getValue('email_on_new');
     $emailOnComment = $sql->getValue('email_on_comment');
     $emailOnStatusChange = $sql->getValue('email_on_status_change');
     $emailOnAssignment = $sql->getValue('email_on_assignment');
+    $emailOnMessage = $sql->getValue('email_on_message') ?? 1;
+    $emailMessageFullText = $sql->getValue('email_message_full_text') ?? 0;
 }
 
 // Formular
@@ -67,6 +73,22 @@ $formElements[] = $n;
 $n = [];
 $n['label'] = '<label>' . $package->i18n('issue_tracker_email_on_assignment') . '</label>';
 $n['field'] = '<input type="checkbox" name="email_on_assignment" value="1" ' . ($emailOnAssignment ? 'checked' : '') . ' /> ' . $package->i18n('issue_tracker_email_on_assignment_desc');
+$formElements[] = $n;
+
+// Trennlinie für Nachrichten-Bereich
+$n = [];
+$n['label'] = '<label><strong>' . $package->i18n('issue_tracker_messages') . '</strong></label>';
+$n['field'] = '<hr style="margin: 5px 0;">';
+$formElements[] = $n;
+
+$n = [];
+$n['label'] = '<label>' . $package->i18n('issue_tracker_email_on_message') . '</label>';
+$n['field'] = '<input type="checkbox" name="email_on_message" value="1" ' . ($emailOnMessage ? 'checked' : '') . ' /> ' . $package->i18n('issue_tracker_email_on_message_desc');
+$formElements[] = $n;
+
+$n = [];
+$n['label'] = '<label>' . $package->i18n('issue_tracker_email_message_full_text') . '</label>';
+$n['field'] = '<input type="checkbox" name="email_message_full_text" value="1" ' . ($emailMessageFullText ? 'checked' : '') . ' /> ' . $package->i18n('issue_tracker_email_message_full_text_desc');
 $formElements[] = $n;
 
 $fragment = new rex_fragment();

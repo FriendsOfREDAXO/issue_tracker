@@ -74,10 +74,15 @@ $searchTerm = $this->getVar('searchTerm', '');
                 <label for="filter_status"><?= $package->i18n('issue_tracker_status') ?></label>
                 <select name="filter_status" id="filter_status" class="form-control selectpicker">
                     <option value=""><?= $package->i18n('issue_tracker_all_active') ?></option>
+                    <option value="_all_" <?= $filterStatus === '_all_' ? 'selected' : '' ?>><?= $package->i18n('issue_tracker_all_issues') ?></option>
+                    <option value="closed" <?= $filterStatus === 'closed' ? 'selected' : '' ?>><?= $package->i18n('issue_tracker_status_closed') ?></option>
+                    <option disabled>──────────</option>
                     <?php foreach ($statuses as $statusKey => $statusLabel): ?>
+                    <?php if ($statusKey !== 'closed'): ?>
                     <option value="<?= rex_escape($statusKey) ?>" <?= $filterStatus === $statusKey ? 'selected' : '' ?>>
                         <?= $package->i18n('issue_tracker_status_' . $statusKey) ?>
                     </option>
+                    <?php endif; ?>
                     <?php endforeach; ?>
                 </select>
             </div>

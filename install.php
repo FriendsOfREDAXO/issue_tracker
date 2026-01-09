@@ -108,6 +108,8 @@ rex_sql_table::get(rex::getTable('issue_tracker_notifications'))
     ->ensureColumn(new rex_sql_column('email_on_comment', 'tinyint(1)', false, '1'))
     ->ensureColumn(new rex_sql_column('email_on_status_change', 'tinyint(1)', false, '1'))
     ->ensureColumn(new rex_sql_column('email_on_assignment', 'tinyint(1)', false, '1'))
+    ->ensureColumn(new rex_sql_column('email_on_message', 'tinyint(1)', false, '1'))
+    ->ensureColumn(new rex_sql_column('email_message_full_text', 'tinyint(1)', false, '0'))
     ->ensureIndex(new rex_sql_index('user_id', ['user_id'], rex_sql_index::UNIQUE))
     ->ensure();
 
@@ -187,6 +189,24 @@ rex_sql_table::get(rex::getTable('issue_tracker_project_users'))
     ->ensureForeignKey(
         new rex_sql_foreign_key('fk_project_user_project', rex::getTable('issue_tracker_projects'), ['project_id' => 'id'], rex_sql_foreign_key::CASCADE, rex_sql_foreign_key::CASCADE)
     )
+    ->ensure();
+
+// Tabelle für private Nachrichten
+rex_sql_table::get(rex::getTable('issue_tracker_messages'))
+    ->ensurePrimaryIdColumn()
+    ->ensureColumn(new rex_sql_column('sender_id', 'int(10) unsigned'))
+    ->ensureColumn(new rex_sql_column('recipient_id', 'int(10) unsigned'))
+    ->ensureColumn(new rex_sql_column('subject', 'varchar(255)'))
+    ->ensureColumn(new rex_sql_column('message', 'text'))
+    ->ensureColumn(new rex_sql_column('is_read', 'tinyint(1)', false, '0'))
+    ->ensureColumn(new rex_sql_column('read_at', 'datetime', true))
+    ->ensureColumn(new rex_sql_column('deleted_by_sender', 'tinyint(1)', false, '0'))
+    ->ensureColumn(new rex_sql_column('deleted_by_recipient', 'tinyint(1)', false, '0'))
+    ->ensureColumn(new rex_sql_column('created_at', 'datetime'))
+    ->ensureIndex(new rex_sql_index('sender_id', ['sender_id']))
+    ->ensureIndex(new rex_sql_index('recipient_id', ['recipient_id']))
+    ->ensureIndex(new rex_sql_index('is_read', ['is_read']))
+    ->ensureIndex(new rex_sql_index('created_at', ['created_at']))
     ->ensure();
 
 // Standard-Kategorien einfügen
