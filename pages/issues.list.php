@@ -97,9 +97,11 @@ if ($hasFilterParams) {
     $searchTerm = $sessionFilter['search'] ?? '';
 }
 
-// Löschaktion
+// Löschaktion (Admin oder Issue-Manager)
 $func = rex_request('func', 'string', '');
-if ($func === 'delete' && rex::getUser()->isAdmin()) {
+$currentUser = rex::getUser();
+$canDelete = $currentUser && ($currentUser->isAdmin() || $currentUser->hasPerm('issue_tracker[issue_manager]'));
+if ($func === 'delete' && $canDelete) {
     $issueId = rex_request('issue_id', 'int', 0);
     $issue = Issue::get($issueId);
     

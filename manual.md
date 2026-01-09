@@ -4,8 +4,8 @@ Dieses Handbuch erklärt die Verwendung des Issue Trackers für Redakteure und A
 
 ## Inhaltsverzeichnis
 
-1. [Dashboard](#dashboard)
-2. [Issues verwalten](#issues-verwalten)
+1. [Übersicht](#übersicht)
+2. [Themen verwalten](#themen-verwalten)
 3. [Projekte](#projekte)
 4. [Private Nachrichten](#private-nachrichten)
 5. [Filter und Suche](#filter-und-suche)
@@ -14,25 +14,25 @@ Dieses Handbuch erklärt die Verwendung des Issue Trackers für Redakteure und A
 
 ---
 
-## Dashboard
+## Übersicht
 
-Das Dashboard bietet eine Übersicht über den aktuellen Stand:
+Die Übersicht bietet einen Überblick über den aktuellen Stand:
 
-- **Offene Issues**: Anzahl der noch nicht bearbeiteten Issues
-- **In Arbeit**: Issues, die gerade bearbeitet werden
-- **Geplant**: Issues, die für später eingeplant sind
-- **Erledigt (30 Tage)**: Kürzlich abgeschlossene Issues
+- **Offene Themen**: Anzahl der noch nicht bearbeiteten Themen
+- **In Arbeit**: Themen, die gerade bearbeitet werden
+- **Geplant**: Themen, die für später eingeplant sind
+- **Erledigt (30 Tage)**: Kürzlich abgeschlossene Themen
 - **Ungelesene Nachrichten**: Private Nachrichten, die noch nicht gelesen wurden
-- **Aktuelle Issues**: Die 10 neuesten Issues
+- **Aktuelle Themen**: Die 10 neuesten Themen
 - **Projekte**: Übersicht der Projekte mit Fortschrittsanzeige
 
 ---
 
-## Issues verwalten
+## Themen verwalten
 
-### Neues Issue erstellen
+### Neues Thema erstellen
 
-1. Navigiere zu **Issues** → **Neues Issue**
+1. Navigiere zu **Themen** → **Neues Thema**
 2. Fülle das Formular aus:
    - **Titel**: Kurze, prägnante Beschreibung des Problems oder Wunsches
    - **Beschreibung**: Detaillierte Beschreibung (Markdown wird unterstützt)
@@ -43,16 +43,16 @@ Das Dashboard bietet eine Übersicht über den aktuellen Stand:
    - **Dateianhänge**: Bilder, PDFs oder andere Dateien hochladen
 3. Klicke auf **Speichern**
 
-### Issue bearbeiten
+### Thema bearbeiten
 
-1. Öffne ein Issue durch Klicken auf den Titel
+1. Öffne ein Thema durch Klicken auf den Titel
 2. Nutze die **Bearbeiten**-Funktion für Änderungen
 3. Ändere den **Status** über das Dropdown-Menü
 4. Füge **Kommentare** hinzu um mit anderen zu kommunizieren
 
 ### Kommentare
 
-- Scrolle zum Kommentar-Bereich am Ende eines Issues
+- Scrolle zum Kommentar-Bereich am Ende eines Themas
 - Gib deinen Kommentar ein (Markdown wird unterstützt)
 - Optional: Markiere den Kommentar als **Intern** (nur für Admins sichtbar)
 - Klicke auf **Kommentar hinzufügen**
@@ -66,17 +66,17 @@ Kommentare können:
 
 | Status | Bedeutung |
 |--------|-----------|
-| Offen | Neues Issue, noch nicht bearbeitet |
-| In Arbeit | Issue wird gerade bearbeitet |
-| Geplant | Issue ist für später eingeplant |
-| Abgelehnt | Issue wurde abgelehnt |
-| Erledigt | Issue wurde abgeschlossen |
+| Offen | Neues Thema, noch nicht bearbeitet |
+| In Arbeit | Thema wird gerade bearbeitet |
+| Geplant | Thema ist für später eingeplant |
+| Abgelehnt | Thema wurde abgelehnt |
+| Erledigt | Thema wurde abgeschlossen |
 
 ---
 
 ## Projekte
 
-Projekte ermöglichen die Gruppierung von Issues.
+Projekte ermöglichen die Gruppierung von Themen.
 
 ### Projekt erstellen (Admin)
 
@@ -89,13 +89,13 @@ Projekte ermöglichen die Gruppierung von Issues.
 
 - **Wichtig**: Du siehst nur Projekte, denen du als Mitglied zugeordnet bist
 - Admins sehen alle Projekte
-- Issues können einem Projekt zugeordnet werden
+- Themen können einem Projekt zugeordnet werden
 
 ### Projekt-Übersicht
 
 Die Projektliste zeigt:
 - Projektname und Beschreibung
-- Anzahl offener / geschlossener Issues
+- Anzahl offener / geschlossener Themen
 - Fortschrittsbalken
 
 ---
@@ -132,10 +132,10 @@ Das Nachrichtensystem ermöglicht die direkte Kommunikation zwischen Benutzern.
 
 ## Filter und Suche
 
-### Issues filtern
+### Themen filtern
 
 Die Filter-Leiste bietet:
-- **Status**: Alle aktiven, Alle Issues, Nur Geschlossene, oder einzelner Status
+- **Status**: Alle aktiven, Alle Themen, Nur Geschlossene, oder einzelner Status
 - **Kategorie**: Nach Kategorie filtern
 - **Tags**: Nach Tags filtern
 - **Erstellt von**: Nach Ersteller filtern
@@ -153,7 +153,7 @@ Gespeicherte Filter erscheinen als Buttons über der Filter-Leiste.
 ### Session-Speicherung
 
 - Filter bleiben während deiner Sitzung erhalten
-- Wenn du ein Issue öffnest und zur Liste zurückkehrst, sind die Filter noch aktiv
+- Wenn du ein Thema öffnest und zur Liste zurückkehrst, sind die Filter noch aktiv
 - Mit **Reset** werden alle Filter zurückgesetzt
 
 ---
@@ -166,7 +166,7 @@ Jeder Benutzer kann seine E-Mail-Benachrichtigungen individuell konfigurieren.
 
 1. Navigiere zu **Benachrichtigungen**
 2. Aktiviere oder deaktiviere:
-   - E-Mail bei neuen Issues
+   - E-Mail bei neuen Themen
    - E-Mail bei neuen Kommentaren
    - E-Mail bei Status-Änderungen
    - E-Mail bei Zuweisungen
@@ -205,8 +205,8 @@ Admins können Nachrichten an alle Benutzer senden:
 
 ### Backup & Export
 
-- **Export**: Exportiert alle Issues als JSON-Datei
-- **Import**: Importiert Issues aus einer JSON-Datei
+- **Export**: Exportiert alle Themen als JSON-Datei
+- **Import**: Importiert Themen aus einer JSON-Datei
 
 ---
 
@@ -225,7 +225,7 @@ Admins können Nachrichten an alle Benutzer senden:
 |-------|--------|
 | issue_tracker[] | Nur Lesen |
 | issue_tracker[issuer] | Erstellen und Kommentieren |
-| issue_tracker[issue_manager] | Alle Issues bearbeiten |
+| issue_tracker[issue_manager] | Alle Themen bearbeiten |
 | Admin | Vollzugriff inkl. Einstellungen |
 
 ---

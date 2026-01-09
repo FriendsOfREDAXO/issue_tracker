@@ -320,6 +320,31 @@
     color: #e0e0e0;
 }
 
+/* Reply-Kommentare im expliziten Dark Mode */
+.rex-theme-dark .issue-tracker-reply-comment {
+    background-color: #252a2f !important;
+    border-left: 3px solid #555;
+    color: #e0e0e0 !important;
+}
+
+.rex-theme-dark .issue-tracker-reply-comment:hover {
+    background-color: #2d3338 !important;
+}
+
+.rex-theme-dark .issue-tracker-reply-comment .text-muted {
+    color: #a0a0a0 !important;
+}
+
+.rex-theme-dark .issue-tracker-replies-container {
+    border-left: 3px solid #555;
+}
+
+.rex-theme-dark .issue-tracker-reply-form {
+    background-color: #252a2f !important;
+    border: 1px solid #444;
+    color: #e0e0e0;
+}
+
 /* ========================================
    Auto Theme - System Preference Support
    ======================================== */

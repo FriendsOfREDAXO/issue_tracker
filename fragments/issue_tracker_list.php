@@ -206,7 +206,7 @@ function getSortIcon($column, $currentColumn, $currentOrder) {
                             <a href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>" class="btn btn-xs btn-primary" title="<?= $package->i18n('issue_tracker_edit') ?>">
                                 <i class="rex-icon fa-edit"></i>
                             </a>
-                            <?php if (rex::getUser()->isAdmin()): ?>
+                            <?php if (rex::getUser()->isAdmin() || rex::getUser()->hasPerm('issue_tracker[issue_manager]')): ?>
                             <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()]) ?>" 
                                class="btn btn-xs btn-danger" 
                                title="<?= $package->i18n('issue_tracker_delete') ?>"

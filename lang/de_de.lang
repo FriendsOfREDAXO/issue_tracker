@@ -5,12 +5,12 @@ issue_tracker_title = Issue Tracker
 issue_tracker_description = Verwaltung von Anfragen, Problemen und Vorschlägen
 
 # Navigation
-issue_tracker_dashboard = Dashboard
-issue_tracker_issues = Issues
+issue_tracker_dashboard = Übersicht
+issue_tracker_issues = Themen
 issue_tracker_issues_list = Übersicht
-issue_tracker_issues_view = Issue anzeigen
-issue_tracker_issues_create = Neues Issue
-issue_tracker_issues_edit = Issue bearbeiten
+issue_tracker_issues_view = Thema anzeigen
+issue_tracker_issues_create = Neues Thema
+issue_tracker_issues_edit = Thema bearbeiten
 issue_tracker_preferences = Benachrichtigungen
 issue_tracker_settings = Einstellungen
 issue_tracker_help = Hilfe
@@ -23,7 +23,7 @@ issue_tracker_status_rejected = Abgelehnt
 issue_tracker_status_closed = Erledigt
 issue_tracker_closed_30_days = Erledigt (30 Tage)
 issue_tracker_by_category = Nach Kategorie
-issue_tracker_recent_issues = Aktuelle Issues
+issue_tracker_recent_issues = Aktuelle Themen
 issue_tracker_count = Anzahl
 
 # Issues
@@ -56,7 +56,7 @@ issue_tracker_status_planned = Geplant
 issue_tracker_status_rejected = Abgelehnt
 issue_tracker_status_closed = Erledigt
 issue_tracker_all_active = Alle aktiven
-issue_tracker_all_issues = Alle Issues
+issue_tracker_all_issues = Alle Themen
 issue_tracker_open = Offen
 issue_tracker_in_progress = In Arbeit
 issue_tracker_planned = Geplant
@@ -64,8 +64,8 @@ issue_tracker_rejected = Abgelehnt
 issue_tracker_closed = Erledigt
 
 # Formular
-issue_tracker_create_new = Neues Issue erstellen
-issue_tracker_edit_issue = Issue bearbeiten
+issue_tracker_create_new = Neues Thema erstellen
+issue_tracker_edit_issue = Thema bearbeiten
 issue_tracker_please_select = Bitte auswählen
 issue_tracker_not_assigned = Nicht zugewiesen
 issue_tracker_save = Speichern
@@ -91,8 +91,8 @@ issue_tracker_attachment_deleted = Dateianhang wurde gelöscht
 issue_tracker_delete_attachment_confirm = Möchten Sie diesen Anhang wirklich löschen?
 
 # Privat/Sichtbarkeit
-issue_tracker_private_issue = Privates Issue (nur für Admins sichtbar)
-issue_tracker_private_issue_help = Wenn aktiviert, ist dieses Issue nur für Sie als Ersteller und für Admins sichtbar
+issue_tracker_private_issue = Privates Thema (nur für Admins sichtbar)
+issue_tracker_private_issue_help = Wenn aktiviert, ist dieses Thema nur für Sie als Ersteller und für Admins sichtbar
 
 # Filter & Suche
 issue_tracker_filter = Filter
@@ -112,15 +112,15 @@ issue_tracker_change_status = Status ändern
 issue_tracker_status_changed = Status wurde geändert
 
 # Meldungen
-issue_tracker_no_issues = Keine Issues gefunden
-issue_tracker_issue_created = Issue wurde erfolgreich erstellt
-issue_tracker_issue_updated = Issue wurde erfolgreich aktualisiert
-issue_tracker_issue_deleted = Issue wurde erfolgreich gelöscht
-issue_tracker_issue_save_error = Fehler beim Speichern des Issues
+issue_tracker_no_issues = Keine Themen gefunden
+issue_tracker_issue_created = Thema wurde erfolgreich erstellt
+issue_tracker_issue_updated = Thema wurde erfolgreich aktualisiert
+issue_tracker_issue_deleted = Thema wurde erfolgreich gelöscht
+issue_tracker_issue_save_error = Fehler beim Speichern des Themas
 issue_tracker_comment_added = Kommentar wurde hinzugefügt
-issue_tracker_delete_confirm = Möchten Sie dieses Issue wirklich löschen?
+issue_tracker_delete_confirm = Möchten Sie dieses Thema wirklich löschen?
 issue_tracker_no_permission = Sie haben keine Berechtigung für diese Aktion
-issue_tracker_issue_not_found = Issue wurde nicht gefunden
+issue_tracker_issue_not_found = Thema wurde nicht gefunden
 
 # Einstellungen
 issue_tracker_general_settings = Allgemeine Einstellungen
@@ -137,7 +137,7 @@ issue_tracker_settings_general = Allgemein
 issue_tracker_email_templates = E-Mail-Templates
 issue_tracker_email_templates_help = Hier können Sie die E-Mail-Templates in Deutsch und Englisch anpassen
 issue_tracker_available_placeholders = Verfügbare Platzhalter
-issue_tracker_template_new_issue = Neues Issue
+issue_tracker_template_new_issue = Neues Thema
 issue_tracker_template_new_comment = Neuer Kommentar
 issue_tracker_template_status_change = Status-Änderung
 issue_tracker_template_assignment = Zuweisung
@@ -170,8 +170,8 @@ issue_tracker[] = Issue Tracker
 issue_tracker[issuer] = Issue Tracker - Issuer
 issue_tracker[issue_manager] = Issue Tracker - Issue Manager
 issue_tracker_no_permission = Sie haben keine Berechtigung für diese Aktion
-issue_tracker_perm_issuer = Issue Tracker - Issuer (kann Issues erstellen und kommentieren)
-issue_tracker_perm_issue_manager = Issue Tracker - Issue Manager (kann alle Issues bearbeiten)
+issue_tracker_perm_issuer = Issue Tracker - Issuer (kann Themen erstellen und kommentieren)
+issue_tracker_perm_issue_manager = Issue Tracker - Issue Manager (kann alle Themen bearbeiten)
 issue_tracker_perm_admin = Issue Tracker - Administration (volle Rechte)
 
 # YRewrite & YForm Integration
@@ -193,10 +193,10 @@ issue_tracker_project_created = Projekt wurde erstellt
 issue_tracker_project_updated = Projekt wurde aktualisiert
 issue_tracker_project_save_error = Fehler beim Speichern des Projekts
 issue_tracker_project_not_found = Projekt wurde nicht gefunden
-issue_tracker_project_delete_confirm = Möchten Sie dieses Projekt wirklich löschen? Die Issues bleiben erhalten.
+issue_tracker_project_delete_confirm = Möchten Sie dieses Projekt wirklich löschen? Die Themen bleiben erhalten.
 issue_tracker_no_projects = Keine Projekte vorhanden
 issue_tracker_no_project = Kein Projekt
-issue_tracker_project_help = Optional: Ordnen Sie dieses Issue einem Projekt zu
+issue_tracker_project_help = Optional: Ordnen Sie dieses Thema einem Projekt zu
 issue_tracker_project_status_active = Aktiv
 issue_tracker_project_status_completed = Abgeschlossen
 issue_tracker_project_status_archived = Archiviert
@@ -217,21 +217,21 @@ issue_tracker_private = Privat
 issue_tracker_markdown_supported = Markdown wird unterstützt
 
 # E-Mail Templates
-issue_tracker_email_new_issue_subject = Neues Issue: {0}
-issue_tracker_email_new_comment_subject = Neuer Kommentar zu Issue #{0}: {1}
-issue_tracker_email_status_change_subject = Status geändert: Issue #{0}: {1}
-issue_tracker_email_assignment_subject = Issue zugewiesen: #{0}: {1}
+issue_tracker_email_new_issue_subject = Neues Thema: {0}
+issue_tracker_email_new_comment_subject = Neuer Kommentar zu Thema #{0}: {1}
+issue_tracker_email_status_change_subject = Status geändert: Thema #{0}: {1}
+issue_tracker_email_assignment_subject = Thema zugewiesen: #{0}: {1}
 
 # Benutzer-Einstellungen
 issue_tracker_email_notifications = E-Mail-Benachrichtigungen
-issue_tracker_email_on_new = Bei neuen Issues
-issue_tracker_email_on_new_desc = Ich möchte benachrichtigt werden, wenn ein neues Issue erstellt wird
+issue_tracker_email_on_new = Bei neuen Themen
+issue_tracker_email_on_new_desc = Ich möchte benachrichtigt werden, wenn ein neues Thema erstellt wird
 issue_tracker_email_on_comment = Bei neuen Kommentaren
-issue_tracker_email_on_comment_desc = Ich möchte benachrichtigt werden, wenn ein Kommentar zu einem Issue hinzugefügt wird
+issue_tracker_email_on_comment_desc = Ich möchte benachrichtigt werden, wenn ein Kommentar zu einem Thema hinzugefügt wird
 issue_tracker_email_on_status_change = Bei Status-Änderungen
-issue_tracker_email_on_status_change_desc = Ich möchte benachrichtigt werden, wenn sich der Status eines Issues ändert
+issue_tracker_email_on_status_change_desc = Ich möchte benachrichtigt werden, wenn sich der Status eines Themas ändert
 issue_tracker_email_on_assignment = Bei Zuweisung
-issue_tracker_email_on_assignment_desc = Ich möchte benachrichtigt werden, wenn mir ein Issue zugewiesen wird
+issue_tracker_email_on_assignment_desc = Ich möchte benachrichtigt werden, wenn mir ein Thema zugewiesen wird
 issue_tracker_email_on_message = Bei privaten Nachrichten
 issue_tracker_email_on_message_desc = Ich möchte benachrichtigt werden, wenn ich eine private Nachricht erhalte
 issue_tracker_email_message_full_text = Vollständiger Nachrichtentext
@@ -249,18 +249,18 @@ issue_tracker_template_bug = Bug / Fehler
 issue_tracker_template_feature = Feature-Request
 issue_tracker_template_content = Redaktionelle Änderung
 issue_tracker_template_question = Frage
-issue_tracker_help_title = Hilfe: Wie erstelle ich ein gutes Issue?
-issue_tracker_help_what_is = Was ist ein Issue?
-issue_tracker_help_what_is_text = Ein Issue ist eine Anfrage, ein Problem oder ein Vorschlag. Es dient dazu, Probleme zu dokumentieren, Verbesserungen vorzuschlagen oder Fragen zu stellen.
-issue_tracker_help_one_topic = Nur ein Thema pro Issue!
-issue_tracker_help_one_topic_text = Bitte erstellen Sie für jedes Problem ein eigenes Issue. Wenn Sie mehrere unterschiedliche Probleme haben, erstellen Sie mehrere Issues. So können die einzelnen Punkte besser nachverfolgt und bearbeitet werden.
+issue_tracker_help_title = Hilfe: Wie erstelle ich ein gutes Thema?
+issue_tracker_help_what_is = Was ist ein Thema?
+issue_tracker_help_what_is_text = Ein Thema ist eine Anfrage, ein Problem oder ein Vorschlag. Es dient dazu, Probleme zu dokumentieren, Verbesserungen vorzuschlagen oder Fragen zu stellen.
+issue_tracker_help_one_topic = Nur ein Thema pro Eintrag!
+issue_tracker_help_one_topic_text = Bitte erstellen Sie für jedes Problem ein eigenes Thema. Wenn Sie mehrere unterschiedliche Probleme haben, erstellen Sie mehrere Themen. So können die einzelnen Punkte besser nachverfolgt und bearbeitet werden.
 issue_tracker_help_good_example = Gute Beispiele
 issue_tracker_help_good_1 = <strong>"Bug: Kontaktformular sendet keine E-Mails"</strong> - Ein spezifisches Problem mit klarer Beschreibung
 issue_tracker_help_good_2 = <strong>"Feature: Newsletter-Anmeldung auf Startseite"</strong> - Ein konkreter Verbesserungsvorschlag
 issue_tracker_help_good_3 = <strong>"Inhalt: Öffnungszeiten auf Kontaktseite aktualisieren"</strong> - Eine klare redaktionelle Aufgabe
 issue_tracker_help_bad_example = Schlechte Beispiele (nicht machen!)
 issue_tracker_help_bad_1 = <strong>"Verschiedene Probleme auf der Website"</strong> - Zu vage, mehrere Themen vermischt
-issue_tracker_help_bad_2 = <strong>"Kontaktformular funktioniert nicht + Newsletter + Öffnungszeiten ändern"</strong> - Drei verschiedene Themen in einem Issue
+issue_tracker_help_bad_2 = <strong>"Kontaktformular funktioniert nicht + Newsletter + Öffnungszeiten ändern"</strong> - Drei verschiedene Themen in einem Eintrag
 issue_tracker_help_important_info = Wichtige Informationen für das technische Team
 issue_tracker_help_tip_1 = <strong>Was genau ist das Problem?</strong> Beschreiben Sie konkret, was nicht funktioniert oder was Sie benötigen.
 issue_tracker_help_tip_2 = <strong>Wo tritt das Problem auf?</strong> Geben Sie an, auf welcher Seite oder in welchem Bereich das Problem auftritt.
@@ -275,10 +275,10 @@ issue_tracker_due_soon = Fällig bald
 
 # History/Aktivitätsverlauf
 issue_tracker_history = Aktivitätsverlauf
-issue_tracker_history_created = Issue erstellt
-issue_tracker_history_updated = Issue aktualisiert
+issue_tracker_history_created = Thema erstellt
+issue_tracker_history_updated = Thema aktualisiert
 issue_tracker_history_commented = Kommentar hinzugefügt
-issue_tracker_history_closed = Issue geschlossen
+issue_tracker_history_closed = Thema geschlossen
 issue_tracker_no_history = Noch keine Aktivitäten
 
 # Gespeicherte Filter
@@ -305,7 +305,7 @@ issue_tracker_replies = Antworten
 
 # Backup/Export
 issue_tracker_backup = Backup & Export
-issue_tracker_backup_export_description = Exportieren Sie alle Issues, Kommentare und Tags als JSON-Datei. Diese kann bei Bedarf manuell wieder importiert werden.
+issue_tracker_backup_export_description = Exportieren Sie alle Themen, Kommentare und Tags als JSON-Datei. Diese kann bei Bedarf manuell wieder importiert werden.
 issue_tracker_backup_export_note = Hinweis:
 issue_tracker_backup_export_note_attachments = Attachments werden nicht exportiert (müssen manuell gesichert werden)
 issue_tracker_backup_export_note_userids = User-IDs bleiben erhalten (müssen bei Import ggf. angepasst werden)
@@ -318,13 +318,13 @@ issue_tracker_backup_attachment_dir_info = Das Attachment-Verzeichnis finden Sie
 issue_tracker_backup_import = Import
 issue_tracker_backup_import_description = Importieren Sie eine zuvor exportierte JSON-Datei.
 issue_tracker_backup_import_warning = Achtung:
-issue_tracker_backup_import_warning_newids = Der Import erstellt neue Issues mit neuen IDs
+issue_tracker_backup_import_warning_newids = Der Import erstellt neue Themen mit neuen IDs
 issue_tracker_backup_import_warning_userids = Bestehende User-IDs müssen im System vorhanden sein
 issue_tracker_backup_import_warning_attachments = Attachments müssen manuell ins Datenverzeichnis kopiert werden
 issue_tracker_backup_import_warning_duplicates = Es werden keine Duplikate geprüft - ggf. mehrfach importieren vermeiden!
 issue_tracker_backup_import_file = JSON-Datei auswählen
 issue_tracker_backup_import_button = Jetzt importieren
-issue_tracker_backup_import_success = Issues erfolgreich importiert
+issue_tracker_backup_import_success = Themen erfolgreich importiert
 issue_tracker_backup_import_error = Fehler beim Import:
 issue_tracker_backup_invalid_json = Ungültige JSON-Datei
 

@@ -5,7 +5,7 @@ issue_tracker_title = Issue Tracker
 issue_tracker_description = Management of requests, problems and suggestions
 
 # Navigation
-issue_tracker_dashboard = Dashboard
+issue_tracker_dashboard = Overview
 issue_tracker_issues = Issues
 issue_tracker_issues_list = Overview
 issue_tracker_issues_view = View issue

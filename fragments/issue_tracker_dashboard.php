@@ -73,6 +73,18 @@ $priorityClasses = [
         </div>
     </div>
 
+    <!-- Schnellzugriff -->
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-sm-12">
+            <a href="<?= rex_url::backendPage('issue_tracker/issues/create') ?>" class="btn btn-primary btn-lg" style="color: #fff;">
+                <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_create_new') ?>
+            </a>
+            <a href="<?= rex_url::backendPage('issue_tracker/issues') ?>" class="btn btn-default btn-lg">
+                <i class="rex-icon fa-list"></i> Alle meine Issues anzeigen
+            </a>
+        </div>
+    </div>
+
     <?php if (!empty($recentIssues)): ?>
     <!-- Meine letzten Issues -->
     <div class="row">
@@ -236,15 +248,4 @@ $priorityClasses = [
         </div>
     </div>
     <?php endif; ?>
-
-    <div class="row">
-        <div class="col-sm-12">
-            <a href="<?= rex_url::backendPage('issue_tracker/issues/create') ?>" class="btn btn-primary btn-lg" style="color: #fff;">
-                <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_create_new') ?>
-            </a>
-            <a href="<?= rex_url::backendPage('issue_tracker/issues') ?>" class="btn btn-default btn-lg">
-                <i class="rex-icon fa-list"></i> Alle meine Issues anzeigen
-            </a>
-        </div>
-    </div>
 </div>

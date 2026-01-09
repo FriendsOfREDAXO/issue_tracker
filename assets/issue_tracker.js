@@ -106,11 +106,6 @@
                 new EasyMDE({
                     element: descriptionField,
                     spellChecker: false,
-                    autosave: {
-                        enabled: true,
-                        uniqueId: "issue_description",
-                        delay: 1000,
-                    },
                     toolbar: [
                         "bold", "italic", "heading", "|",
                         "quote", "unordered-list", "ordered-list", "|",

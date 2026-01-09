@@ -187,8 +187,16 @@ $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
                                     $domainId = method_exists($domain, 'getId') ? (int) $domain->getId() : null;
                                     if ($domainId === null) continue;
                                     
-                                    // Rechteprüfung: Admin oder User hat Domain-Berechtigung
-                                    $hasDomainAccess = $user->isAdmin() || $user->getComplexPerm('structure_mountpoints')->hasPerm($domain->getMountId());
+                                    // Rechteprüfung: Admin, Issue-Manager oder User hat Domain-Berechtigung
+                                    $hasDomainAccess = false;
+                                    if ($user) {
+                                        if ($user->isAdmin() || $user->hasPerm('issue_tracker[issue_manager]')) {
+                                            $hasDomainAccess = true;
+                                        } else {
+                                            $complexPerm = $user->getComplexPerm('structure_mountpoints');
+                                            $hasDomainAccess = $complexPerm && $complexPerm->hasPerm($domain->getMountId());
+                                        }
+                                    }
                                     if (!$hasDomainAccess) continue;
                                 ?>
                                 <option value="<?= $domainId ?>" <?= in_array($domainId, $selectedDomainIds, true) ? 'selected' : '' ?>>

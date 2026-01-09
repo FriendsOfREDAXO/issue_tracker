@@ -18,8 +18,22 @@ page:
     block: system
     subpages:
         dashboard:
-            title: Issue Tracker
+            title: 'translate:issue_tracker_dashboard'
             icon: rex-icon fa-dashboard
+        issues:
+            title: 'translate:issue_tracker_issues'
+            icon: rex-icon fa-ticket
+            subpages:
+                list:
+                    title: 'translate:issue_tracker_issues_list'
+                view:
+                    title: 'translate:issue_tracker_issues_view'
+                    hidden: true
+                create:
+                    title: 'translate:issue_tracker_issues_create'
+                edit:
+                    title: 'translate:issue_tracker_issues_edit'
+                    hidden: true
         projects:
             title: 'translate:issue_tracker_projects'
             icon: rex-icon fa-folder-open
@@ -47,20 +61,6 @@ page:
                     hidden: true
                 compose:
                     title: 'translate:issue_tracker_messages_compose'
-        issues:
-            title: 'translate:issue_tracker_issues'
-            icon: rex-icon fa-ticket
-            subpages:
-                list:
-                    title: 'translate:issue_tracker_issues_list'
-                view:
-                    title: 'translate:issue_tracker_issues_view'
-                    hidden: true
-                create:
-                    title: 'translate:issue_tracker_issues_create'
-                edit:
-                    title: 'translate:issue_tracker_issues_edit'
-                    hidden: true
         preferences:
             title: 'translate:issue_tracker_preferences'
             icon: rex-icon fa-user
