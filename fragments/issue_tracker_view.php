@@ -46,7 +46,7 @@ $priorityClass = [
             
             <?php 
             $history = $this->getVar('history', []);
-            $canViewHistory = rex::getUser() && (rex::getUser()->isAdmin() || rex::getUser()->hasPerm('issue_tracker[issue_manager]'));
+            $canViewHistory = \FriendsOfREDAXO\IssueTracker\PermissionService::canViewHistory();
             if (!empty($history) && $canViewHistory): 
             ?>
             <button type="button" class="btn btn-info" data-toggle="modal" data-target="#history-modal">
@@ -293,11 +293,6 @@ $priorityClass = [
                             </button>
                         </form>
                     </div>
-                    <script>
-                    jQuery(function($) {
-                        $('#status-select').selectpicker('refresh');
-                    });
-                    </script>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -666,80 +661,10 @@ $priorityClass = [
     </div>
 </div>
 
-<script>
-function toggleReplyForm(commentId) {
-    var form = document.getElementById('reply-form-' + commentId);
-    if (form.style.display === 'none') {
-        form.style.display = 'block';
-        // EasyMDE für Reply-Textarea initialisieren
-        var textarea = form.querySelector('textarea[name="comment"]');
-        if (textarea && !textarea.nextSibling?.classList?.contains('EasyMDEContainer')) {
-            if (typeof EasyMDE !== 'undefined') {
-                new EasyMDE({
-                    element: textarea,
-                    spellChecker: false,
-                    toolbar: ["bold", "italic", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "|", "preview", "guide"],
-                    status: false,
-                    placeholder: "Antwort schreiben...",
-                    minHeight: "120px"
-                });
-            }
-        }
-    } else {
-        form.style.display = 'none';
-    }
-}
-
-function toggleEditForm(commentId) {
-    var form = document.getElementById('edit-form-' + commentId);
-    var content = document.getElementById('comment-content-' + commentId);
-    if (form.style.display === 'none') {
-        form.style.display = 'block';
-        if (content) content.style.display = 'none';
-        
-        // EasyMDE für Edit-Textarea initialisieren
-        var textarea = form.querySelector('textarea[name="comment_text"]');
-        if (textarea && !textarea.nextSibling?.classList?.contains('EasyMDEContainer')) {
-            if (typeof EasyMDE !== 'undefined') {
-                new EasyMDE({
-                    element: textarea,
-                    spellChecker: false,
-                    toolbar: ["bold", "italic", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "|", "preview", "guide"],
-                    status: false,
-                    placeholder: "Kommentar bearbeiten...",
-                    minHeight: "150px"
-                });
-            }
-        }
-    } else {
-        form.style.display = 'none';
-        if (content) content.style.display = 'block';
-    }
-}
-
-// Zum Kommentar scrollen wenn Hash vorhanden
-jQuery(function($) {
-    if (window.location.hash) {
-        var target = $(window.location.hash);
-        if (target.length) {
-            setTimeout(function() {
-                $('html, body').animate({
-                    scrollTop: target.offset().top - 100
-                }, 500);
-                target.css('box-shadow', '0 0 15px rgba(255, 193, 7, 0.8)');
-                setTimeout(function() {
-                    target.css('box-shadow', '');
-                }, 2000);
-            }, 100);
-        }
-    }
-});
-</script>
-
 <!-- Modal: Aktivitätsverlauf -->
 <?php 
 $history = $this->getVar('history', []);
-$canViewHistory = rex::getUser() && (rex::getUser()->isAdmin() || rex::getUser()->hasPerm('issue_tracker[issue_manager]'));
+$canViewHistory = \FriendsOfREDAXO\IssueTracker\PermissionService::canViewHistory();
 if (!empty($history) && $canViewHistory): 
 ?>
 <div class="modal fade" id="history-modal" tabindex="-1" role="dialog">

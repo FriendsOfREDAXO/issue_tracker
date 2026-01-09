@@ -6,10 +6,12 @@
  * @package issue_tracker
  */
 
+use FriendsOfREDAXO\IssueTracker\PermissionService;
+
 $package = rex_addon::get('issue_tracker');
 
 // Nur Admins dürfen Einstellungen ändern
-if (!rex::getUser()->isAdmin()) {
+if (!PermissionService::canManageSettings()) {
     echo rex_view::error($package->i18n('issue_tracker_no_permission'));
     return;
 }

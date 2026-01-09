@@ -142,8 +142,3 @@ $colors = [
     </form>
 </div>
 
-<script>
-$(document).ready(function() {
-    $('.selectpicker').selectpicker('refresh');
-});
-</script>

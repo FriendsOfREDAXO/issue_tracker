@@ -11,6 +11,7 @@ use FriendsOfREDAXO\IssueTracker\Comment;
 use FriendsOfREDAXO\IssueTracker\Attachment;
 use FriendsOfREDAXO\IssueTracker\NotificationService;
 use FriendsOfREDAXO\IssueTracker\HistoryService;
+use FriendsOfREDAXO\IssueTracker\PermissionService;
 
 $package = rex_addon::get('issue_tracker');
 
@@ -29,26 +30,23 @@ if (!$issue) {
 }
 
 // Berechtigungsprüfung für private Issues
-$currentUser = rex::getUser();
-if ($issue->getIsPrivate() && !$currentUser->isAdmin() && $issue->getCreatedBy() !== $currentUser->getId()) {
+if (!PermissionService::canView($issue)) {
     echo rex_view::error($package->i18n('issue_tracker_no_permission'));
     return;
 }
 
-// Kommentar löschen (nur Admins)
+// Kommentar löschen
 if (rex_post('delete_comment', 'int', 0) > 0) {
     $commentId = rex_post('delete_comment', 'int', 0);
     $comment = Comment::get($commentId);
     
     if ($comment && $comment->getIssueId() === $issue->getId()) {
-        $currentUser = rex::getUser();
-        
-        if ($currentUser->isAdmin()) {
+        if (PermissionService::canDeleteComment($comment)) {
             if ($comment->delete()) {
                 // History-Eintrag
                 HistoryService::add(
                     $issue->getId(),
-                    $currentUser->getId(),
+                    PermissionService::getUserId(),
                     'comment_deleted',
                     'comment',
                     null,
@@ -70,10 +68,7 @@ if (rex_post('edit_comment', 'int', 0) > 0) {
     $comment = Comment::get($commentId);
     
     if ($comment && $comment->getIssueId() === $issue->getId()) {
-        $currentUser = rex::getUser();
-        $canEdit = $currentUser->isAdmin() || $comment->getCreatedBy() === $currentUser->getId();
-        
-        if ($canEdit) {
+        if (PermissionService::canEditComment($comment)) {
             $newText = rex_post('comment_text', 'string', '');
             if ($newText !== '') {
                 $comment->setComment($newText);
@@ -81,7 +76,7 @@ if (rex_post('edit_comment', 'int', 0) > 0) {
                     // History-Eintrag
                     HistoryService::add(
                         $issue->getId(),
-                        $currentUser->getId(),
+                        PermissionService::getUserId(),
                         'comment_edited',
                         'comment',
                         null,
@@ -105,10 +100,7 @@ if (rex_post('toggle_pin', 'int', 0) > 0) {
     $comment = Comment::get($commentId);
     
     if ($comment && $comment->getIssueId() === $issue->getId()) {
-        $currentUser = rex::getUser();
-        $canModerate = $currentUser->isAdmin() || $issue->getCreatedBy() === $currentUser->getId();
-        
-        if ($canModerate) {
+        if (PermissionService::canModerateComments() || $issue->getCreatedBy() === PermissionService::getUserId()) {
             $comment->setPinned(!$comment->isPinned());
             if ($comment->save()) {
                 $message = $comment->isPinned() ? 'Kommentar angepinnt' : 'Pin entfernt';
@@ -124,10 +116,7 @@ if (rex_post('toggle_solution', 'int', 0) > 0) {
     $comment = Comment::get($commentId);
     
     if ($comment && $comment->getIssueId() === $issue->getId()) {
-        $currentUser = rex::getUser();
-        $canModerate = $currentUser->isAdmin() || $issue->getCreatedBy() === $currentUser->getId();
-        
-        if ($canModerate) {
+        if (PermissionService::canModerateComments() || $issue->getCreatedBy() === PermissionService::getUserId()) {
             // Nur ein Kommentar kann Lösung sein - andere zurücksetzen
             if (!$comment->isSolution()) {
                 $sql = rex_sql::factory();
@@ -155,7 +144,7 @@ if (rex_post('add_comment', 'int', 0) === 1) {
     if ($commentText !== '') {
         $comment = new Comment();
         $comment->setIssueId($issue->getId());
-        $comment->setCreatedBy(rex::getUser()->getId());
+        $comment->setCreatedBy(PermissionService::getUserId());
         $comment->setComment($commentText);
         
         if ($parentCommentId > 0) {
@@ -190,7 +179,7 @@ if (rex_post('add_comment', 'int', 0) === 1) {
                             $attachment->setOriginalFilename($_FILES['comment_attachments']['name'][$i]);
                             $attachment->setMimetype($_FILES['comment_attachments']['type'][$i]);
                             $attachment->setFilesize($_FILES['comment_attachments']['size'][$i]);
-                            $attachment->setCreatedBy(rex::getUser()->getId());
+                            $attachment->setCreatedBy(PermissionService::getUserId());
                             $attachment->save();
                         }
                     }
@@ -200,7 +189,7 @@ if (rex_post('add_comment', 'int', 0) === 1) {
             // History-Eintrag erstellen
             HistoryService::add(
                 $issue->getId(),
-                rex::getUser()->getId(),
+                PermissionService::getUserId(),
                 'commented',
                 'comment',
                 null,
@@ -220,12 +209,10 @@ if (rex_post('add_comment', 'int', 0) === 1) {
     }
 }
 
-// Status-Änderung direkt in der Ansicht (nur für zugewiesenen User oder Admin)
+// Status-Änderung direkt in der Ansicht
 if (rex_post('change_status', 'int', 0) === 1) {
-    $currentUser = rex::getUser();
-    $canChangeStatus = $currentUser->isAdmin() || 
-                       $issue->getAssignedUserId() === $currentUser->getId() ||
-                       $issue->getCreatedBy() === $currentUser->getId();
+    $canChangeStatus = PermissionService::isAdmin() || 
+                       PermissionService::canEdit($issue);
     
     if ($canChangeStatus) {
         $newStatus = rex_post('status', 'string', '');

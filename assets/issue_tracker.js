@@ -262,3 +262,122 @@
     };
 
 })(jQuery);
+
+// =============================================================================
+// Globale Funktionen (müssen außerhalb des IIFE sein für onclick-Attribute)
+// =============================================================================
+
+/**
+ * Toggle Reply-Formular für einen Kommentar
+ * @param {number} commentId - ID des Kommentars
+ */
+function toggleReplyForm(commentId) {
+    var form = document.getElementById('reply-form-' + commentId);
+    if (!form) return;
+    
+    if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'block';
+        // EasyMDE für Reply-Textarea initialisieren
+        var textarea = form.querySelector('textarea[name="comment"]');
+        if (textarea && !textarea.nextSibling?.classList?.contains('EasyMDEContainer')) {
+            if (typeof EasyMDE !== 'undefined') {
+                new EasyMDE({
+                    element: textarea,
+                    spellChecker: false,
+                    toolbar: ["bold", "italic", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "|", "preview", "guide"],
+                    status: false,
+                    placeholder: "Antwort schreiben...",
+                    minHeight: "120px"
+                });
+            }
+        }
+    } else {
+        form.style.display = 'none';
+    }
+}
+
+/**
+ * Toggle Edit-Formular für einen Kommentar
+ * @param {number} commentId - ID des Kommentars
+ */
+function toggleEditForm(commentId) {
+    var form = document.getElementById('edit-form-' + commentId);
+    var content = document.getElementById('comment-content-' + commentId);
+    if (!form) return;
+    
+    if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'block';
+        if (content) content.style.display = 'none';
+        
+        // EasyMDE für Edit-Textarea initialisieren
+        var textarea = form.querySelector('textarea[name="comment_text"]');
+        if (textarea && !textarea.nextSibling?.classList?.contains('EasyMDEContainer')) {
+            if (typeof EasyMDE !== 'undefined') {
+                new EasyMDE({
+                    element: textarea,
+                    spellChecker: false,
+                    toolbar: ["bold", "italic", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "|", "preview", "guide"],
+                    status: false,
+                    placeholder: "Kommentar bearbeiten...",
+                    minHeight: "150px"
+                });
+            }
+        }
+    } else {
+        form.style.display = 'none';
+        if (content) content.style.display = 'block';
+    }
+}
+
+/**
+ * Scroll zu Kommentar wenn Hash vorhanden
+ */
+(function($) {
+    $(document).ready(function() {
+        if (window.location.hash) {
+            var target = $(window.location.hash);
+            if (target.length) {
+                setTimeout(function() {
+                    $('html, body').animate({
+                        scrollTop: target.offset().top - 100
+                    }, 500);
+                    target.css('box-shadow', '0 0 15px rgba(255, 193, 7, 0.8)');
+                    setTimeout(function() {
+                        target.css('box-shadow', '');
+                    }, 2000);
+                }, 100);
+            }
+        }
+        
+        // Selectpicker refresh für alle Seiten
+        if (typeof $.fn.selectpicker !== 'undefined') {
+            $('.selectpicker').selectpicker('refresh');
+        }
+    });
+})(jQuery);
+
+/**
+ * Badge für ungelesene Nachrichten hinzufügen
+ * @param {number} unreadCount - Anzahl ungelesener Nachrichten
+ */
+function issueTrackerAddMessageBadge(unreadCount) {
+    if (unreadCount <= 0) return;
+    
+    jQuery(document).ready(function($) {
+        var badge = '<span class="issue-tracker-message-badge">(' + unreadCount + ')</span>';
+        $(".rex-page-nav > ul > li > a[href*='issue_tracker/messages']").each(function() {
+            if ($(this).find(".issue-tracker-message-badge").length === 0) {
+                $(this).append(badge);
+            }
+        });
+    });
+}
+
+/**
+ * LocalStorage Draft löschen nach erfolgreichem Speichern
+ */
+function issueTrackerClearDraft() {
+    if (typeof localStorage !== "undefined") {
+        localStorage.removeItem("smde_issue_description");
+    }
+}

@@ -7,11 +7,12 @@
  */
 
 use FriendsOfREDAXO\IssueTracker\NotificationService;
+use FriendsOfREDAXO\IssueTracker\PermissionService;
 
 $package = rex_addon::get('issue_tracker');
 
 // Nur Admins dürfen Einstellungen ändern
-if (!rex::getUser()->isAdmin()) {
+if (!PermissionService::canManageSettings()) {
     echo rex_view::error($package->i18n('issue_tracker_no_permission'));
     return;
 }
@@ -100,7 +101,7 @@ if (rex_post('send_broadcast', 'int', 0) === 1) {
     
     if ($subject && $message) {
         $count = NotificationService::sendBroadcast($subject, $message);
-        echo rex_view::success(sprintf($package->i18n('issue_tracker_broadcast_sent'), $count));
+        echo rex_view::success($package->i18n('issue_tracker_broadcast_sent', $count));
     } else {
         echo rex_view::error($package->i18n('issue_tracker_broadcast_error'));
     }

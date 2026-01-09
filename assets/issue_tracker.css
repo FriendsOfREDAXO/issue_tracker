@@ -558,3 +558,13 @@
 .issue-tracker-reply-form {
     background-color: #f9f9f9;
     border: 1px solid #e0e0e0;
+}
+
+/* ==========================================================================
+   Message Badge (ungelesene Nachrichten)
+   ========================================================================== */
+.issue-tracker-message-badge {
+    color: #d9534f;
+    font-weight: bold;
+    margin-left: 3px;
+}

@@ -99,9 +99,9 @@ if ($hasFilterParams) {
 
 // Löschaktion (Admin oder Issue-Manager)
 $func = rex_request('func', 'string', '');
-$currentUser = rex::getUser();
-$canDelete = $currentUser && ($currentUser->isAdmin() || $currentUser->hasPerm('issue_tracker[issue_manager]'));
-if ($func === 'delete' && $canDelete) {
+use FriendsOfREDAXO\IssueTracker\PermissionService;
+
+if ($func === 'delete' && PermissionService::canDelete()) {
     $issueId = rex_request('issue_id', 'int', 0);
     $issue = Issue::get($issueId);
     
@@ -176,9 +176,8 @@ if ($searchTerm !== '') {
 }
 
 // Filter für private Issues: Nur Ersteller und Admins können private Issues sehen
-$currentUser = rex::getUser();
-if (!$currentUser->isAdmin()) {
-    $where[] = '(i.is_private = 0 OR i.created_by = ' . (int) $currentUser->getId() . ')';
+if (!PermissionService::isAdmin()) {
+    $where[] = '(i.is_private = 0 OR i.created_by = ' . PermissionService::getUserId() . ')';
 }
 
 $whereClause = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : '';

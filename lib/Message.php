@@ -6,7 +6,12 @@ namespace FriendsOfREDAXO\IssueTracker;
 
 use DateTime;
 use rex;
+use rex_addon;
+use rex_escape;
+use rex_logger;
+use rex_mailer;
 use rex_sql;
+use rex_url;
 use rex_user;
 
 /**
@@ -453,12 +458,8 @@ class Message
         $sender = $this->getSender();
         $senderName = $sender ? ($sender->getName() ?: $sender->getLogin()) : 'Unbekannt';
 
-        // E-Mail-Betreff
-        $emailSubject = sprintf(
-            $package->i18n('issue_tracker_email_new_message_subject'),
-            $senderName,
-            $this->subject
-        );
+        // E-Mail-Betreff - Platzhalter werden von i18n() automatisch ersetzt
+        $emailSubject = $package->i18n('issue_tracker_email_new_message_subject', $senderName, $this->subject);
 
         // E-Mail-Body erstellen
         $body = '<html><body>';

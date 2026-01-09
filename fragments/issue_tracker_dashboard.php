@@ -209,7 +209,7 @@ $priorityClasses = [
                     <?php if ($unreadMessages > 0): ?>
                     <p class="text-info" style="margin-bottom: 10px;">
                         <i class="rex-icon fa-info-circle"></i>
-                        <?= sprintf($package->i18n('issue_tracker_unread_messages_info'), $unreadMessages) ?>
+                        <?= $package->i18n('issue_tracker_unread_messages_info', $unreadMessages) ?>
                     </p>
                     <?php endif; ?>
                     

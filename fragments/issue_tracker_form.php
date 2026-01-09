@@ -233,13 +233,6 @@ $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
                     <?php endif; ?>
                 </div>
 
-                <script>
-                $(document).ready(function() {
-                    // Selectpicker für multiple Felder neu initialisieren
-                    $('#issue-domains, #issue-yform-tables').selectpicker('refresh');
-                });
-                </script>
-
                 <!-- Tags -->
                 <div class="form-group">
                     <label for="issue-tags"><?= $package->i18n('issue_tracker_tags') ?></label>
@@ -269,7 +262,7 @@ $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
                 </div>
 
                 <!-- Privat (nur für Admins) -->
-                <?php if (rex::getUser()->isAdmin()): ?>
+                <?php if (\FriendsOfREDAXO\IssueTracker\PermissionService::canCreatePrivateIssues()): ?>
                 <div class="checkbox">
                     <label>
                         <input type="checkbox" name="is_private" value="1" <?= $issue->getIsPrivate() ? 'checked' : '' ?>>
@@ -388,7 +381,7 @@ $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
                     <textarea class="form-control" id="comment-text" name="comment" rows="4"></textarea>
                 </div>
 
-                <?php if (rex::getUser()->isAdmin()): ?>
+                <?php if (\FriendsOfREDAXO\IssueTracker\PermissionService::canCreateInternalComments()): ?>
                 <div class="checkbox">
                     <label>
                         <input type="checkbox" name="is_internal" value="1">

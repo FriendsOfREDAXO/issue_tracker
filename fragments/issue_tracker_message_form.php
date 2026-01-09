@@ -91,9 +91,3 @@ $replyToMessage = $this->getVar('replyToMessage', null);
         </div>
     </form>
 </div>
-
-<script>
-$(document).ready(function() {
-    $('.selectpicker').selectpicker('refresh');
-});
-</script>

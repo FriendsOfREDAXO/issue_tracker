@@ -58,40 +58,11 @@ if (rex::isBackend() && rex::getUser() && isset($_SESSION['issue_tracker_token']
 
 // Ungelesene Nachrichten Badge in Navigation anzeigen
 if (rex::isBackend() && rex::getUser()) {
-    rex_extension::register('PAGE_SIDEBAR', static function (rex_extension_point $ep) {
-        // Nur auf Issue-Tracker Seiten das Badge aktualisieren
-        $page = rex_be_controller::getCurrentPage();
-        if (str_starts_with($page, 'issue_tracker')) {
-            $unreadCount = \FriendsOfREDAXO\IssueTracker\Message::getUnreadCount(rex::getUser()->getId());
-            if ($unreadCount > 0) {
-                // Badge CSS hinzufügen
-                $css = '<style>
-                    .issue-tracker-message-badge {
-                        color: #d9534f;
-                        font-weight: bold;
-                        margin-left: 3px;
-                    }
-                </style>';
-                $ep->setSubject($ep->getSubject() . $css);
-            }
-        }
-    });
-
     rex_extension::register('PAGE_TITLE', static function (rex_extension_point $ep) {
         $unreadCount = \FriendsOfREDAXO\IssueTracker\Message::getUnreadCount(rex::getUser()->getId());
         if ($unreadCount > 0) {
-            // JavaScript um das Badge nur zur Haupt-Navigation hinzuzufügen
-            $script = '<script>
-                $(document).ready(function() {
-                    var badge = \'<span class="issue-tracker-message-badge">(' . $unreadCount . ')</span>\';
-                    // Badge NUR zum Nachrichten-Tab in der Haupt-Navigation (rex-page-nav > ul > li > a)
-                    $(".rex-page-nav > ul > li > a[href*=\'issue_tracker/messages\']").each(function() {
-                        if ($(this).find(".issue-tracker-message-badge").length === 0) {
-                            $(this).append(badge);
-                        }
-                    });
-                });
-            </script>';
+            // Badge per zentraler JS-Funktion hinzufügen (CSS ist in issue_tracker.css)
+            $script = '<script>issueTrackerAddMessageBadge(' . $unreadCount . ');</script>';
             $ep->setSubject($ep->getSubject() . $script);
         }
     });
