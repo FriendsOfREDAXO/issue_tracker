@@ -47,9 +47,9 @@ if ($issueId > 0) {
     if ($issue) {
         $isNew = false;
         
-        // Berechtigungsprüfung: Nur Admin oder Ersteller darf bearbeiten
+        // Berechtigungsprüfung: Admin, Issue-Manager oder Ersteller darf bearbeiten
         $currentUser = rex::getUser();
-        if (!$currentUser->isAdmin() && $issue->getCreatedBy() !== $currentUser->getId()) {
+        if (!$currentUser->isAdmin() && !$currentUser->hasPerm('issue_tracker[issue_manager]') && $issue->getCreatedBy() !== $currentUser->getId()) {
             echo rex_view::error($package->i18n('issue_tracker_no_permission'));
             return;
         }
@@ -81,6 +81,12 @@ if (rex_post('save', 'int', 0) === 1) {
     $issue->setAssignedAddon(rex_post('assigned_addon', 'string', null));
     $issue->setVersion(rex_post('version', 'string', null));
     $issue->setIsPrivate(rex_post('is_private', 'int', 0) === 1);
+    
+    // Domain IDs (Multiple) und YForm Tabellen (Multiple)
+    $domainIds = rex_post('domain_ids', 'array', []);
+    $issue->setDomainIds(array_filter($domainIds, fn($v) => $v !== ''));
+    $yformTables = rex_post('yform_tables', 'array', []);
+    $issue->setYformTables(array_filter($yformTables, fn($v) => $v !== ''));
     
     // Due Date verarbeiten
     $dueDateInput = rex_post('due_date', 'string', '');

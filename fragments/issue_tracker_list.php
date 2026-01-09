@@ -126,6 +126,34 @@ function getSortIcon($column, $currentColumn, $currentOrder) {
                                     <i class="rex-icon fa-comment"></i> <?= count($comments) ?>
                                 </span>
                             <?php endif; ?>
+                            <?php 
+                            // Domain- und YForm-Tabellen-Info anzeigen
+                            $domainIds = $issue->getDomainIds();
+                            $yformTables = $issue->getYformTables();
+                            if (!empty($domainIds) || !empty($yformTables)): 
+                            ?>
+                                <br>
+                                <small class="text-muted">
+                                    <?php if (!empty($domainIds) && rex_addon::exists('yrewrite') && rex_addon::get('yrewrite')->isAvailable()): ?>
+                                        <i class="rex-icon fa-globe"></i>
+                                        <?php 
+                                        $domainNames = [];
+                                        foreach (rex_yrewrite::getDomains() as $domainName => $domain) {
+                                            $domainId = method_exists($domain, 'getId') ? (int) $domain->getId() : null;
+                                            if ($domainId !== null && in_array($domainId, $domainIds, true)) {
+                                                $domainNames[] = rex_escape($domainName);
+                                            }
+                                        }
+                                        echo implode(', ', $domainNames);
+                                        ?>
+                                    <?php endif; ?>
+                                    <?php if (!empty($domainIds) && !empty($yformTables)): ?> | <?php endif; ?>
+                                    <?php if (!empty($yformTables)): ?>
+                                        <i class="rex-icon fa-database"></i>
+                                        <?= rex_escape(implode(', ', $yformTables)) ?>
+                                    <?php endif; ?>
+                                </small>
+                            <?php endif; ?>
                             <?php if (!empty($tags)): ?>
                                 <br>
                                 <?php foreach ($tags as $tag): ?>

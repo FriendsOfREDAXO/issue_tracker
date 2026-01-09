@@ -31,6 +31,10 @@ class Issue
     private ?DateTime $createdAt = null;
     private ?DateTime $updatedAt = null;
     private ?DateTime $closedAt = null;
+    /** @var int[] */
+    private array $domainIds = [];
+    /** @var string[] */
+    private array $yformTables = [];
 
     /**
      * Lädt ein Issue aus der Datenbank
@@ -109,6 +113,18 @@ class Issue
             $issue->closedAt = new DateTime((string) $sql->getValue('closed_at'));
         }
 
+        // Domain IDs aus JSON laden
+        if ($sql->hasValue('domain_ids') && $sql->getValue('domain_ids')) {
+            $decoded = json_decode((string) $sql->getValue('domain_ids'), true);
+            $issue->domainIds = is_array($decoded) ? array_map('intval', $decoded) : [];
+        }
+        
+        // YForm Tables aus JSON laden
+        if ($sql->hasValue('yform_tables') && $sql->getValue('yform_tables')) {
+            $decoded = json_decode((string) $sql->getValue('yform_tables'), true);
+            $issue->yformTables = is_array($decoded) ? $decoded : [];
+        }
+
         return $issue;
     }
 
@@ -131,6 +147,8 @@ class Issue
         $sql->setValue('due_date', $this->dueDate ? $this->dueDate->format('Y-m-d H:i:s') : null);
         $sql->setValue('is_private', $this->isPrivate ? 1 : 0);
         $sql->setValue('notified', $this->notified ? 1 : 0);
+        $sql->setValue('domain_ids', !empty($this->domainIds) ? json_encode($this->domainIds) : null);
+        $sql->setValue('yform_tables', !empty($this->yformTables) ? json_encode($this->yformTables) : null);
         $sql->setValue('updated_at', date('Y-m-d H:i:s'));
 
         if ($this->id > 0) {
@@ -387,5 +405,34 @@ class Issue
             return false;
         }
         return $this->dueDate < new DateTime();
+    }
+
+    public function getDomainIds(): array
+    {
+        return $this->domainIds;
+    }
+
+    /**
+     * @param int[] $domainIds
+     */
+    public function setDomainIds(array $domainIds): void
+    {
+        $this->domainIds = array_map('intval', $domainIds);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getYformTables(): array
+    {
+        return $this->yformTables;
+    }
+
+    /**
+     * @param string[] $yformTables
+     */
+    public function setYformTables(array $yformTables): void
+    {
+        $this->yformTables = $yformTables;
     }
 }

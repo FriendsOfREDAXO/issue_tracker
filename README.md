@@ -35,9 +35,14 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - ✅ Individuelle Benachrichtigungseinstellungen pro Benutzer
 
 ### Berechtigungen
-- **issue_tracker[]**: Basis-Berechtigung für Zugriff auf den Issue Tracker
+- **issue_tracker[]**: Basis-Berechtigung für Zugriff auf den Issue Tracker (nur lesen)
 - **issue_tracker[issuer]**: Erweiterte Berechtigung für das Erstellen und Kommentieren von Issues
+- **issue_tracker[issue_manager]**: Issue Manager - kann alle Issues bearbeiten (fast wie Admin, ohne Einstellungen)
 - **admin**: Vollzugriff inkl. Einstellungen, Löschen, Private Issues erstellen und Broadcast-Nachrichten
+
+### YRewrite & YForm Integration
+- **Domain-Auswahl**: Issues können optional einer YRewrite-Domain zugeordnet werden (nur sichtbar wenn YRewrite installiert ist)
+- **YForm Tabellen-Auswahl**: Issues können einer YForm-Tabelle zugeordnet werden (gefiltert nach Benutzerrechten)
 
 ## Installation
 

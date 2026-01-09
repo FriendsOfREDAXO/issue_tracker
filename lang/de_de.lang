@@ -161,9 +161,15 @@ issue_tracker_broadcast_confirm = Möchten Sie wirklich eine Broadcast-Nachricht
 # Permissions
 issue_tracker[] = Issue Tracker
 issue_tracker[issuer] = Issue Tracker - Issuer
+issue_tracker[issue_manager] = Issue Tracker - Issue Manager
 issue_tracker_no_permission = Sie haben keine Berechtigung für diese Aktion
 issue_tracker_perm_issuer = Issue Tracker - Issuer (kann Issues erstellen und kommentieren)
+issue_tracker_perm_issue_manager = Issue Tracker - Issue Manager (kann alle Issues bearbeiten)
 issue_tracker_perm_admin = Issue Tracker - Administration (volle Rechte)
+
+# YRewrite & YForm Integration
+issue_tracker_domain = Domain
+issue_tracker_yform_table = YForm Tabelle
 
 # E-Mail Templates
 issue_tracker_email_new_issue_subject = Neues Issue: {0}

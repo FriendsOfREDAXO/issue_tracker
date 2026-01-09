@@ -15,6 +15,7 @@ if (rex_addon::get('media_manager')->isAvailable()) {
 if (rex::isBackend() && rex::getUser()) {
     rex_perm::register('issue_tracker[]', null, rex_perm::OPTIONS);
     rex_perm::register('issue_tracker[issuer]', null, rex_perm::OPTIONS);
+    rex_perm::register('issue_tracker[issue_manager]', null, rex_perm::OPTIONS);
 }
 
 // Assets einbinden

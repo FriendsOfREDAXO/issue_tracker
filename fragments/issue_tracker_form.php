@@ -156,6 +156,65 @@ $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
                     </div>
                 </div>
 
+                <div class="row">
+                    <!-- YRewrite Domains (optional, multiple) -->
+                    <?php if (rex_addon::exists('yrewrite') && rex_addon::get('yrewrite')->isAvailable()): ?>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="issue-domains"><?= $package->i18n('issue_tracker_domain') ?></label>
+                            <select class="form-control selectpicker" id="issue-domains" name="domain_ids[]" multiple="multiple" data-live-search="true" data-actions-box="true" data-selected-text-format="count > 2" title="<?= $package->i18n('issue_tracker_please_select') ?>">
+                                <?php 
+                                $user = rex::getUser();
+                                $selectedDomainIds = $issue->getDomainIds();
+                                foreach (rex_yrewrite::getDomains() as $domainName => $domain): 
+                                    $domainId = method_exists($domain, 'getId') ? (int) $domain->getId() : null;
+                                    if ($domainId === null) continue;
+                                    
+                                    // Rechteprüfung: Admin oder User hat Domain-Berechtigung
+                                    $hasDomainAccess = $user->isAdmin() || $user->getComplexPerm('structure_mountpoints')->hasPerm($domain->getMountId());
+                                    if (!$hasDomainAccess) continue;
+                                ?>
+                                <option value="<?= $domainId ?>" <?= in_array($domainId, $selectedDomainIds, true) ? 'selected' : '' ?>>
+                                    <?= rex_escape($domainName) ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- YForm Tabellen (entsprechend User-Rechte, multiple) -->
+                    <?php if (rex_addon::exists('yform') && rex_addon::get('yform')->isAvailable()): ?>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="issue-yform-tables"><?= $package->i18n('issue_tracker_yform_table') ?></label>
+                            <select class="form-control selectpicker" id="issue-yform-tables" name="yform_tables[]" multiple="multiple" data-live-search="true" data-actions-box="true" data-selected-text-format="count > 2" title="<?= $package->i18n('issue_tracker_please_select') ?>">
+                                <?php
+                                $user = rex::getUser();
+                                $selectedYformTables = $issue->getYformTables();
+                                foreach (rex_yform_manager_table::getAll() as $yTable):
+                                    // Rechteprüfung: Admin oder User hat Tabellen-Berechtigung
+                                    $tableName = $yTable->getTableName();
+                                    $hasAccess = $user->isAdmin() || $user->getComplexPerm('yform_manager_table_edit')->hasPerm($tableName);
+                                    if (!$hasAccess) continue;
+                                ?>
+                                <option value="<?= rex_escape($tableName) ?>" <?= in_array($tableName, $selectedYformTables, true) ? 'selected' : '' ?>>
+                                    <?= rex_escape(rex_i18n::translate($yTable->getName())) ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <script>
+                $(document).ready(function() {
+                    // Selectpicker für multiple Felder neu initialisieren
+                    $('#issue-domains, #issue-yform-tables').selectpicker('refresh');
+                });
+                </script>
+
                 <!-- Tags -->
                 <div class="form-group">
                     <label for="issue-tags"><?= $package->i18n('issue_tracker_tags') ?></label>

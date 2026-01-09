@@ -202,6 +202,39 @@ $priorityClass = [
                             <?php endif; ?>
                         </dd>
                         <?php endif; ?>
+
+                        <?php 
+                        // Domains anzeigen
+                        $domainIds = $issue->getDomainIds();
+                        if (!empty($domainIds) && rex_addon::exists('yrewrite') && rex_addon::get('yrewrite')->isAvailable()): 
+                        ?>
+                        <dt><?= $package->i18n('issue_tracker_domain') ?>:</dt>
+                        <dd>
+                            <?php 
+                            $domainNames = [];
+                            foreach (rex_yrewrite::getDomains() as $domainName => $domain) {
+                                $domainId = method_exists($domain, 'getId') ? (int) $domain->getId() : null;
+                                if ($domainId !== null && in_array($domainId, $domainIds, true)) {
+                                    $domainNames[] = '<span class="label label-info"><i class="rex-icon fa-globe"></i> ' . rex_escape($domainName) . '</span>';
+                                }
+                            }
+                            echo implode(' ', $domainNames);
+                            ?>
+                        </dd>
+                        <?php endif; ?>
+
+                        <?php 
+                        // YForm Tabellen anzeigen
+                        $yformTables = $issue->getYformTables();
+                        if (!empty($yformTables)): 
+                        ?>
+                        <dt><?= $package->i18n('issue_tracker_yform_table') ?>:</dt>
+                        <dd>
+                            <?php foreach ($yformTables as $tableName): ?>
+                                <span class="label label-default"><i class="rex-icon fa-database"></i> <?= rex_escape($tableName) ?></span>
+                            <?php endforeach; ?>
+                        </dd>
+                        <?php endif; ?>
                     </dl>
 
                     <!-- Tags -->
