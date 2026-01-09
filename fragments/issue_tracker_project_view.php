@@ -264,8 +264,7 @@ $existingUserIds = array_column($users, 'user_id');
                     <form method="post" class="form-inline">
                         <input type="hidden" name="add_user" value="1" />
                         <div class="form-group" style="margin-right: 5px;">
-                            <select name="user_id" class="form-control selectpicker" data-live-search="true" data-width="150px" required>
-                                <option value=""><?= $package->i18n('issue_tracker_please_select') ?></option>
+                            <select name="user_id" class="form-control selectpicker" data-live-search="true" data-width="200px" title="<?= $package->i18n('issue_tracker_please_select') ?>" required>
                                 <?php foreach ($allUsers as $userId => $userName): 
                                     if (in_array($userId, $existingUserIds)) continue;
                                 ?>
@@ -274,7 +273,7 @@ $existingUserIds = array_column($users, 'user_id');
                             </select>
                         </div>
                         <div class="form-group" style="margin-right: 5px;">
-                            <select name="role" class="form-control">
+                            <select name="role" class="form-control selectpicker" data-width="120px">
                                 <option value="member"><?= $package->i18n('issue_tracker_role_member') ?></option>
                                 <option value="viewer"><?= $package->i18n('issue_tracker_role_viewer') ?></option>
                                 <option value="owner"><?= $package->i18n('issue_tracker_role_owner') ?></option>

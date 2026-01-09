@@ -78,4 +78,5 @@ page:
         help:
             title: 'translate:issue_tracker_help'
             icon: rex-icon fa-question-circle
-            itemclass: pull-right
+            subPath: manual.md
+            itemClass: pull-right

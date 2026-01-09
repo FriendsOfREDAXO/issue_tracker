@@ -1,18 +1,18 @@
 # REDAXO Issue Tracker
 
-Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht, Wünsche zu äußern, Probleme zu melden und Vorschläge zu machen.
+Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht, Wünsche zu äußern, Probleme zu melden und Vorschläge zu machen. Mit integriertem Projektmanagement und privatem Nachrichtensystem.
 
 ## Features
 
 ### Kernfunktionen
 - ✅ **Issue-Verwaltung**: Erstellen, Bearbeiten, Löschen und Kommentieren von Issues
-- ✅ **Dashboard**: Übersicht über den aktuellen Status aller Issues
-- ✅ **Status-Tracking**: Offen, In Arbeit, Abgelehnt, Erledigt
-- ✅ **Prioritäten**: Niedrig, Normal, Hoch, Kritisch
-- ✅ **Kategorien**: Redaktion, Technik, AddOn, Support, Medien, Struktur (erweiterbar)
-- ✅ **Tags**: Flexible Tag-Verwaltung mit Farbcodierung
+- ✅ **Dashboard**: Übersicht über den aktuellen Status aller Issues mit Statistiken und Widgets
+- ✅ **Status-Tracking**: Offen, In Arbeit, Geplant, Abgelehnt, Erledigt
+- ✅ **Prioritäten**: Niedrig, Normal, Hoch, Dringend
+- ✅ **Kategorien**: Frei konfigurierbare Kategorien in den Einstellungen
+- ✅ **Tags**: Flexible Tag-Verwaltung mit Farbcodierung und Zufallsfarben für neue Tags
 - ✅ **Private Issues**: Issues können als privat markiert werden (nur für Ersteller und Admins sichtbar)
-- ✅ **Kommentare**: Diskussion und Feedback zu jedem Issue
+- ✅ **Kommentare**: Diskussion und Feedback zu jedem Issue mit Thread-System
 - ✅ **Interne Kommentare**: Kommentare können als intern markiert werden (nur für Admins sichtbar)
 - ✅ **Zuweisungen**: Issues können Benutzern und AddOns zugeordnet werden
 - ✅ **Versionsverwaltung**: Issues können einer Version zugeordnet werden
@@ -20,19 +20,44 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - ✅ **Aktivitätsverlauf**: Vollständiges Tracking aller Änderungen an Issues
 - ✅ **Dateianhänge**: Upload von Bildern, Dokumenten und anderen Dateien zu Issues
 - ✅ **Gespeicherte Filter**: Häufig verwendete Filtereinstellungen speichern und als Standard festlegen
-- ✅ **Erweiterte Filter**: Nach Status, Kategorie, Tags, Ersteller und Text durchsuchbar
+- ✅ **Session-Filter**: Filter bleiben während der Sitzung erhalten
+- ✅ **Erweiterte Filter**: Nach Status, Kategorie, Tags, Ersteller und Text durchsuchbar (inkl. "Alle Issues" und "Nur Geschlossene")
 - ✅ **Sortierbare Listen**: Alle Spalten können aufsteigend/absteigend sortiert werden
+- ✅ **Automatisches closed_at**: Beim Schließen eines Issues wird das Datum automatisch gesetzt
+
+### Projektmanagement
+- ✅ **Projekte**: Issues können Projekten zugeordnet werden
+- ✅ **Projekt-Mitglieder**: Benutzer können Projekten zugeordnet werden
+- ✅ **Projektbasierte Sichtbarkeit**: Benutzer sehen nur Projekte, denen sie zugeordnet sind
+- ✅ **Projekt-Übersicht**: Dashboard zeigt Projekte mit Fortschrittsanzeige
+- ✅ **Issue-Gruppierung**: Issues können nach Projekten gefiltert werden
+
+### Private Nachrichten
+- ✅ **Nachrichtensystem**: Benutzer können sich gegenseitig private Nachrichten senden
+- ✅ **Posteingang & Gesendet**: Übersichtliche Trennung von empfangenen und gesendeten Nachrichten
+- ✅ **Konversationsansicht**: Nachrichten werden als Konversation mit demselben Partner gruppiert
+- ✅ **Ungelesen-Badge**: Navigation zeigt Anzahl ungelesener Nachrichten
+- ✅ **Dashboard-Widget**: Ungelesene Nachrichten werden auf dem Dashboard angezeigt
+- ✅ **E-Mail-Benachrichtigung**: Optional werden Benutzer per E-Mail über neue Nachrichten informiert
+- ✅ **Volltext-Option**: Nachrichten können optional vollständig in der E-Mail enthalten sein
+- ✅ **Antwort-Funktion**: Direktes Antworten auf Nachrichten möglich
 
 ### E-Mail-Benachrichtigungen
 - ✅ Automatische Benachrichtigungen bei neuen Issues
 - ✅ Benachrichtigungen bei neuen Kommentaren
 - ✅ Benachrichtigungen bei Status-Änderungen
 - ✅ Benachrichtigungen bei Zuweisungen
+- ✅ Benachrichtigungen bei privaten Nachrichten (optional)
 - ✅ **HTML E-Mail Templates** mit professionellem Design
 - ✅ **Deep Links** mit One-Time-Token (30 Tage gültig)
 - ✅ Mehrsprachige Templates (Deutsch/Englisch)
 - ✅ Broadcast-Nachrichten an alle Benutzer (nur Admins)
 - ✅ Individuelle Benachrichtigungseinstellungen pro Benutzer
+
+### Anpassungen
+- ✅ **Menü-Titel anpassbar**: Der Menüpunkt kann in den Einstellungen umbenannt werden (z.B. "Support", "Tickets", "Anfragen")
+- ✅ **Tag-Duplikate verhindern**: Doppelte Tag-Namen werden erkannt und abgelehnt
+- ✅ **Dark Mode kompatibel**: Styling funktioniert im hellen und dunklen REDAXO-Theme
 
 ### Berechtigungen
 - **issue_tracker[]**: Basis-Berechtigung für Zugriff auf den Issue Tracker (nur lesen)
@@ -136,6 +161,30 @@ Admins können Issues als privat markieren. Private Issues sind:
 4. Optional: Markiere den Kommentar als "Intern" (nur für Admins sichtbar)
 5. Klicke auf "Kommentar hinzufügen"
 
+### Projekte verwalten
+
+1. Gehe zu "Issue Tracker" → "Projekte"
+2. Klicke auf "Neues Projekt"
+3. Gib einen Namen und optional eine Beschreibung ein
+4. Wähle die Projekt-Mitglieder aus (wichtig: nur zugewiesene Benutzer sehen das Projekt!)
+5. Issues können anschließend einem Projekt zugeordnet werden
+
+**Hinweis**: Benutzer sehen nur Projekte, denen sie als Mitglied zugeordnet sind. Admins sehen alle Projekte.
+
+### Private Nachrichten senden
+
+1. Gehe zu "Issue Tracker" → "Nachrichten"
+2. Klicke auf "Neue Nachricht"
+3. Wähle den Empfänger aus
+4. Gib Betreff und Nachricht ein
+5. Klicke auf "Senden"
+
+Nachrichten werden als Konversation gruppiert. In der Inbox siehst du:
+- Den Kommunikationspartner
+- Anzahl ungelesener Nachrichten
+- Die letzte Nachricht in der Konversation
+- Wer zuletzt geantwortet hat
+
 ### Broadcast-Nachricht senden (nur Admins)
 
 1. Gehe zu "Issue Tracker" → "Einstellungen"
@@ -153,17 +202,21 @@ Das Dashboard zeigt:
 - Anzahl erledigter Issues (letzte 30 Tage)
 - Issues nach Kategorie
 - Die 10 neuesten Issues
+- Ungelesene Nachrichten (Widget)
+- Projekte mit Fortschrittsanzeige
 
 ## Filter und Suche
 
 In der Issues-Liste kannst du:
-- Nach Status filtern (Offen, In Arbeit, Geplant, etc.)
+- Nach Status filtern (Alle aktiven, Alle Issues, Nur Geschlossene, oder einzelner Status)
 - Nach Kategorie filtern
 - Nach Tags filtern
 - Nach Ersteller filtern ("Erstellt von")
 - Nach Titel oder Beschreibung suchen
 - Filter kombinieren und speichern
 - Gespeicherte Filter als Standard festlegen
+
+**Wichtig**: Filter werden in der Session gespeichert und bleiben erhalten, auch wenn du ein Issue öffnest und zurückkehrst. Mit dem "Reset"-Button werden alle Filter zurückgesetzt.
 
 ## Benachrichtigungen
 
@@ -174,10 +227,17 @@ Benutzer werden automatisch benachrichtigt bei:
 - Neuen Kommentaren
 - Status-Änderungen
 - Zuweisungen
+- Privaten Nachrichten (optional)
 
 ### Benachrichtigungseinstellungen anpassen
 
-Benachrichtigungseinstellungen können in der Datenbanktabelle `rex_issue_tracker_notifications` pro Benutzer angepasst werden.
+Jeder Benutzer kann seine Benachrichtigungen unter "Issue Tracker" → "Benachrichtigungen" individuell konfigurieren:
+- E-Mail bei neuen Issues
+- E-Mail bei neuen Kommentaren
+- E-Mail bei Status-Änderungen
+- E-Mail bei Zuweisungen
+- E-Mail bei privaten Nachrichten
+- Optional: Vollständiger Nachrichtentext in E-Mails
 
 ## Technische Details
 
@@ -187,19 +247,30 @@ Benachrichtigungseinstellungen können in der Datenbanktabelle `rex_issue_tracke
 - `rex_issue_tracker_comments`: Kommentare zu Issues
 - `rex_issue_tracker_tags`: Tag-Definitionen
 - `rex_issue_tracker_issue_tags`: Zuordnung Issues ↔ Tags
-- `rex_issue_tracker_notifications`: Benachrichtigungseinstellungen
+- `rex_issue_tracker_notifications`: Benachrichtigungseinstellungen pro Benutzer
 - `rex_issue_tracker_settings`: Globale Einstellungen
+- `rex_issue_tracker_attachments`: Dateianhänge zu Issues
+- `rex_issue_tracker_history`: Aktivitätsverlauf
+- `rex_issue_tracker_saved_filters`: Gespeicherte Filter pro Benutzer
+- `rex_issue_tracker_projects`: Projekte
+- `rex_issue_tracker_project_users`: Projekt-Mitgliedschaften
+- `rex_issue_tracker_messages`: Private Nachrichten
 
 ### PHP-Klassen
 
 - `FriendsOfREDAXO\IssueTracker\Issue`: Issue-Model
 - `FriendsOfREDAXO\IssueTracker\Comment`: Comment-Model
 - `FriendsOfREDAXO\IssueTracker\Tag`: Tag-Model
+- `FriendsOfREDAXO\IssueTracker\Project`: Projekt-Model
+- `FriendsOfREDAXO\IssueTracker\Message`: Nachrichten-Model
+- `FriendsOfREDAXO\IssueTracker\Attachment`: Attachment-Model
 - `FriendsOfREDAXO\IssueTracker\NotificationService`: E-Mail-Benachrichtigungen
+- `FriendsOfREDAXO\IssueTracker\HistoryService`: Aktivitätsverlauf
+- `FriendsOfREDAXO\IssueTracker\SavedFilterService`: Gespeicherte Filter
 
 ### Assets
 
-- `assets/issue_tracker.css`: Styling
+- `assets/issue_tracker.css`: Styling (Dark Mode kompatibel)
 - `assets/issue_tracker.js`: JavaScript-Funktionalität
 
 ## Erweiterungen
@@ -228,19 +299,23 @@ Bei Fragen oder Problemen:
 
 ## Changelog
 
-### Version 1.0.0 (2026-01-07)
+### Version 1.0.0-beta1 (2026-01-09)
 - Initial Release
 - Vollständige Issue-Verwaltung mit verschachtelten Kommentaren
-- E-Mail-Benachrichtigungen mit Deep-Links
-- Personalisiertes Dashboard
-- Tag-System mit Farbcodierung
+- Projektmanagement mit Mitglieder-Zuordnung
+- Privates Nachrichtensystem zwischen Benutzern
+- E-Mail-Benachrichtigungen mit Deep-Links und HTML-Templates
+- Personalisiertes Dashboard mit Statistiken und Widgets
+- Tag-System mit Farbcodierung und Duplikat-Erkennung
 - Kommentar-System mit Pin- und Lösungs-Markierung
 - Kommentar-Antworten (Thread-System)
-- Filter und Suche mit speicherbaren Filtern
-- Broadcast-Funktion
-- Aktivitätsverlauf
+- Filter und Suche mit Session-Speicherung und speicherbaren Filtern
+- Broadcast-Funktion für Admin-Nachrichten
+- Vollständiger Aktivitätsverlauf
 - Dateianhang-Verwaltung
 - Backup/Export und Import-Funktion
+- Anpassbarer Menü-Titel
+- Dark Mode Unterstützung
 
 
 ## Lizenz
