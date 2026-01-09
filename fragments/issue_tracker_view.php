@@ -46,7 +46,8 @@ $priorityClass = [
             
             <?php 
             $history = $this->getVar('history', []);
-            if (!empty($history)): 
+            $canViewHistory = rex::getUser() && (rex::getUser()->isAdmin() || rex::getUser()->hasPerm('issue_tracker[issue_manager]'));
+            if (!empty($history) && $canViewHistory): 
             ?>
             <button type="button" class="btn btn-info" data-toggle="modal" data-target="#history-modal">
                 <i class="rex-icon fa-history"></i> <?= $package->i18n('issue_tracker_history') ?> (<?= count($history) ?>)
@@ -738,7 +739,8 @@ jQuery(function($) {
 <!-- Modal: Aktivitätsverlauf -->
 <?php 
 $history = $this->getVar('history', []);
-if (!empty($history)): 
+$canViewHistory = rex::getUser() && (rex::getUser()->isAdmin() || rex::getUser()->hasPerm('issue_tracker[issue_manager]'));
+if (!empty($history) && $canViewHistory): 
 ?>
 <div class="modal fade" id="history-modal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
