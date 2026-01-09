@@ -114,11 +114,28 @@ class NotificationService
     }
 
     /**
-     * Sendet Broadcast-Nachricht an alle berechtigten User
+     * Sendet Broadcast-Nachricht an User
+     * 
+     * @param string $subject Betreff der Nachricht
+     * @param string $message Nachrichtentext
+     * @param string $method Versandart: 'message' (Nachrichtensystem), 'email' (nur E-Mail), 'both' (beides)
+     * @param string $recipients Empfänger: 'issue_tracker' (nur berechtigte User) oder 'all' (alle REDAXO User)
+     * @return int Anzahl der gesendeten Nachrichten
      */
-    public static function sendBroadcast(string $subject, string $message): int
+    public static function sendBroadcast(string $subject, string $message, string $method = 'message', string $recipients = 'issue_tracker'): int
     {
-        $users = self::getAllIssueTrackerUsers();
+        // Bei E-Mail-Versand nur User mit E-Mail holen
+        $requireEmail = ($method === 'email' || $method === 'both');
+        
+        // User holen je nach Empfängergruppe
+        if ($recipients === 'all') {
+            $users = self::getAllRedaxoUsers($requireEmail);
+            // Bei "alle User" nur E-Mail erlauben (Sicherheit)
+            $method = 'email';
+        } else {
+            $users = self::getAllIssueTrackerUsers($requireEmail);
+        }
+        
         $count = 0;
         $currentUserId = \rex::getUser()->getId();
 
@@ -128,7 +145,29 @@ class NotificationService
                 continue;
             }
             
-            if (self::sendMail($user->getValue('email'), $subject, $message)) {
+            $sent = false;
+            
+            // Nachricht über das interne Nachrichtensystem senden
+            if ($method === 'message' || $method === 'both') {
+                $msg = new Message();
+                $msg->setSenderId($currentUserId);
+                $msg->setRecipientId($user->getId());
+                $msg->setSubject($subject);
+                $msg->setMessage($message);
+                if ($msg->save()) {
+                    $sent = true;
+                }
+            }
+            
+            // E-Mail senden
+            if ($method === 'email' || $method === 'both') {
+                $email = $user->getValue('email');
+                if ($email && self::sendMail($email, $subject, $message)) {
+                    $sent = true;
+                }
+            }
+            
+            if ($sent) {
                 $count++;
             }
         }
@@ -177,19 +216,53 @@ class NotificationService
 
     /**
      * Gibt alle berechtigten Issue-Tracker User zurück
+     * 
+     * @param bool $requireEmail Wenn true, werden nur User mit E-Mail zurückgegeben
      */
-    private static function getAllIssueTrackerUsers(): array
+    private static function getAllIssueTrackerUsers(bool $requireEmail = false): array
     {
+        // Alle aktiven User laden
         $sql = rex_sql::factory();
-        $sql->setQuery('
-            SELECT id FROM ' . rex::getTable('user') . '
-            WHERE admin = 1 OR role LIKE "%|issue_tracker[]|%" OR role LIKE "%|issue_tracker[issuer]|%"
-        ');
+        $sql->setQuery('SELECT id FROM ' . rex::getTable('user') . ' WHERE status = 1');
 
         $users = [];
         foreach ($sql as $row) {
             $user = rex_user::get((int) $row->getValue('id'));
-            if ($user && $user->getValue('email')) {
+            if ($user) {
+                // Prüfen ob User Issue-Tracker Berechtigung hat (Admin oder issue_tracker[])
+                if (!$user->isAdmin() && !$user->hasPerm('issue_tracker[]')) {
+                    continue;
+                }
+                
+                // Wenn E-Mail erforderlich, nur User mit E-Mail hinzufügen
+                if ($requireEmail && !$user->getValue('email')) {
+                    continue;
+                }
+                $users[] = $user;
+            }
+        }
+
+        return $users;
+    }
+
+    /**
+     * Gibt alle aktiven REDAXO User zurück (unabhängig von Berechtigungen)
+     * 
+     * @param bool $requireEmail Wenn true, werden nur User mit E-Mail zurückgegeben
+     */
+    private static function getAllRedaxoUsers(bool $requireEmail = true): array
+    {
+        $sql = rex_sql::factory();
+        $sql->setQuery('SELECT id FROM ' . rex::getTable('user') . ' WHERE status = 1');
+
+        $users = [];
+        foreach ($sql as $row) {
+            $user = rex_user::get((int) $row->getValue('id'));
+            if ($user) {
+                // Wenn E-Mail erforderlich, nur User mit E-Mail hinzufügen
+                if ($requireEmail && !$user->getValue('email')) {
+                    continue;
+                }
                 $users[] = $user;
             }
         }

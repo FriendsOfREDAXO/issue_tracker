@@ -157,13 +157,21 @@ issue_tracker_tag_delete_confirm = Do you really want to delete this tag?
 
 # Broadcast
 issue_tracker_broadcast = Broadcast Message
-issue_tracker_broadcast_info = Send a message to all authorized users
+issue_tracker_broadcast_info = Send a message to users
 issue_tracker_subject = Subject
 issue_tracker_message = Message
 issue_tracker_send_broadcast = Send Broadcast
-issue_tracker_broadcast_sent = Broadcast was sent to %d users
+issue_tracker_broadcast_sent = Broadcast was sent to {0} users
 issue_tracker_broadcast_error = Please fill in all fields
-issue_tracker_broadcast_confirm = Do you really want to send a broadcast message to all users?
+issue_tracker_broadcast_confirm = Do you really want to send a broadcast message?
+issue_tracker_broadcast_method = Delivery method
+issue_tracker_broadcast_method_message = Internal message system
+issue_tracker_broadcast_method_email = Email only
+issue_tracker_broadcast_method_both = Message system and email
+issue_tracker_broadcast_recipients = Recipients
+issue_tracker_broadcast_recipients_issue_tracker = Issue Tracker users only
+issue_tracker_broadcast_recipients_all = All REDAXO users
+issue_tracker_broadcast_email_only = email only
 
 # Permissions
 issue_tracker[] = Issue Tracker

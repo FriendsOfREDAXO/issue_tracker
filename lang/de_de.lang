@@ -157,13 +157,21 @@ issue_tracker_tag_delete_confirm = Möchten Sie diesen Tag wirklich löschen?
 
 # Broadcast
 issue_tracker_broadcast = Broadcast-Nachricht
-issue_tracker_broadcast_info = Senden Sie eine Nachricht an alle berechtigten Benutzer
+issue_tracker_broadcast_info = Senden Sie eine Nachricht an Benutzer
 issue_tracker_subject = Betreff
 issue_tracker_message = Nachricht
 issue_tracker_send_broadcast = Broadcast senden
-issue_tracker_broadcast_sent = Broadcast wurde an %d Benutzer gesendet
+issue_tracker_broadcast_sent = Broadcast wurde an {0} Benutzer gesendet
 issue_tracker_broadcast_error = Bitte füllen Sie alle Felder aus
-issue_tracker_broadcast_confirm = Möchten Sie wirklich eine Broadcast-Nachricht an alle Benutzer senden?
+issue_tracker_broadcast_confirm = Möchten Sie wirklich eine Broadcast-Nachricht senden?
+issue_tracker_broadcast_method = Versandart
+issue_tracker_broadcast_method_message = Internes Nachrichtensystem
+issue_tracker_broadcast_method_email = Nur per E-Mail
+issue_tracker_broadcast_method_both = Nachrichtensystem und E-Mail
+issue_tracker_broadcast_recipients = Empfänger
+issue_tracker_broadcast_recipients_issue_tracker = Nur Issue-Tracker User
+issue_tracker_broadcast_recipients_all = Alle REDAXO User
+issue_tracker_broadcast_email_only = nur per E-Mail
 
 # Permissions
 issue_tracker[] = Issue Tracker

@@ -196,12 +196,18 @@ Jeder Benutzer kann seine E-Mail-Benachrichtigungen individuell konfigurieren.
 
 ### Broadcast-Nachricht
 
-Admins können Nachrichten an alle Benutzer senden:
+Admins können Nachrichten an alle berechtigten Benutzer senden:
 
 1. Navigiere zu **Einstellungen** → **Allgemein**
 2. Scrolle zum Bereich **Broadcast-Nachricht**
 3. Gib **Betreff** und **Nachricht** ein
-4. Klicke auf **Broadcast senden**
+4. Wähle die **Versandart**:
+   - **Internes Nachrichtensystem** (Standard): Nachricht erscheint im Posteingang
+   - **Nur per E-Mail**: Nachricht wird per E-Mail versendet
+   - **Nachrichtensystem und E-Mail**: Beide Kanäle gleichzeitig
+5. Klicke auf **Broadcast senden** und bestätige die Aktion
+
+**Hinweis**: Nur Benutzer mit Issue-Tracker-Berechtigung erhalten die Broadcast-Nachricht.
 
 ### Backup & Export
 

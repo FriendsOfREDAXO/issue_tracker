@@ -190,8 +190,12 @@ Nachrichten werden als Konversation gruppiert. In der Inbox siehst du:
 1. Gehe zu "Issue Tracker" → "Einstellungen"
 2. Scrolle zum Bereich "Broadcast-Nachricht"
 3. Gib Betreff und Nachricht ein
-4. Klicke auf "Broadcast senden"
-5. Bestätige die Aktion
+4. Wähle die Versandart:
+   - **Internes Nachrichtensystem** (Standard): Nachricht erscheint im Posteingang aller User
+   - **Nur per E-Mail**: Nachricht wird nur per E-Mail versendet
+   - **Nachrichtensystem und E-Mail**: Beides gleichzeitig
+5. Klicke auf "Broadcast senden"
+6. Bestätige die Aktion
 
 ## Dashboard
 

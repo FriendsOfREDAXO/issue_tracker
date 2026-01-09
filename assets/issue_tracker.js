@@ -381,3 +381,30 @@ function issueTrackerClearDraft() {
         localStorage.removeItem("smde_issue_description");
     }
 }
+
+/**
+ * Broadcast Empfänger-Auswahl: Bei "Alle REDAXO User" nur E-Mail erlauben
+ */
+function issueTrackerInitBroadcastForm() {
+    var $ = jQuery;
+    
+    $('input[name="broadcast_recipients"]').on('change', function() {
+        var isAll = $(this).val() === 'all';
+        if (isAll) {
+            // Nur E-Mail erlauben
+            $('#method-email').prop('checked', true);
+            $('#method-message, #method-both').prop('disabled', true).closest('label').addClass('text-muted');
+        } else {
+            // Alle Optionen erlauben
+            $('#method-message, #method-both').prop('disabled', false).closest('label').removeClass('text-muted');
+        }
+    });
+}
+
+// Auto-Init wenn DOM ready (rex:ready für pjax-Kompatibilität)
+jQuery(document).on('rex:ready', function() {
+    // Broadcast-Form initialisieren falls vorhanden
+    if (jQuery('input[name="broadcast_recipients"]').length) {
+        issueTrackerInitBroadcastForm();
+    }
+});

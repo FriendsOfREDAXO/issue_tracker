@@ -199,6 +199,50 @@ $editTag = $this->getVar('editTag', null);
                     <textarea class="form-control" id="broadcast-message" name="broadcast_message" rows="6" required></textarea>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label><?= $package->i18n('issue_tracker_broadcast_recipients') ?></label>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="broadcast_recipients" value="issue_tracker" checked id="recipients-issue-tracker">
+                                    <i class="rex-icon fa-users"></i> <?= $package->i18n('issue_tracker_broadcast_recipients_issue_tracker') ?>
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="broadcast_recipients" value="all" id="recipients-all">
+                                    <i class="rex-icon fa-globe"></i> <?= $package->i18n('issue_tracker_broadcast_recipients_all') ?>
+                                    <small class="text-muted">(<?= $package->i18n('issue_tracker_broadcast_email_only') ?>)</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="method-options">
+                        <div class="form-group">
+                            <label><?= $package->i18n('issue_tracker_broadcast_method') ?></label>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="broadcast_method" value="message" checked id="method-message">
+                                    <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_broadcast_method_message') ?>
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="broadcast_method" value="email" id="method-email">
+                                    <i class="rex-icon fa-at"></i> <?= $package->i18n('issue_tracker_broadcast_method_email') ?>
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="broadcast_method" value="both" id="method-both">
+                                    <i class="rex-icon fa-share-alt"></i> <?= $package->i18n('issue_tracker_broadcast_method_both') ?>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-warning" onclick="return confirm('<?= $package->i18n('issue_tracker_broadcast_confirm') ?>')">
                     <i class="rex-icon fa-send"></i> <?= $package->i18n('issue_tracker_send_broadcast') ?>
                 </button>

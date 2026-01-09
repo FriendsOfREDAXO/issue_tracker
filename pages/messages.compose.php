@@ -22,7 +22,10 @@ $prefilledRecipient = 0;
 if ($replyToId > 0) {
     $replyToMessage = Message::get($replyToId);
     if ($replyToMessage && $replyToMessage->hasAccess($currentUser->getId())) {
-        $prefilledSubject = 'Re: ' . $replyToMessage->getSubject();
+        // Re: nur einmal - bestehende Re: Prefixe entfernen
+        $originalSubject = $replyToMessage->getSubject();
+        $cleanSubject = preg_replace('/^(Re:\s*)+/i', '', $originalSubject);
+        $prefilledSubject = 'Re: ' . $cleanSubject;
         // Antwort geht an den anderen Teilnehmer
         $prefilledRecipient = $replyToMessage->getSenderId() === $currentUser->getId() 
             ? $replyToMessage->getRecipientId() 
@@ -59,7 +62,8 @@ if (rex_post('send', 'int', 0) === 1) {
         $message->setMessage($messageText);
         
         if ($message->save()) {
-            rex_response::sendRedirect(rex_url::backendPage('issue_tracker/messages/sent', [], false));
+            // Zurück zur Konversationsansicht mit der neuen Nachricht
+            rex_response::sendRedirect(rex_url::backendPage('issue_tracker/messages/view', ['message_id' => $message->getId()], false));
         } else {
             echo rex_view::error($package->i18n('issue_tracker_message_send_error'));
         }

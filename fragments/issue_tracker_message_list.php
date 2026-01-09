@@ -51,7 +51,7 @@ usort($conversations, fn($a, $b) => $b['latest_message']->getCreatedAt() <=> $a[
     <div class="row" style="margin-bottom: 20px;">
         <div class="col-sm-12">
             <a href="<?= rex_url::backendPage('issue_tracker/messages/compose') ?>" class="btn btn-primary">
-                <i class="rex-icon fa-pencil"></i> <?= $package->i18n('issue_tracker_messages_compose') ?>
+                <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_messages_compose') ?>
             </a>
         </div>
     </div>
@@ -133,7 +133,7 @@ usort($conversations, fn($a, $b) => $b['latest_message']->getCreatedAt() <=> $a[
                             </a>
                             <a href="<?= rex_url::backendPage('issue_tracker/messages/compose', ['recipient_id' => $conv['partner_id']]) ?>" 
                                class="btn btn-default" title="<?= $package->i18n('issue_tracker_new_message') ?>">
-                                <i class="rex-icon fa-pencil"></i>
+                                <i class="rex-icon fa-plus"></i>
                             </a>
                         </div>
                     </td>
