@@ -2,7 +2,7 @@
 
 /**
  * API-Funktion für Deep Links aus E-Mails
- * Ermöglicht direkten Zugriff auf Issues auch wenn User nicht eingeloggt ist
+ * Ermöglicht direkten Zugriff auf Issues und Nachrichten auch wenn User nicht eingeloggt ist
  * 
  * @package issue_tracker
  */
@@ -27,7 +27,7 @@ class rex_api_issue_tracker_link extends rex_api_function
         // Token validieren
         $sql = \rex_sql::factory();
         $sql->setQuery('
-            SELECT issue_id, expires_at 
+            SELECT issue_id, message_id, expires_at 
             FROM ' . rex::getTable('issue_tracker_email_tokens') . ' 
             WHERE token = ? 
             AND used = 0
@@ -43,7 +43,8 @@ class rex_api_issue_tracker_link extends rex_api_function
             exit;
         }
         
-        $issueId = (int) $sql->getValue('issue_id');
+        $issueId = $sql->getValue('issue_id') ? (int) $sql->getValue('issue_id') : null;
+        $messageId = $sql->getValue('message_id') ? (int) $sql->getValue('message_id') : null;
         $expiresAt = $sql->getValue('expires_at');
         
         // Prüfen ob Token abgelaufen (30 Tage)
@@ -73,8 +74,15 @@ class rex_api_issue_tracker_link extends rex_api_function
         $updateSql->setValue('used_at', date('Y-m-d H:i:s'));
         $updateSql->update();
         
-        // Zum Issue weiterleiten - html_entity_decode verhindert &amp; Problem
-        $redirectUrl = html_entity_decode(rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issueId]));
+        // Je nach Typ weiterleiten - html_entity_decode verhindert &amp; Problem
+        if ($messageId !== null) {
+            // Zur Nachricht weiterleiten
+            $redirectUrl = html_entity_decode(rex_url::backendPage('issue_tracker/messages/view', ['message_id' => $messageId]));
+        } else {
+            // Zum Issue weiterleiten
+            $redirectUrl = html_entity_decode(rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issueId]));
+        }
+        
         rex_response::sendRedirect($redirectUrl);
         exit;
     }

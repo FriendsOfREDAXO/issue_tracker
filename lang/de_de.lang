@@ -250,6 +250,7 @@ issue_tracker_email_new_message_subject = Neue Nachricht von {0}: {1}
 issue_tracker_email_new_message_title = Sie haben eine neue private Nachricht erhalten
 issue_tracker_email_message_login_hint = Melden Sie sich im Backend an, um die vollständige Nachricht zu lesen.
 issue_tracker_email_view_message = Nachricht anzeigen
+issue_tracker_email_link_one_time = Hinweis: Dieser Link ist aus Sicherheitsgründen nur einmalig gültig.
 issue_tracker_save_preferences = Einstellungen speichern
 issue_tracker_preferences_saved = Ihre Einstellungen wurden gespeichert
 issue_tracker_preferences_error = Fehler beim Speichern der Einstellungen
@@ -276,6 +277,14 @@ issue_tracker_help_tip_1 = <strong>Was genau ist das Problem?</strong> Beschreib
 issue_tracker_help_tip_2 = <strong>Wo tritt das Problem auf?</strong> Geben Sie an, auf welcher Seite oder in welchem Bereich das Problem auftritt.
 issue_tracker_help_tip_3 = <strong>Wie kann man das Problem nachvollziehen?</strong> Beschreiben Sie Schritt für Schritt, wie man das Problem selbst sehen kann.
 issue_tracker_help_tip_4 = <strong>Screenshots helfen!</strong> Fügen Sie wenn möglich Screenshots hinzu - ein Bild sagt mehr als tausend Worte.
+
+# Hilfe: Nachrichten
+issue_tracker_help_messages_title = Hilfe: Private Nachrichten
+issue_tracker_help_messages_intro = Das Nachrichtensystem ermöglicht die direkte Kommunikation zwischen Benutzern.
+issue_tracker_help_messages_email = Bei neuen Nachrichten erhalten Sie optional eine E-Mail-Benachrichtigung.
+issue_tracker_help_messages_email_link = Der Link in der E-Mail ist aus Sicherheitsgründen nur einmalig gültig und funktioniert 30 Tage.
+issue_tracker_help_messages_conversation = Nachrichten werden automatisch als Konversation mit Ihrem Kommunikationspartner gruppiert.
+
 issue_tracker_close = Schließen
 
 # Deadline/Fälligkeit
@@ -369,3 +378,15 @@ issue_tracker_message_fill_all_fields = Bitte füllen Sie alle Pflichtfelder aus
 issue_tracker_message_delete_confirm = Möchten Sie diese Nachricht wirklich löschen?
 issue_tracker_last_reply = Letzte Antwort
 issue_tracker_unread_messages_info = Sie haben %d ungelesene Nachricht(en)
+
+# API-Einstellungen
+issue_tracker_api_settings = API-Einstellungen
+issue_tracker_installation_name = Installations-Name
+issue_tracker_installation_name_placeholder = z.B. Kunde XY, Projekt ABC
+issue_tracker_installation_name_help = Zur Identifikation dieser Installation im externen Dashboard
+issue_tracker_api_token = API-Token
+issue_tracker_no_api_token = Noch kein Token generiert
+issue_tracker_generate_token = Token generieren
+issue_tracker_api_token_help = Dieser Token wird für den Zugriff auf die API benötigt. Bewahren Sie ihn sicher auf!
+issue_tracker_api_endpoint = API-Endpoint
+issue_tracker_copy = Kopieren

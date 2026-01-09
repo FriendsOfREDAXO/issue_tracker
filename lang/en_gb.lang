@@ -250,6 +250,7 @@ issue_tracker_email_new_message_subject = New message from {0}: {1}
 issue_tracker_email_new_message_title = You have received a new private message
 issue_tracker_email_message_login_hint = Log in to the backend to read the full message.
 issue_tracker_email_view_message = View Message
+issue_tracker_email_link_one_time = Note: This link is valid for one-time use only for security reasons.
 issue_tracker_save_preferences = Save Preferences
 issue_tracker_preferences_saved = Your preferences were saved
 issue_tracker_preferences_error = Error saving preferences
@@ -276,6 +277,14 @@ issue_tracker_help_tip_1 = <strong>What exactly is the problem?</strong> Describ
 issue_tracker_help_tip_2 = <strong>Where does the problem occur?</strong> Indicate on which page or in which area the problem occurs.
 issue_tracker_help_tip_3 = <strong>How can the problem be reproduced?</strong> Describe step by step how to see the problem yourself.
 issue_tracker_help_tip_4 = <strong>Screenshots help!</strong> Add screenshots if possible - a picture is worth a thousand words.
+
+# Help: Messages
+issue_tracker_help_messages_title = Help: Private Messages
+issue_tracker_help_messages_intro = The messaging system enables direct communication between users.
+issue_tracker_help_messages_email = You can optionally receive an email notification for new messages.
+issue_tracker_help_messages_email_link = The link in the email is valid for one-time use only for security reasons and expires after 30 days.
+issue_tracker_help_messages_conversation = Messages are automatically grouped as a conversation with your communication partner.
+
 issue_tracker_close = Close
 
 # Deadline/Due Date
@@ -368,3 +377,15 @@ issue_tracker_message_fill_all_fields = Please fill in all required fields
 issue_tracker_message_delete_confirm = Do you really want to delete this message?
 issue_tracker_last_reply = Last Reply
 issue_tracker_unread_messages_info = You have %d unread message(s)
+
+# API Settings
+issue_tracker_api_settings = API Settings
+issue_tracker_installation_name = Installation Name
+issue_tracker_installation_name_placeholder = e.g. Client XY, Project ABC
+issue_tracker_installation_name_help = Used to identify this installation in external dashboards
+issue_tracker_api_token = API Token
+issue_tracker_no_api_token = No token generated yet
+issue_tracker_generate_token = Generate Token
+issue_tracker_api_token_help = This token is required to access the API. Keep it safe!
+issue_tracker_api_endpoint = API Endpoint
+issue_tracker_copy = Copy

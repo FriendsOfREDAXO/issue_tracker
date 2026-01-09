@@ -407,4 +407,57 @@ jQuery(document).on('rex:ready', function() {
     if (jQuery('input[name="broadcast_recipients"]').length) {
         issueTrackerInitBroadcastForm();
     }
+    
+    // API-Token Generierung
+    jQuery('#generate-api-token').on('click', function() {
+        var $btn = jQuery(this);
+        var $input = jQuery('#api-token');
+        var $copyBtn = jQuery('#copy-api-token');
+        
+        if (!confirm('Möchten Sie einen neuen API-Token generieren? Der alte Token wird ungültig!')) {
+            return;
+        }
+        
+        $btn.prop('disabled', true).find('i').removeClass('fa-refresh').addClass('fa-spinner fa-spin');
+        
+        jQuery.ajax({
+            url: 'index.php',
+            method: 'GET',
+            data: {
+                'rex-api-call': 'issue_tracker_generate_token'
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    $input.val(response.token);
+                    $copyBtn.prop('disabled', false);
+                    alert('Neuer API-Token wurde generiert!');
+                } else {
+                    alert('Fehler: ' + (response.error || 'Unbekannter Fehler'));
+                }
+            },
+            error: function() {
+                alert('Fehler beim Generieren des Tokens!');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).find('i').removeClass('fa-spinner fa-spin').addClass('fa-refresh');
+            }
+        });
+    });
+    
+    // API-Token kopieren
+    jQuery('#copy-api-token').on('click', function() {
+        var $input = jQuery('#api-token');
+        var token = $input.val();
+        
+        if (token && navigator.clipboard) {
+            navigator.clipboard.writeText(token).then(function() {
+                var $icon = jQuery('#copy-api-token i');
+                $icon.removeClass('fa-copy').addClass('fa-check');
+                setTimeout(function() {
+                    $icon.removeClass('fa-check').addClass('fa-copy');
+                }, 2000);
+            });
+        }
+    });
 });

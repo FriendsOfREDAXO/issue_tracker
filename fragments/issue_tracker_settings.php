@@ -11,6 +11,8 @@ $menuTitle = $this->getVar('menuTitle', '');
 $categories = $this->getVar('categories', []);
 $emailEnabled = $this->getVar('emailEnabled', 1);
 $emailFromName = $this->getVar('emailFromName', 'REDAXO Issue Tracker');
+$installationName = $this->getVar('installationName', '');
+$apiToken = $this->getVar('apiToken', '');
 $allTags = $this->getVar('allTags', []);
 $editTag = $this->getVar('editTag', null);
 ?>
@@ -80,6 +82,46 @@ $editTag = $this->getVar('editTag', null);
                     <label for="email-from-name"><?= $package->i18n('issue_tracker_email_from_name') ?></label>
                     <input type="text" class="form-control" id="email-from-name" name="email_from_name" 
                            value="<?= rex_escape($emailFromName) ?>" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- API-Einstellungen -->
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><?= $package->i18n('issue_tracker_api_settings') ?></h3>
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label for="installation-name"><?= $package->i18n('issue_tracker_installation_name') ?></label>
+                    <input type="text" class="form-control" id="installation-name" name="installation_name" 
+                           value="<?= rex_escape($installationName) ?>" 
+                           placeholder="<?= $package->i18n('issue_tracker_installation_name_placeholder') ?>">
+                    <p class="help-block"><?= $package->i18n('issue_tracker_installation_name_help') ?></p>
+                </div>
+
+                <div class="form-group">
+                    <label><?= $package->i18n('issue_tracker_api_token') ?></label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="api-token" 
+                               value="<?= rex_escape($apiToken) ?>" readonly 
+                               placeholder="<?= $package->i18n('issue_tracker_no_api_token') ?>">
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" id="copy-api-token" title="<?= $package->i18n('issue_tracker_copy') ?>" <?= $apiToken ? '' : 'disabled' ?>>
+                                <i class="rex-icon fa-copy"></i>
+                            </button>
+                            <button type="button" class="btn btn-primary" id="generate-api-token">
+                                <i class="rex-icon fa-refresh"></i> <?= $package->i18n('issue_tracker_generate_token') ?>
+                            </button>
+                        </span>
+                    </div>
+                    <p class="help-block"><?= $package->i18n('issue_tracker_api_token_help') ?></p>
+                    <?php if ($apiToken): ?>
+                    <p class="help-block">
+                        <strong><?= $package->i18n('issue_tracker_api_endpoint') ?>:</strong><br>
+                        <code><?= rex::getServer() ?>index.php?rex-api-call=issue_tracker_stats</code>
+                    </p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

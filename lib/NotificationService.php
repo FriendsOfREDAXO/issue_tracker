@@ -271,7 +271,7 @@ class NotificationService
     }
 
     /**
-     * Erstellt einen Token für Deep Links in E-Mails
+     * Erstellt einen Token für Deep Links zu Issues in E-Mails
      */
     private static function createEmailToken(int $issueId): string
     {
@@ -281,6 +281,25 @@ class NotificationService
         $sql->setTable(rex::getTable('issue_tracker_email_tokens'));
         $sql->setValue('token', $token);
         $sql->setValue('issue_id', $issueId);
+        $sql->setValue('used', 0);
+        $sql->setValue('created_at', date('Y-m-d H:i:s'));
+        $sql->setValue('expires_at', date('Y-m-d H:i:s', strtotime('+30 days')));
+        $sql->insert();
+        
+        return $token;
+    }
+
+    /**
+     * Erstellt einen Token für Deep Links zu Nachrichten in E-Mails
+     */
+    public static function createMessageEmailToken(int $messageId): string
+    {
+        $token = bin2hex(random_bytes(32));
+        
+        $sql = \rex_sql::factory();
+        $sql->setTable(rex::getTable('issue_tracker_email_tokens'));
+        $sql->setValue('token', $token);
+        $sql->setValue('message_id', $messageId);
         $sql->setValue('used', 0);
         $sql->setValue('created_at', date('Y-m-d H:i:s'));
         $sql->setValue('expires_at', date('Y-m-d H:i:s', strtotime('+30 days')));

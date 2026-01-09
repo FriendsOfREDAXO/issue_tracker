@@ -90,6 +90,13 @@ if (rex_post('save_settings', 'int', 0) === 1) {
         ->setValue('setting_value', rex_post('email_from_name', 'string', 'REDAXO Issue Tracker'))
         ->insertOrUpdate();
     
+    // Installations-Name (für API)
+    rex_sql::factory()
+        ->setTable(rex::getTable('issue_tracker_settings'))
+        ->setValue('setting_key', 'installation_name')
+        ->setValue('setting_value', rex_post('installation_name', 'string', ''))
+        ->insertOrUpdate();
+    
     echo rex_view::success($package->i18n('issue_tracker_settings_saved'));
 }
 
@@ -108,6 +115,12 @@ $emailEnabled = $sql->getRows() > 0 ? (int) $sql->getValue('setting_value') : 1;
 $sql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "email_from_name"');
 $emailFromName = $sql->getRows() > 0 ? $sql->getValue('setting_value') : 'REDAXO Issue Tracker';
 
+$sql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "installation_name"');
+$installationName = $sql->getRows() > 0 ? $sql->getValue('setting_value') : '';
+
+$sql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "api_token"');
+$apiToken = $sql->getRows() > 0 ? $sql->getValue('setting_value') : '';
+
 // Tags laden
 $allTags = \FriendsOfREDAXO\IssueTracker\Tag::getAll();
 
@@ -124,6 +137,8 @@ $fragment->setVar('menuTitle', $menuTitle);
 $fragment->setVar('categories', $categories);
 $fragment->setVar('emailEnabled', $emailEnabled);
 $fragment->setVar('emailFromName', $emailFromName);
+$fragment->setVar('installationName', $installationName);
+$fragment->setVar('apiToken', $apiToken);
 $fragment->setVar('allTags', $allTags);
 $fragment->setVar('editTag', $editTag);
 echo $fragment->parse('issue_tracker_settings.php');

@@ -49,7 +49,7 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - ✅ Benachrichtigungen bei Zuweisungen
 - ✅ Benachrichtigungen bei privaten Nachrichten (optional)
 - ✅ **HTML E-Mail Templates** mit professionellem Design
-- ✅ **Deep Links** mit One-Time-Token (30 Tage gültig)
+- ✅ **Deep Links** mit One-Time-Token für Issues und Nachrichten (30 Tage gültig, einmalige Verwendung)
 - ✅ Mehrsprachige Templates (Deutsch/Englisch)
 - ✅ Broadcast-Nachrichten an alle Benutzer (nur Admins)
 - ✅ Individuelle Benachrichtigungseinstellungen pro Benutzer
@@ -261,6 +261,7 @@ Jeder Benutzer kann seine Benachrichtigungen unter "Issue Tracker" → "Benachri
 - `rex_issue_tracker_projects`: Projekte
 - `rex_issue_tracker_project_users`: Projekt-Mitgliedschaften
 - `rex_issue_tracker_messages`: Private Nachrichten
+- `rex_issue_tracker_email_tokens`: One-Time-Token für E-Mail-Deep-Links
 
 ### PHP-Klassen
 
@@ -270,9 +271,11 @@ Jeder Benutzer kann seine Benachrichtigungen unter "Issue Tracker" → "Benachri
 - `FriendsOfREDAXO\IssueTracker\Project`: Projekt-Model
 - `FriendsOfREDAXO\IssueTracker\Message`: Nachrichten-Model
 - `FriendsOfREDAXO\IssueTracker\Attachment`: Attachment-Model
-- `FriendsOfREDAXO\IssueTracker\NotificationService`: E-Mail-Benachrichtigungen
+- `FriendsOfREDAXO\IssueTracker\NotificationService`: E-Mail-Benachrichtigungen inkl. Token-Generierung
 - `FriendsOfREDAXO\IssueTracker\HistoryService`: Aktivitätsverlauf
 - `FriendsOfREDAXO\IssueTracker\SavedFilterService`: Gespeicherte Filter
+- `FriendsOfREDAXO\IssueTracker\PermissionService`: Zentralisierte Berechtigungsprüfungen
+- `rex_api_issue_tracker_link`: API-Klasse für Deep-Link-Token-Verarbeitung
 
 ### Assets
 

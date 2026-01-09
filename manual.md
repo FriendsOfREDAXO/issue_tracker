@@ -128,6 +128,16 @@ Das Nachrichtensystem ermöglicht die direkte Kommunikation zwischen Benutzern.
 - Die Navigation zeigt die Anzahl ungelesener Nachrichten
 - Auch das Dashboard zeigt ungelesene Nachrichten an
 
+### E-Mail-Benachrichtigungen
+
+Wenn du E-Mail-Benachrichtigungen für private Nachrichten aktiviert hast:
+
+- Du erhältst eine E-Mail bei jeder neuen Nachricht
+- Optional kann der vollständige Nachrichtentext in der E-Mail enthalten sein
+- Der **Link in der E-Mail ist nur einmalig gültig** (aus Sicherheitsgründen)
+- Nach dem Klick wirst du zur Nachricht weitergeleitet (ggf. nach Login)
+- Der Link ist 30 Tage lang gültig
+
 ---
 
 ## Filter und Suche
@@ -173,6 +183,14 @@ Jeder Benutzer kann seine E-Mail-Benachrichtigungen individuell konfigurieren.
    - E-Mail bei privaten Nachrichten
 3. Optional: **Vollständiger Nachrichtentext** in E-Mails (bei privaten Nachrichten)
 4. Klicke auf **Speichern**
+
+### Wichtig: E-Mail-Links
+
+Die Links in den E-Mail-Benachrichtigungen sind aus Sicherheitsgründen:
+- **Nur einmalig verwendbar** (One-Time-Token)
+- **30 Tage gültig**
+- Falls du nicht eingeloggt bist, wirst du zuerst zur Anmeldung geleitet
+- Nach der Anmeldung erfolgt automatisch die Weiterleitung zum Thema bzw. zur Nachricht
 
 ---
 

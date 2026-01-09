@@ -486,12 +486,16 @@ class Message
             $body .= '</p>';
         }
 
-        // Link zum Backend
-        $backendUrl = rex::getServer() . rex_url::backendPage('issue_tracker/messages/view', ['message_id' => $this->id]);
+        // Token-basierten Link erstellen (wie bei Issue-Benachrichtigungen)
+        $token = NotificationService::createMessageEmailToken($this->id);
+        $backendUrl = rex::getServer() . 'index.php?rex-api-call=issue_tracker_link&token=' . $token;
         $body .= '<p style="margin-top: 20px;">';
         $body .= '<a href="' . $backendUrl . '" style="display: inline-block; padding: 10px 20px; background: #337ab7; color: #fff; text-decoration: none; border-radius: 4px;">';
         $body .= $package->i18n('issue_tracker_email_view_message');
         $body .= '</a></p>';
+        $body .= '<p style="margin-top: 10px; font-size: 12px; color: #666;">';
+        $body .= $package->i18n('issue_tracker_email_link_one_time');
+        $body .= '</p>';
 
         $body .= '</body></html>';
 
