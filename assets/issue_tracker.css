@@ -4,6 +4,13 @@
  * @package issue_tracker
  */
 
+/* Unread Messages Badge */
+.issue-tracker-message-badge {
+    color: #d9534f;
+    font-weight: bold;
+    margin-left: 3px;
+}
+
 /* Dashboard Statistiken */
 .issue-tracker-dashboard .panel-body h3 {
     margin-top: 0;

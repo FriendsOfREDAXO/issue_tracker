@@ -142,7 +142,7 @@ $colors = [
     </form>
 </div>
 
-<script>
+<script nonce="<?= rex_response::getNonce() ?>">
 $(document).ready(function() {
     $('.selectpicker').selectpicker('refresh');
 });

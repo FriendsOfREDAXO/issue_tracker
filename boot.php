@@ -63,17 +63,7 @@ if (rex::isBackend() && rex::getUser()) {
         $page = rex_be_controller::getCurrentPage();
         if (str_starts_with($page, 'issue_tracker')) {
             $unreadCount = \FriendsOfREDAXO\IssueTracker\Message::getUnreadCount(rex::getUser()->getId());
-            if ($unreadCount > 0) {
-                // Badge CSS hinzufügen
-                $css = '<style>
-                    .issue-tracker-message-badge {
-                        color: #d9534f;
-                        font-weight: bold;
-                        margin-left: 3px;
-                    }
-                </style>';
-                $ep->setSubject($ep->getSubject() . $css);
-            }
+            // Badge CSS ist jetzt in issue_tracker.css
         }
     });
 
@@ -81,7 +71,7 @@ if (rex::isBackend() && rex::getUser()) {
         $unreadCount = \FriendsOfREDAXO\IssueTracker\Message::getUnreadCount(rex::getUser()->getId());
         if ($unreadCount > 0) {
             // JavaScript um das Badge nur zur Haupt-Navigation hinzuzufügen
-            $script = '<script>
+            $script = '<script nonce="' . rex_response::getNonce() . '">
                 $(document).ready(function() {
                     var badge = \'<span class="issue-tracker-message-badge">(' . $unreadCount . ')</span>\';
                     // Badge NUR zum Nachrichten-Tab in der Haupt-Navigation (rex-page-nav > ul > li > a)

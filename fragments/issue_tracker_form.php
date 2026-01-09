@@ -233,7 +233,7 @@ $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
                     <?php endif; ?>
                 </div>
 
-                <script>
+                <script nonce="<?= rex_response::getNonce() ?>">
                 $(document).ready(function() {
                     // Selectpicker für multiple Felder neu initialisieren
                     $('#issue-domains, #issue-yform-tables').selectpicker('refresh');

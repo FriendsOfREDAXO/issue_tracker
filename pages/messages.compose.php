@@ -60,7 +60,7 @@ if (rex_post('send', 'int', 0) === 1) {
         
         if ($message->save()) {
             echo rex_view::success($package->i18n('issue_tracker_message_sent'));
-            echo '<script>location.href = "' . rex_url::backendPage('issue_tracker/messages/sent', [], false) . '";</script>';
+            echo '<script nonce="' . rex_response::getNonce() . '">location.href = "' . rex_url::backendPage('issue_tracker/messages/sent', [], false) . '";</script>';
             return;
         } else {
             echo rex_view::error($package->i18n('issue_tracker_message_send_error'));

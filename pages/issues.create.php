@@ -203,7 +203,7 @@ if (rex_post('save', 'int', 0) === 1) {
         echo rex_view::success($package->i18n($isNew ? 'issue_tracker_issue_created' : 'issue_tracker_issue_updated'));
         
         // LocalStorage-Draft löschen
-        echo '<script>
+        echo '<script nonce="' . rex_response::getNonce() . '">
             if (typeof localStorage !== "undefined") {
                 localStorage.removeItem("smde_issue_description");
             }

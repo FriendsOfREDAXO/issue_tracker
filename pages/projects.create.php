@@ -52,7 +52,7 @@ if (rex_post('save', 'int', 0) === 1) {
         }
         
         echo rex_view::success($package->i18n('issue_tracker_project_created'));
-        echo '<script>location.href = "' . rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId()], false) . '";</script>';
+        echo '<script nonce="' . rex_response::getNonce() . '">location.href = "' . rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId()], false) . '";</script>';
         return;
     } else {
         echo rex_view::error($package->i18n('issue_tracker_project_save_error'));

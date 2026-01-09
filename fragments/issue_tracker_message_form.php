@@ -92,7 +92,7 @@ $replyToMessage = $this->getVar('replyToMessage', null);
     </form>
 </div>
 
-<script>
+<script nonce="<?= rex_response::getNonce() ?>">
 $(document).ready(function() {
     $('.selectpicker').selectpicker('refresh');
 });

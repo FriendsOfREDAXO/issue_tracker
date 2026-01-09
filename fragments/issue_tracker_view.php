@@ -293,7 +293,7 @@ $priorityClass = [
                             </button>
                         </form>
                     </div>
-                    <script>
+                    <script nonce="<?= rex_response::getNonce() ?>">
                     jQuery(function($) {
                         $('#status-select').selectpicker('refresh');
                     });
@@ -666,7 +666,7 @@ $priorityClass = [
     </div>
 </div>
 
-<script>
+<script nonce="<?= rex_response::getNonce() ?>">
 function toggleReplyForm(commentId) {
     var form = document.getElementById('reply-form-' + commentId);
     if (form.style.display === 'none') {
