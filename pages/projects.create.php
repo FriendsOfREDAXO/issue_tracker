@@ -7,12 +7,13 @@
  */
 
 use FriendsOfREDAXO\IssueTracker\Project;
+use FriendsOfREDAXO\IssueTracker\PermissionService;
 
 $package = rex_addon::get('issue_tracker');
 $currentUser = rex::getUser();
 
-// Prüfen ob User Projekte erstellen darf (Admin, Issue-Manager oder Issuer)
-if (!$currentUser->isAdmin() && !$currentUser->hasPerm('issue_tracker[issue_manager]') && !$currentUser->hasPerm('issue_tracker[issuer]')) {
+// Prüfen ob User Projekte erstellen darf (nur Admin oder Issue-Manager)
+if (!PermissionService::canCreateProject()) {
     echo rex_view::error($package->i18n('issue_tracker_no_permission'));
     return;
 }

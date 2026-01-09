@@ -1,6 +1,6 @@
 <?php
 /**
- * Dashboard Fragment
+ * Dashboard Fragment - 2-spaltiges Layout
  * 
  * @var rex_fragment $this
  */
@@ -16,6 +16,7 @@ $recentIssues = $this->getVar('recentIssues', []);
 $recentActivities = $this->getVar('recentActivities', []);
 $unreadMessages = $this->getVar('unreadMessages', 0);
 $recentMessages = $this->getVar('recentMessages', []);
+$userProjects = $this->getVar('userProjects', []);
 
 // Status- und Prioritäts-Klassen
 $statusClasses = [
@@ -33,75 +34,70 @@ $priorityClasses = [
 ?>
 
 <div class="issue-tracker-dashboard">
-    <!-- Meine Issues Übersicht -->
     <div class="row">
-        <div class="col-sm-3">
-            <div class="panel panel-default">
-                <div class="panel-body text-center">
-                    <h3 class="text-danger"><?= $openIssues ?></h3>
-                    <p><?= $package->i18n('issue_tracker_status_open') ?></p>
-                    <small class="text-muted">Meine offenen Issues</small>
+        <!-- ========== LINKE SPALTE ========== -->
+        <div class="col-md-8">
+            
+            <!-- Statistik-Kacheln -->
+            <div class="row">
+                <div class="col-sm-3">
+                    <div class="panel panel-default">
+                        <div class="panel-body text-center" style="padding: 15px 10px;">
+                            <h3 class="text-danger" style="margin: 0;"><?= $openIssues ?></h3>
+                            <small><?= $package->i18n('issue_tracker_status_open') ?></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="panel panel-default">
+                        <div class="panel-body text-center" style="padding: 15px 10px;">
+                            <h3 class="text-warning" style="margin: 0;"><?= $inProgressIssues ?></h3>
+                            <small><?= $package->i18n('issue_tracker_status_in_progress') ?></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="panel panel-default">
+                        <div class="panel-body text-center" style="padding: 15px 10px;">
+                            <h3 class="text-danger" style="margin: 0; font-weight: bold;"><?= $overdueIssues ?></h3>
+                            <small><i class="rex-icon fa-exclamation-triangle"></i> Überfällig</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="panel panel-default">
+                        <div class="panel-body text-center" style="padding: 15px 10px;">
+                            <h3 class="text-success" style="margin: 0;"><?= $closedIssues ?></h3>
+                            <small>Erledigt (30 T.)</small>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-sm-3">
-            <div class="panel panel-default">
-                <div class="panel-body text-center">
-                    <h3 class="text-warning"><?= $inProgressIssues ?></h3>
-                    <p><?= $package->i18n('issue_tracker_status_in_progress') ?></p>
-                    <small class="text-muted">In Bearbeitung</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-3">
-            <div class="panel panel-default">
-                <div class="panel-body text-center">
-                    <h3 class="text-danger" style="font-weight: bold;"><?= $overdueIssues ?></h3>
-                    <p><i class="rex-icon fa-exclamation-triangle"></i> Überfällig</p>
-                    <small class="text-muted">Fälligkeit überschritten</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-3">
-            <div class="panel panel-default">
-                <div class="panel-body text-center">
-                    <h3 class="text-success"><?= $closedIssues ?></h3>
-                    <p>Erledigt (30 Tage)</p>
-                    <small class="text-muted">Geschlossene Issues</small>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Schnellzugriff -->
-    <div class="row" style="margin-bottom: 20px;">
-        <div class="col-sm-12">
-            <a href="<?= rex_url::backendPage('issue_tracker/issues/create') ?>" class="btn btn-primary btn-lg" style="color: #fff;">
-                <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_create_new') ?>
-            </a>
-            <a href="<?= rex_url::backendPage('issue_tracker/issues') ?>" class="btn btn-default btn-lg">
-                <i class="rex-icon fa-list"></i> Alle meine Issues anzeigen
-            </a>
-        </div>
-    </div>
+            <!-- Schnellzugriff -->
+            <div style="margin-bottom: 20px;">
+                <a href="<?= rex_url::backendPage('issue_tracker/issues/create') ?>" class="btn btn-primary" style="color: #fff;">
+                    <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_create_new') ?>
+                </a>
+                <a href="<?= rex_url::backendPage('issue_tracker/issues') ?>" class="btn btn-default">
+                    <i class="rex-icon fa-list"></i> Alle Issues
+                </a>
+            </div>
 
-    <?php if (!empty($recentIssues)): ?>
-    <!-- Meine letzten Issues -->
-    <div class="row">
-        <div class="col-sm-12">
+            <?php if (!empty($recentIssues)): ?>
+            <!-- Meine letzten Issues -->
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title"><i class="rex-icon fa-list"></i> Meine letzten Issues</h3>
                 </div>
-                <div class="panel-body">
-                    <table class="table table-striped table-hover">
+                <div class="panel-body" style="padding: 0;">
+                    <table class="table table-striped table-hover" style="margin-bottom: 0;">
                         <thead>
                             <tr>
-                                <th width="60">#</th>
+                                <th width="50">#</th>
                                 <th><?= $package->i18n('issue_tracker_title') ?></th>
-                                <th width="120"><?= $package->i18n('issue_tracker_status') ?></th>
-                                <th width="120"><?= $package->i18n('issue_tracker_priority') ?></th>
-                                <th width="150"><?= $package->i18n('issue_tracker_created_at') ?></th>
+                                <th width="90"><?= $package->i18n('issue_tracker_status') ?></th>
+                                <th width="90"><?= $package->i18n('issue_tracker_priority') ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -110,44 +106,39 @@ $priorityClasses = [
                                 <td><?= $issue->getId() ?></td>
                                 <td>
                                     <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]) ?>">
-                                        <?= rex_escape($issue->getTitle()) ?>
+                                        <?= rex_escape(mb_strlen($issue->getTitle()) > 40 ? mb_substr($issue->getTitle(), 0, 40) . '...' : $issue->getTitle()) ?>
                                     </a>
                                     <?php if ($issue->isOverdue()): ?>
-                                        <span class="label label-danger">
-                                            <i class="rex-icon fa-exclamation-triangle"></i> Überfällig
+                                        <span class="label label-danger" style="font-size: 9px;">
+                                            <i class="rex-icon fa-exclamation-triangle"></i>
                                         </span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <span class="label label-<?= $statusClasses[$issue->getStatus()] ?? 'default' ?>">
+                                    <span class="label label-<?= $statusClasses[$issue->getStatus()] ?? 'default' ?>" style="font-size: 10px;">
                                         <?= $package->i18n('issue_tracker_status_' . $issue->getStatus()) ?>
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="label label-<?= $priorityClasses[$issue->getPriority()] ?? 'default' ?>">
+                                    <span class="label label-<?= $priorityClasses[$issue->getPriority()] ?? 'default' ?>" style="font-size: 10px;">
                                         <?= $package->i18n('issue_tracker_priority_' . $issue->getPriority()) ?>
                                     </span>
                                 </td>
-                                <td><?= $issue->getCreatedAt() ? $issue->getCreatedAt()->format('d.m.Y H:i') : '-' ?></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
-    </div>
-    <?php endif; ?>
+            <?php endif; ?>
 
-    <?php if (!empty($recentActivities)): ?>
-    <!-- Letzte Aktivitäten bei meinen Issues -->
-    <div class="row">
-        <div class="col-sm-8">
+            <?php if (!empty($recentActivities)): ?>
+            <!-- Letzte Aktivitäten -->
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title"><i class="rex-icon fa-history"></i> Letzte Aktivitäten</h3>
                 </div>
-                <div class="panel-body">
+                <div class="panel-body" style="padding: 0;">
                     <div class="list-group" style="margin-bottom: 0;">
                         <?php 
                         foreach ($recentActivities as $activity): 
@@ -155,47 +146,39 @@ $priorityClasses = [
                             $userName = $user ? $user->getValue('name') : 'Unbekannt';
                             $formattedEntry = \FriendsOfREDAXO\IssueTracker\HistoryService::formatEntry($activity, $package);
                         ?>
-                        <div class="list-group-item">
+                        <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $activity['issue_id']]) ?>" class="list-group-item" style="padding: 10px 15px;">
                             <div class="row">
-                                <div class="col-sm-8">
-                                    <strong>
-                                        <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $activity['issue_id']]) ?>">
-                                            #<?= $activity['issue_id'] ?> 
-                                            <?php 
-                                            $titleText = rex_escape($activity['issue_title']);
-                                            echo mb_strlen($titleText) > 50 ? mb_substr($titleText, 0, 50) . '...' : $titleText;
-                                            ?>
-                                        </a>
-                                    </strong>
+                                <div class="col-xs-9">
+                                    <strong>#<?= $activity['issue_id'] ?></strong>
+                                    <?php 
+                                    $titleText = rex_escape($activity['issue_title']);
+                                    echo mb_strlen($titleText) > 35 ? mb_substr($titleText, 0, 35) . '...' : $titleText;
+                                    ?>
                                     <br>
                                     <small class="text-muted">
                                         <?php
-                                        // formatEntry Ausgabe kürzen wenn zu lang
                                         $entryText = strip_tags($formattedEntry);
-                                        if (mb_strlen($entryText) > 80) {
-                                            echo mb_substr($entryText, 0, 80) . '...';
-                                        } else {
-                                            echo $formattedEntry;
-                                        }
+                                        echo mb_strlen($entryText) > 50 ? mb_substr($entryText, 0, 50) . '...' : $entryText;
                                         ?>
-                                        <em>von <?= rex_escape($userName) ?></em>
                                     </small>
                                 </div>
-                                <div class="col-sm-4 text-right">
-                                    <small class="text-muted">
-                                        <?= $activity['created_at']->format('d.m.Y H:i') ?>
-                                    </small>
+                                <div class="col-xs-3 text-right">
+                                    <small class="text-muted"><?= $activity['created_at']->format('d.m. H:i') ?></small>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                         <?php endforeach; ?>
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
+
         </div>
-        
-        <!-- Nachrichten-Panel -->
-        <div class="col-sm-4">
+
+        <!-- ========== RECHTE SPALTE ========== -->
+        <div class="col-md-4">
+            
+            <!-- Nachrichten-Panel -->
             <div class="panel panel-<?= $unreadMessages > 0 ? 'primary' : 'default' ?>">
                 <div class="panel-heading">
                     <h3 class="panel-title">
@@ -207,7 +190,7 @@ $priorityClasses = [
                 </div>
                 <div class="panel-body">
                     <?php if ($unreadMessages > 0): ?>
-                    <p class="text-info" style="margin-bottom: 10px;">
+                    <p class="text-info" style="margin-bottom: 10px; font-size: 12px;">
                         <i class="rex-icon fa-info-circle"></i>
                         <?= $package->i18n('issue_tracker_unread_messages_info', $unreadMessages) ?>
                     </p>
@@ -215,7 +198,7 @@ $priorityClasses = [
                     
                     <?php if (!empty($recentMessages)): ?>
                     <ul class="list-unstyled" style="margin-bottom: 15px;">
-                        <?php foreach (array_slice($recentMessages, 0, 3) as $msg): ?>
+                        <?php foreach (array_slice($recentMessages, 0, 5) as $msg): ?>
                         <li style="padding: 8px 0; border-bottom: 1px solid rgba(128,128,128,0.2); <?= !$msg->isRead() ? 'border-left: 3px solid #d9534f; margin: 0 -15px; padding-left: 12px; padding-right: 15px;' : '' ?>">
                             <a href="<?= rex_url::backendPage('issue_tracker/messages/view', ['message_id' => $msg->getId()]) ?>" style="text-decoration: none; color: inherit;">
                                 <div style="<?= !$msg->isRead() ? 'font-weight: bold;' : '' ?>">
@@ -223,7 +206,7 @@ $priorityClasses = [
                                     <?php if (!$msg->isRead()): ?><span class="label label-danger" style="font-size: 9px; margin-left: 5px;">NEU</span><?php endif; ?>
                                     <span class="pull-right text-muted" style="font-size: 11px;"><?= $msg->getCreatedAt()->format('d.m. H:i') ?></span>
                                 </div>
-                                <small class="text-muted"><?= rex_escape(mb_substr($msg->getSubject(), 0, 25)) ?><?= mb_strlen($msg->getSubject()) > 25 ? '...' : '' ?></small>
+                                <small class="text-muted"><?= rex_escape(mb_substr($msg->getSubject(), 0, 30)) ?><?= mb_strlen($msg->getSubject()) > 30 ? '...' : '' ?></small>
                             </a>
                         </li>
                         <?php endforeach; ?>
@@ -237,15 +220,61 @@ $priorityClasses = [
                     
                     <div class="text-center" style="margin-top: 10px;">
                         <a href="<?= rex_url::backendPage('issue_tracker/messages/inbox') ?>" class="btn btn-default btn-sm">
-                            <i class="rex-icon fa-inbox"></i> <?= $package->i18n('issue_tracker_messages_inbox') ?>
+                            <i class="rex-icon fa-inbox"></i> Posteingang
                         </a>
                         <a href="<?= rex_url::backendPage('issue_tracker/messages/compose') ?>" class="btn btn-primary btn-sm">
-                            <i class="rex-icon fa-pencil"></i> Schreiben
+                            <i class="rex-icon fa-plus"></i> Neu
                         </a>
                     </div>
                 </div>
             </div>
+
+            <?php if (!empty($userProjects)): ?>
+            <!-- Projekte -->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <i class="rex-icon fa-folder-open"></i> <?= $package->i18n('issue_tracker_projects') ?>
+                        <a href="<?= rex_url::backendPage('issue_tracker/projects') ?>" class="btn btn-xs btn-default pull-right">
+                            <?= $package->i18n('issue_tracker_show_all') ?>
+                        </a>
+                    </h3>
+                </div>
+                <div class="panel-body" style="padding: 10px;">
+                    <?php foreach (array_slice($userProjects, 0, 5) as $project): 
+                        $stats = $project->getStats();
+                        $statusClass = 'default';
+                        if ($project->getStatus() === 'active') $statusClass = 'success';
+                        if ($project->getStatus() === 'on_hold') $statusClass = 'warning';
+                    ?>
+                    <div style="border-left: 3px solid <?= rex_escape($project->getColor()) ?>; padding: 8px 10px; margin-bottom: 10px; background: rgba(0,0,0,0.02);">
+                        <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId()]) ?>" style="color: inherit; font-weight: 500;">
+                            <?= rex_escape($project->getName()) ?>
+                        </a>
+                        <?php if ($project->isOverdue()): ?>
+                            <span class="label label-danger" style="font-size: 9px; margin-left: 3px;">!</span>
+                        <?php endif; ?>
+                        <div class="progress" style="height: 4px; margin: 6px 0 4px 0;">
+                            <div class="progress-bar progress-bar-success" style="width: <?= $stats['progress'] ?>%;"></div>
+                        </div>
+                        <small class="text-muted">
+                            <span class="text-danger"><?= $stats['open'] ?></span> offen · 
+                            <span class="text-success"><?= $stats['closed'] ?></span> erledigt
+                        </small>
+                    </div>
+                    <?php endforeach; ?>
+                    
+                    <?php if (count($userProjects) > 5): ?>
+                    <div class="text-center">
+                        <a href="<?= rex_url::backendPage('issue_tracker/projects') ?>" class="text-muted" style="font-size: 12px;">
+                            + <?= count($userProjects) - 5 ?> weitere Projekte
+                        </a>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
         </div>
     </div>
-    <?php endif; ?>
 </div>

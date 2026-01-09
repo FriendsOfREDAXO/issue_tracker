@@ -198,16 +198,18 @@ Jeder Benutzer kann seine E-Mail-Benachrichtigungen individuell konfigurieren.
 
 Admins können Nachrichten an alle berechtigten Benutzer senden:
 
-1. Navigiere zu **Einstellungen** → **Allgemein**
-2. Scrolle zum Bereich **Broadcast-Nachricht**
-3. Gib **Betreff** und **Nachricht** ein
+1. Navigiere zu **Nachrichten** → **Broadcast**
+2. Gib **Betreff** und **Nachricht** ein
+3. Wähle die **Empfänger**:
+   - **Nur Issue-Tracker User**: Benutzer mit Issue-Tracker-Berechtigung
+   - **Alle REDAXO User**: Alle aktiven Backend-Benutzer (nur per E-Mail)
 4. Wähle die **Versandart**:
-   - **Internes Nachrichtensystem** (Standard): Nachricht erscheint im Posteingang
+   - **Internes Nachrichtensystem**: Nachricht erscheint im Posteingang
    - **Nur per E-Mail**: Nachricht wird per E-Mail versendet
    - **Nachrichtensystem und E-Mail**: Beide Kanäle gleichzeitig
 5. Klicke auf **Broadcast senden** und bestätige die Aktion
 
-**Hinweis**: Nur Benutzer mit Issue-Tracker-Berechtigung erhalten die Broadcast-Nachricht.
+**Hinweis**: Bei "Alle REDAXO User" ist nur E-Mail-Versand möglich, da diese User keinen Zugang zum internen Nachrichtensystem haben.
 
 ### Backup & Export
 

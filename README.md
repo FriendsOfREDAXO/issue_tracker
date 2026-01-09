@@ -187,12 +187,14 @@ Nachrichten werden als Konversation gruppiert. In der Inbox siehst du:
 
 ### Broadcast-Nachricht senden (nur Admins)
 
-1. Gehe zu "Issue Tracker" → "Einstellungen"
-2. Scrolle zum Bereich "Broadcast-Nachricht"
-3. Gib Betreff und Nachricht ein
+1. Gehe zu "Issue Tracker" → "Nachrichten" → "Broadcast"
+2. Gib Betreff und Nachricht ein
+3. Wähle die Empfänger:
+   - **Nur Issue-Tracker User** (Standard): Benutzer mit Issue-Tracker-Berechtigung
+   - **Alle REDAXO User**: Alle aktiven Backend-Benutzer (nur per E-Mail)
 4. Wähle die Versandart:
-   - **Internes Nachrichtensystem** (Standard): Nachricht erscheint im Posteingang aller User
-   - **Nur per E-Mail**: Nachricht wird nur per E-Mail versendet
+   - **Internes Nachrichtensystem**: Nachricht erscheint im Posteingang
+   - **Nur per E-Mail**: Nachricht wird per E-Mail versendet
    - **Nachrichtensystem und E-Mail**: Beides gleichzeitig
 5. Klicke auf "Broadcast senden"
 6. Bestätige die Aktion

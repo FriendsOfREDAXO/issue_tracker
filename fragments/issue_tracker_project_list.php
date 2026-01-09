@@ -5,6 +5,8 @@
  * @var rex_fragment $this
  */
 
+use FriendsOfREDAXO\IssueTracker\PermissionService;
+
 $package = rex_addon::get('issue_tracker');
 $projects = $this->getVar('projects', []);
 $currentUser = rex::getUser();
@@ -20,9 +22,11 @@ $statusLabels = [
     <div class="panel-heading">
         <div class="panel-title">
             <?= $package->i18n('issue_tracker_projects') ?>
+            <?php if (PermissionService::canCreateProject()): ?>
             <a href="<?= rex_url::backendPage('issue_tracker/projects/create') ?>" class="btn btn-primary btn-xs pull-right" style="color: #fff !important;">
                 <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_project_create') ?>
             </a>
+            <?php endif; ?>
         </div>
     </div>
     

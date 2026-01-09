@@ -3,6 +3,7 @@
 # Allgemein
 issue_tracker_title = Issue Tracker
 issue_tracker_description = Verwaltung von Anfragen, Problemen und Vorschlägen
+issue_tracker_show_all = Alle anzeigen
 
 # Navigation
 issue_tracker_dashboard = Übersicht
@@ -206,6 +207,7 @@ issue_tracker_no_projects = Keine Projekte vorhanden
 issue_tracker_no_project = Kein Projekt
 issue_tracker_project_help = Optional: Ordnen Sie dieses Thema einem Projekt zu
 issue_tracker_project_status_active = Aktiv
+issue_tracker_project_status_on_hold = Pausiert
 issue_tracker_project_status_completed = Abgeschlossen
 issue_tracker_project_status_archived = Archiviert
 issue_tracker_project_color = Farbe

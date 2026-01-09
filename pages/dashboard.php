@@ -99,6 +99,15 @@ foreach ($sql as $row) {
 $unreadMessages = \FriendsOfREDAXO\IssueTracker\Message::getUnreadCount($userId);
 $recentMessages = \FriendsOfREDAXO\IssueTracker\Message::getInbox($userId, 5);
 
+// Projekte laden (je nach Berechtigung)
+if ($currentUser->isAdmin()) {
+    // Admins sehen alle aktiven Projekte
+    $userProjects = \FriendsOfREDAXO\IssueTracker\Project::getAll(null, 'active');
+} else {
+    // Normale User sehen nur ihre Projekte
+    $userProjects = \FriendsOfREDAXO\IssueTracker\Project::getByUser($userId);
+}
+
 // Dashboard ausgeben
 $fragment = new rex_fragment();
 $fragment->setVar('openIssues', $openIssues);
@@ -110,4 +119,5 @@ $fragment->setVar('recentIssues', $recentIssues);
 $fragment->setVar('recentActivities', $recentActivities);
 $fragment->setVar('unreadMessages', $unreadMessages);
 $fragment->setVar('recentMessages', $recentMessages);
+$fragment->setVar('userProjects', $userProjects);
 echo $fragment->parse('issue_tracker_dashboard.php');

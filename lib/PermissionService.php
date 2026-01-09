@@ -69,6 +69,15 @@ class PermissionService
     }
 
     /**
+     * Prüft ob der aktuelle Benutzer Projekte erstellen darf
+     * (Nur Admins und Issue-Manager dürfen Projekte erstellen)
+     */
+    public static function canCreateProject(): bool
+    {
+        return self::isAdminOrManager();
+    }
+
+    /**
      * Prüft ob der aktuelle Benutzer Löschen darf
      * (Admins und Issue-Manager dürfen löschen)
      */
