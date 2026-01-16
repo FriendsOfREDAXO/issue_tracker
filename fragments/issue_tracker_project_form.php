@@ -71,7 +71,7 @@ $colors = [
                             <select class="form-control selectpicker" id="project-status" name="status">
                                 <?php foreach ($projectStatuses as $statusKey => $statusLabel): ?>
                                 <option value="<?= rex_escape($statusKey) ?>" <?= $project->getStatus() === $statusKey ? 'selected' : '' ?>>
-                                    <?= rex_escape($statusLabel) ?>
+                                    <?= $statusLabel ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>

@@ -402,3 +402,15 @@ issue_tracker_color_orange = Orange
 issue_tracker_color_turquoise = Türkis
 issue_tracker_color_gray = Grau
 issue_tracker_color_pink = Pink
+# Benutzereinstellungen
+issue_tracker_no_email_warning = Warnung: In Ihrem REDAXO-Profil ist keine E-Mail-Adresse hinterlegt. E-Mail-Benachrichtigungen können daher nicht versendet werden.
+issue_tracker_email_profile_edit = E-Mail-Adresse im Profil hinterlegen
+issue_tracker_email_address = E-Mail-Adresse
+issue_tracker_email_address_placeholder = z.B. vorname@beispiel.de
+issue_tracker_update_email = E-Mail-Adresse aktualisieren
+issue_tracker_email_updated = E-Mail-Adresse wurde aktualisiert
+issue_tracker_email_update_error = E-Mail-Adresse konnte nicht aktualisiert werden
+issue_tracker_email_invalid = Bitte geben Sie eine gültige E-Mail-Adresse ein
+issue_tracker_email_hint = Sie können die E-Mail-Adresse später auch in Ihrem Benutzerprofil ändern.
+issue_tracker_email_current = Aktuelle E-Mail-Adresse für Benachrichtigungen
+issue_tracker_email_change_in_profile = Im Profil ändern

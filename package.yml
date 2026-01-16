@@ -75,6 +75,7 @@ page:
         preferences:
             title: 'translate:issue_tracker_preferences'
             icon: rex-icon fa-user
+            pjax: false
         settings:
             title: 'translate:issue_tracker_settings'
             icon: rex-icon fa-wrench

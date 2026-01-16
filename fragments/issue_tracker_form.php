@@ -99,7 +99,7 @@ $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
                             <select class="form-control selectpicker" id="issue-status" name="status">
                                 <?php foreach ($statuses as $statusKey => $statusLabel): ?>
                                 <option value="<?= rex_escape($statusKey) ?>" <?= $issue->getStatus() === $statusKey ? 'selected' : '' ?>>
-                                    <?= rex_escape($statusLabel) ?>
+                                    <?= $package->i18n('issue_tracker_status_' . $statusKey) ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
@@ -115,7 +115,7 @@ $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
                             <select class="form-control selectpicker" id="issue-priority" name="priority">
                                 <?php foreach ($priorities as $priorityKey => $priorityLabel): ?>
                                 <option value="<?= rex_escape($priorityKey) ?>" <?= $issue->getPriority() === $priorityKey ? 'selected' : '' ?>>
-                                    <?= rex_escape($priorityLabel) ?>
+                                    <?= $package->i18n('issue_tracker_priority_' . $priorityKey) ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>

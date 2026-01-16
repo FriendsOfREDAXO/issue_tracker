@@ -282,8 +282,8 @@ $priorityClass = [
                                     <?php foreach ($statuses as $statusKey => $statusLabel): ?>
                                     <option value="<?= rex_escape($statusKey) ?>" 
                                             <?= $issue->getStatus() === $statusKey ? 'selected' : '' ?>
-                                            data-content="<span class='label label-<?= ['open' => 'danger', 'in_progress' => 'warning', 'planned' => 'info', 'rejected' => 'default', 'closed' => 'success'][$statusKey] ?? 'default' ?>'><?= rex_escape($statusLabel) ?></span>">
-                                        <?= rex_escape($statusLabel) ?>
+                                            data-content="<span class='label label-<?= ['open' => 'danger', 'in_progress' => 'warning', 'planned' => 'info', 'rejected' => 'default', 'closed' => 'success'][$statusKey] ?? 'default' ?>'><?= $package->i18n('issue_tracker_status_' . $statusKey) ?></span>">
+                                        <?= $package->i18n('issue_tracker_status_' . $statusKey) ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>

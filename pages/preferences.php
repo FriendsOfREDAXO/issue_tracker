@@ -9,6 +9,76 @@
 $package = rex_addon::get('issue_tracker');
 $currentUser = rex::getUser();
 
+// Flag für erfolgreiche E-Mail-Aktualisierung
+$emailUpdated = false;
+
+// E-Mail aktualisieren
+if (rex_post('update_email', 'boolean')) {
+    $newEmail = rex_post('user_email', 'string', '');
+    
+    if (empty($newEmail)) {
+        echo rex_view::error($package->i18n('issue_tracker_email_invalid'));
+    } elseif (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+        echo rex_view::error($package->i18n('issue_tracker_email_invalid'));
+    } else {
+        try {
+            $sql = rex_sql::factory();
+            $sql->setQuery('UPDATE ' . rex::getTable('user') . ' SET email = ? WHERE id = ?', [$newEmail, $currentUser->getId()]);
+            echo rex_view::success($package->i18n('issue_tracker_email_updated'));
+            $emailUpdated = true;
+        } catch (rex_sql_exception $e) {
+            echo rex_view::error($package->i18n('issue_tracker_email_update_error') . ': ' . $e->getMessage());
+        }
+    }
+}
+
+// Prüfung ob E-Mail-Adresse gesetzt ist
+$userEmail = $currentUser->getValue('email');
+if (empty($userEmail) && !$emailUpdated) {
+    echo rex_view::warning($package->i18n('issue_tracker_no_email_warning'));
+    
+    // Formular für E-Mail-Eingabe
+    $formElements = [];
+    $n = [];
+    $n['label'] = '<label>' . $package->i18n('issue_tracker_email_address') . '</label>';
+    $n['field'] = '<input type="email" name="user_email" class="form-control" placeholder="' . $package->i18n('issue_tracker_email_address_placeholder') . '" required />';
+    $formElements[] = $n;
+    
+    $fragment = new rex_fragment();
+    $fragment->setVar('elements', $formElements, false);
+    $content = $fragment->parse('core/form/form.php');
+    
+    // Hinweis hinzufügen
+    $content .= '<div class="alert alert-info"><small>' . $package->i18n('issue_tracker_email_hint') . '</small></div>';
+    
+    $formElements = [];
+    $n = [];
+    $n['field'] = '<button type="submit" name="update_email" value="1" class="btn btn-primary">' . $package->i18n('issue_tracker_update_email') . '</button>';
+    $formElements[] = $n;
+    
+    $fragment = new rex_fragment();
+    $fragment->setVar('elements', $formElements, false);
+    $buttons = $fragment->parse('core/form/submit.php');
+    
+    $fragment = new rex_fragment();
+    $fragment->setVar('body', '<form method="post">' . $content . $buttons . '</form>', false);
+    echo $fragment->parse('core/page/section.php');
+} else if (!empty($userEmail)) {
+    // Info-Block mit aktueller E-Mail-Adresse anzeigen
+    $profileUrl = rex_url::backendPage('users/users', ['user_id' => $currentUser->getId(), 'function' => 'edit']);
+    $infoContent = '<div class="form-group">';
+    $infoContent .= '<label>' . $package->i18n('issue_tracker_email_current') . '</label>';
+    $infoContent .= '<div class="well well-sm" style="margin-bottom: 0;">';
+    $infoContent .= '<strong>' . rex_escape($userEmail) . '</strong>';
+    $infoContent .= ' <a href="' . $profileUrl . '" class="btn btn-xs btn-default">' . $package->i18n('issue_tracker_email_change_in_profile') . '</a>';
+    $infoContent .= '</div>';
+    $infoContent .= '</div>';
+    
+    $fragment = new rex_fragment();
+    $fragment->setVar('body', $infoContent, false);
+    echo $fragment->parse('core/page/section.php');
+}
+
 // Formular speichern
 if (rex_post('save_preferences', 'boolean')) {
     $sql = rex_sql::factory();

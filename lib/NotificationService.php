@@ -640,6 +640,7 @@ class NotificationService
         </div>
         
         <a href="{{issue_url}}" style="display: inline-block; background: #0056b3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-weight: bold;">Issue anzeigen</a>
+        <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">(Dieser Link ist nur einmal verwendbar und 30 Tage gültig)</p>
     </div>
     
     <div style="text-align: center; padding: 15px; color: #999; font-size: 12px; border-top: 1px solid #ddd;">
@@ -667,6 +668,7 @@ class NotificationService
         </div>
         
         <a href="{{issue_url}}" style="display: inline-block; background: #0056b3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-weight: bold;">View Issue</a>
+        <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">(This link is valid for one-time use and 30 days)</p>
     </div>
     
     <div style="text-align: center; padding: 15px; color: #999; font-size: 12px; border-top: 1px solid #ddd;">
@@ -704,6 +706,7 @@ class NotificationService
         </div>
         
         <a href="{{issue_url}}" style="display: inline-block; background: #0056b3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-weight: bold;">Issue anzeigen</a>
+        <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">(Dieser Link ist nur einmal verwendbar und 30 Tage gültig)</p>
     </div>
     
     <div style="text-align: center; padding: 15px; color: #999; font-size: 12px; border-top: 1px solid #ddd;">
@@ -741,6 +744,7 @@ class NotificationService
         </div>
         
         <a href="{{issue_url}}" style="display: inline-block; background: #0056b3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-weight: bold;">View Issue</a>
+        <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">(This link is valid for one-time use and 30 days)</p>
     </div>
     
     <div style="text-align: center; padding: 15px; color: #999; font-size: 12px; border-top: 1px solid #ddd;">
