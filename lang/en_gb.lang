@@ -389,3 +389,15 @@ issue_tracker_generate_token = Generate Token
 issue_tracker_api_token_help = This token is required to access the API. Keep it safe!
 issue_tracker_api_endpoint = API Endpoint
 issue_tracker_copy = Copy
+
+# Colors
+issue_tracker_color_blue = Blue
+issue_tracker_color_green = Green
+issue_tracker_color_red = Red
+issue_tracker_color_yellow = Yellow
+issue_tracker_color_cyan = Cyan
+issue_tracker_color_purple = Purple
+issue_tracker_color_orange = Orange
+issue_tracker_color_turquoise = Turquoise
+issue_tracker_color_gray = Gray
+issue_tracker_color_pink = Pink

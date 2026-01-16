@@ -390,3 +390,15 @@ issue_tracker_generate_token = Token generieren
 issue_tracker_api_token_help = Dieser Token wird für den Zugriff auf die API benötigt. Bewahren Sie ihn sicher auf!
 issue_tracker_api_endpoint = API-Endpoint
 issue_tracker_copy = Kopieren
+
+# Farben
+issue_tracker_color_blue = Blau
+issue_tracker_color_green = Grün
+issue_tracker_color_red = Rot
+issue_tracker_color_yellow = Gelb
+issue_tracker_color_cyan = Cyan
+issue_tracker_color_purple = Lila
+issue_tracker_color_orange = Orange
+issue_tracker_color_turquoise = Türkis
+issue_tracker_color_gray = Grau
+issue_tracker_color_pink = Pink

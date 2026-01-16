@@ -21,16 +21,16 @@ $projectStatuses = [
 ];
 
 $colors = [
-    '#007bff' => 'Blau',
-    '#28a745' => 'Grün',
-    '#dc3545' => 'Rot',
-    '#ffc107' => 'Gelb',
-    '#17a2b8' => 'Cyan',
-    '#6f42c1' => 'Lila',
-    '#fd7e14' => 'Orange',
-    '#20c997' => 'Türkis',
-    '#6c757d' => 'Grau',
-    '#e83e8c' => 'Pink',
+    '#007bff' => $package->i18n('issue_tracker_color_blue'),
+    '#28a745' => $package->i18n('issue_tracker_color_green'),
+    '#dc3545' => $package->i18n('issue_tracker_color_red'),
+    '#ffc107' => $package->i18n('issue_tracker_color_yellow'),
+    '#17a2b8' => $package->i18n('issue_tracker_color_cyan'),
+    '#6f42c1' => $package->i18n('issue_tracker_color_purple'),
+    '#fd7e14' => $package->i18n('issue_tracker_color_orange'),
+    '#20c997' => $package->i18n('issue_tracker_color_turquoise'),
+    '#6c757d' => $package->i18n('issue_tracker_color_gray'),
+    '#e83e8c' => $package->i18n('issue_tracker_color_pink'),
 ];
 ?>
 
