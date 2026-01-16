@@ -246,7 +246,12 @@ foreach ($userSql as $row) {
 // Verfügbare Add
 $addons = [];
 foreach (rex_addon::getAvailableAddons() as $addon) {
-    $addons[$addon->getName()] = $addon->getProperty('page')['title'] ?? $addon->getName();
+    $pageProp = $addon->getProperty('page');
+    $title = $addon->getName();
+    if (is_array($pageProp) && isset($pageProp['title'])) {
+        $title = $pageProp['title'];
+    }
+    $addons[$addon->getName()] = $title;
 }
 
 // Verfügbare Projekte (nur wo User schreiben darf)
