@@ -148,6 +148,14 @@ issue_tracker_tags = Tags
 issue_tracker_tag_name = Tag Name
 issue_tracker_tag_color = Color
 issue_tracker_tag_preview = Preview
+
+# Messages
+issue_tracker_messages = Messages
+issue_tracker_inbox = Inbox
+issue_tracker_compose = New
+issue_tracker_all_issues = All Issues
+issue_tracker_my_issues = My Issues
+issue_tracker_filter_by_view = View
 issue_tracker_add_tag = Add Tag
 issue_tracker_no_tags = No tags available
 issue_tracker_tag_saved = Tag was saved

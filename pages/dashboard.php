@@ -12,44 +12,53 @@ $package = rex_addon::get('issue_tracker');
 $sql = rex_sql::factory();
 $currentUser = rex::getUser();
 $userId = $currentUser->getId();
+$isManager = $currentUser->isAdmin();
 
-// Nur eigene Issues (erstellt oder zugewiesen)
-$userCondition = '(created_by = ' . $userId . ' OR assigned_user_id = ' . $userId . ')';
+// Filter: Manager sehen alle Issues, Normal User nur eigene
+$viewType = rex_request('view', 'string', 'own');
+if (!$isManager) {
+    $viewType = 'own'; // Force own view for non-managers
+}
 
-// Offene Issues (eigene)
-$sql->setQuery('SELECT COUNT(*) as cnt FROM ' . rex::getTable('issue_tracker_issues') . ' WHERE status = "open" AND ' . $userCondition);
+if ($viewType === 'all' && $isManager) {
+    // Alle Issues für Manager
+    $filterCondition = '';
+} else {
+    // Nur eigene Issues (erstellt oder zugewiesen)
+    $filterCondition = ' AND (created_by = ' . $userId . ' OR assigned_user_id = ' . $userId . ')';
+}
+
+// Offene Issues
+$sql->setQuery('SELECT COUNT(*) as cnt FROM ' . rex::getTable('issue_tracker_issues') . ' WHERE status = "open"' . $filterCondition);
 $openIssues = (int) $sql->getValue('cnt');
 
-// In Bearbeitung (eigene)
-$sql->setQuery('SELECT COUNT(*) as cnt FROM ' . rex::getTable('issue_tracker_issues') . ' WHERE status = "in_progress" AND ' . $userCondition);
+// In Bearbeitung
+$sql->setQuery('SELECT COUNT(*) as cnt FROM ' . rex::getTable('issue_tracker_issues') . ' WHERE status = "in_progress"' . $filterCondition);
 $inProgressIssues = (int) $sql->getValue('cnt');
 
-// Überfällige Issues (eigene)
+// Überfällige Issues
 $sql->setQuery('
     SELECT COUNT(*) as cnt 
     FROM ' . rex::getTable('issue_tracker_issues') . ' 
     WHERE due_date < NOW()
-    AND status NOT IN ("closed", "rejected")
-    AND ' . $userCondition . '
+    AND status NOT IN ("closed", "rejected")' . $filterCondition . '
 ');
 $overdueIssues = (int) $sql->getValue('cnt');
 
-// Erledigte Issues (letzte 30 Tage, eigene)
+// Erledigte Issues (letzte 30 Tage)
 $sql->setQuery('
     SELECT COUNT(*) as cnt 
     FROM ' . rex::getTable('issue_tracker_issues') . ' 
     WHERE status = "closed" 
-    AND closed_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-    AND ' . $userCondition . '
+    AND closed_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)' . $filterCondition . '
 ');
 $closedIssues = (int) $sql->getValue('cnt');
 
-// Issues nach Priorität (eigene, nicht geschlossen)
+// Issues nach Priorität (nicht geschlossen)
 $sql->setQuery('
     SELECT priority, COUNT(*) as cnt 
     FROM ' . rex::getTable('issue_tracker_issues') . ' 
-    WHERE status NOT IN ("closed", "rejected")
-    AND ' . $userCondition . '
+    WHERE status NOT IN ("closed", "rejected")' . $filterCondition . '
     GROUP BY priority
     ORDER BY FIELD(priority, "critical", "high", "normal", "low")
 ');
@@ -58,11 +67,11 @@ foreach ($sql as $row) {
     $priorityCounts[$row->getValue('priority')] = (int) $row->getValue('cnt');
 }
 
-// Neueste eigene Issues
+// Neueste Issues
 $sql->setQuery('
     SELECT * 
     FROM ' . rex::getTable('issue_tracker_issues') . ' 
-    WHERE ' . $userCondition . '
+    WHERE 1=1' . $filterCondition . '
     ORDER BY created_at DESC 
     LIMIT 5
 ');
@@ -71,12 +80,12 @@ foreach ($sql as $row) {
     $recentIssues[] = \FriendsOfREDAXO\IssueTracker\Issue::get((int) $row->getValue('id'));
 }
 
-// Letzte Aktivitäten bei eigenen Issues
+// Letzte Aktivitäten
 $sql->setQuery('
     SELECT h.*, i.title as issue_title
     FROM ' . rex::getTable('issue_tracker_history') . ' h
     JOIN ' . rex::getTable('issue_tracker_issues') . ' i ON h.issue_id = i.id
-    WHERE ' . $userCondition . '
+    WHERE 1=1' . $filterCondition . '
     ORDER BY h.created_at DESC
     LIMIT 10
 ');
@@ -120,4 +129,6 @@ $fragment->setVar('recentActivities', $recentActivities);
 $fragment->setVar('unreadMessages', $unreadMessages);
 $fragment->setVar('recentMessages', $recentMessages);
 $fragment->setVar('userProjects', $userProjects);
+$fragment->setVar('isManager', $isManager);
+$fragment->setVar('currentViewType', $viewType);
 echo $fragment->parse('issue_tracker_dashboard.php');

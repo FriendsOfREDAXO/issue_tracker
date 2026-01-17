@@ -17,6 +17,8 @@ $recentActivities = $this->getVar('recentActivities', []);
 $unreadMessages = $this->getVar('unreadMessages', 0);
 $recentMessages = $this->getVar('recentMessages', []);
 $userProjects = $this->getVar('userProjects', []);
+$isManager = $this->getVar('isManager', false);
+$currentViewType = $this->getVar('currentViewType', 'own');
 
 // Status- und Prioritäts-Klassen
 $statusClasses = [
@@ -74,13 +76,26 @@ $priorityClasses = [
                 </div>
             </div>
 
+            <!-- Filter für Manager -->
+            <?php if ($isManager): ?>
+            <div style="margin-bottom: 20px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+                <small style="display: block; margin-bottom: 8px;"><strong><?= $package->i18n('issue_tracker_filter_by_view') ?>:</strong></small>
+                <a href="<?= rex_url::backendPage('issue_tracker/dashboard', ['view' => 'own']) ?>" class="btn btn-sm <?= $currentViewType === 'own' ? 'btn-primary' : 'btn-default' ?>">
+                    <i class="rex-icon fa-user"></i> <?= $package->i18n('issue_tracker_my_issues') ?>
+                </a>
+                <a href="<?= rex_url::backendPage('issue_tracker/dashboard', ['view' => 'all']) ?>" class="btn btn-sm <?= $currentViewType === 'all' ? 'btn-primary' : 'btn-default' ?>">
+                    <i class="rex-icon fa-list"></i> <?= $package->i18n('issue_tracker_all_issues') ?>
+                </a>
+            </div>
+            <?php endif; ?>
+
             <!-- Schnellzugriff -->
             <div style="margin-bottom: 20px;">
                 <a href="<?= rex_url::backendPage('issue_tracker/issues/create') ?>" class="btn btn-primary" style="color: #fff;">
                     <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_create_new') ?>
                 </a>
                 <a href="<?= rex_url::backendPage('issue_tracker/issues') ?>" class="btn btn-default">
-                    <i class="rex-icon fa-list"></i> Alle Issues
+                    <i class="rex-icon fa-list"></i> <?= $package->i18n('issue_tracker_all_issues') ?>
                 </a>
             </div>
 
@@ -220,10 +235,10 @@ $priorityClasses = [
                     
                     <div class="text-center" style="margin-top: 10px;">
                         <a href="<?= rex_url::backendPage('issue_tracker/messages/inbox') ?>" class="btn btn-default btn-sm">
-                            <i class="rex-icon fa-inbox"></i> Posteingang
+                            <i class="rex-icon fa-inbox"></i> <?= $package->i18n('issue_tracker_inbox') ?>
                         </a>
                         <a href="<?= rex_url::backendPage('issue_tracker/messages/compose') ?>" class="btn btn-primary btn-sm">
-                            <i class="rex-icon fa-plus"></i> Neu
+                            <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_compose') ?>
                         </a>
                     </div>
                 </div>
