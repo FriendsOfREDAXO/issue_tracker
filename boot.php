@@ -67,3 +67,5 @@ if (rex::isBackend() && rex::getUser()) {
         }
     });
 }
+// API-Funktionen registrieren
+rex_api_function::register('issue_tracker_export', 'FriendsOfREDAXO\IssueTracker\rex_api_issue_tracker_export');

@@ -1,6 +1,7 @@
 # Issue Tracker - Deutsch
 
 # Allgemein
+issue_tracker = Issue Tracker
 issue_tracker_title = Issue Tracker
 issue_tracker_description = Verwaltung von Anfragen, Problemen und Vorschlägen
 issue_tracker_show_all = Alle anzeigen
@@ -49,6 +50,7 @@ issue_tracker_priority_low = Niedrig
 issue_tracker_priority_normal = Normal
 issue_tracker_priority_high = Hoch
 issue_tracker_priority_urgent = Dringend
+issue_tracker_priority_critical = Kritisch
 
 # Status
 issue_tracker_status_open = Offen
@@ -449,3 +451,12 @@ issue_tracker_email_invalid = Bitte geben Sie eine gültige E-Mail-Adresse ein
 issue_tracker_email_hint = Sie können die E-Mail-Adresse später auch in Ihrem Benutzerprofil ändern.
 issue_tracker_email_current = Aktuelle E-Mail-Adresse für Benachrichtigungen
 issue_tracker_email_change_in_profile = Im Profil ändern
+
+# Export
+issue_tracker_export = Export
+issue_tracker_export_csv = Als CSV exportieren
+issue_tracker_export_pdf = Als PDF exportieren
+issue_tracker_no_issues = Keine Themen gefunden
+issue_tracker_statistics = Statistiken
+issue_tracker_status_overdue = Überfällig
+issue_tracker_due_date = Fälligkeitsdatum

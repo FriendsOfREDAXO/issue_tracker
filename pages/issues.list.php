@@ -10,6 +10,21 @@ use FriendsOfREDAXO\IssueTracker\Issue;
 
 $package = rex_addon::get('issue_tracker');
 
+// PDF-Export generieren falls angefordert
+if (rex_request('export_pdf', 'int', 0) === 1) {
+    if (!\FriendsOfREDAXO\IssueTracker\PermissionService::isLoggedIn()) {
+        exit;
+    }
+    
+    if (!\rex_addon::exists('pdfout') || !\rex_addon::get('pdfout')->isAvailable()) {
+        exit;
+    }
+    
+    // PDF-Export Code wird unten eingefügt
+    require_once rex_path::addon('issue_tracker', 'lib/pdf_export.php');
+    exit;
+}
+
 // Filter speichern
 if (rex_post('save_filter', 'int', 0) === 1) {
     $filterName = rex_post('filter_name', 'string', '');
