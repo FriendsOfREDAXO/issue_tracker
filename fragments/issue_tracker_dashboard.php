@@ -40,6 +40,13 @@ $priorityClasses = [
         <!-- ========== LINKE SPALTE ========== -->
         <div class="col-md-8">
             
+            <!-- Überschrift für Normal-User -->
+            <?php if (!$isManager): ?>
+            <div style="margin-bottom: 20px;">
+                <h3><?= $package->i18n('issue_tracker_own_issues') ?></h3>
+            </div>
+            <?php endif; ?>
+            
             <!-- Filter für Manager -->
             <?php if ($isManager): ?>
             <div style="margin-bottom: 20px;">
@@ -77,7 +84,7 @@ $priorityClasses = [
                     <div class="panel panel-default">
                         <div class="panel-body text-center" style="padding: 15px 10px;">
                             <h3 class="text-danger" style="margin: 0; font-weight: bold;"><?= $overdueIssues ?></h3>
-                            <small><i class="rex-icon fa-exclamation-triangle"></i> Überfällig</small>
+                            <small><i class="rex-icon fa-exclamation-triangle"></i> <?= $package->i18n('issue_tracker_status_overdue') ?></small>
                         </div>
                     </div>
                 </div>
@@ -85,7 +92,7 @@ $priorityClasses = [
                     <div class="panel panel-default">
                         <div class="panel-body text-center" style="padding: 15px 10px;">
                             <h3 class="text-success" style="margin: 0;"><?= $closedIssues ?></h3>
-                            <small>Erledigt (30 T.)</small>
+                            <small><?= $package->i18n('issue_tracker_closed_30_days_short') ?></small>
                         </div>
                     </div>
                 </div>
