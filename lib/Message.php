@@ -261,6 +261,16 @@ class Message
     }
 
     /**
+     * Prüft, ob die Nachricht gelöscht werden kann (max. 1 Stunde nach Erstellung)
+     */
+    public function canBeDeleted(): bool
+    {
+        $now = new DateTime();
+        $deleteLimit = $this->createdAt->modify('+1 hour');
+        return $now <= $deleteLimit;
+    }
+
+    /**
      * Markiert die Nachricht als gelöscht (für Sender oder Empfänger)
      */
     public function delete(int $userId): bool
@@ -283,6 +293,51 @@ class Message
         }
 
         return $this->save();
+    }
+
+    /**
+     * Prüft ob ein User Zugriff auf diese Nachricht hat
+     */
+    public function hasAccess(int $userId): bool
+    {
+        if ($userId === $this->senderId && !$this->deletedBySender) {
+            return true;
+        }
+        if ($userId === $this->recipientId && !$this->deletedByRecipient) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Löscht eine komplette Konversation für einen User
+     * Markiert alle Nachrichten dieser Konversation als gelöscht
+     */
+    public static function deleteConversation(int $userId, int $partnerId): bool
+    {
+        $sql = rex_sql::factory();
+        
+        if ($userId === 0 || $partnerId === 0 || $userId === $partnerId) {
+            return false;
+        }
+
+        // Alle Nachrichten zwischen den beiden Usern als gelöscht für $userId markieren
+        $sql->setQuery(
+            'UPDATE ' . rex::getTable('issue_tracker_messages') . ' 
+             SET deleted_by_sender = CASE WHEN sender_id = ? THEN 1 ELSE deleted_by_sender END,
+                 deleted_by_recipient = CASE WHEN recipient_id = ? THEN 1 ELSE deleted_by_recipient END
+             WHERE (sender_id = ? AND recipient_id = ?) 
+             OR (sender_id = ? AND recipient_id = ?)',
+            [$userId, $userId, $userId, $partnerId, $partnerId, $userId]
+        );
+
+        // Nachrichten, die von beiden gelöscht wurden, wirklich löschen
+        $sql->setQuery(
+            'DELETE FROM ' . rex::getTable('issue_tracker_messages') . ' 
+             WHERE deleted_by_sender = 1 AND deleted_by_recipient = 1'
+        );
+
+        return true;
     }
 
     /**
@@ -341,17 +396,22 @@ class Message
 
     /**
      * Konversation zwischen zwei Usern laden
+     * Jeder User sieht nur die Nachrichten, die er nicht gelöscht hat
      */
     public static function getConversation(int $user1Id, int $user2Id, int $limit = 100): array
     {
         $sql = rex_sql::factory();
         $sql->setQuery(
             'SELECT * FROM ' . rex::getTable('issue_tracker_messages') . ' 
-             WHERE ((sender_id = ? AND recipient_id = ? AND deleted_by_sender = 0) 
-                OR (sender_id = ? AND recipient_id = ? AND deleted_by_recipient = 0))
+             WHERE (sender_id = ? OR sender_id = ?)
+             AND (recipient_id = ? OR recipient_id = ?)
+             AND (
+                (sender_id = ? AND deleted_by_sender = 0)
+                OR (sender_id = ? AND deleted_by_recipient = 0)
+             )
              ORDER BY created_at ASC
              LIMIT ?',
-            [$user1Id, $user2Id, $user2Id, $user1Id, $limit]
+            [$user1Id, $user2Id, $user1Id, $user2Id, $user1Id, $user2Id, $limit]
         );
 
         $messages = [];
