@@ -14,8 +14,8 @@ $currentUser = rex::getUser();
 $userId = $currentUser->getId();
 $isManager = $currentUser->isAdmin();
 
-// Filter: Manager sehen alle Issues, Normal User nur eigene
-$viewType = rex_request('view', 'string', 'own');
+// Filter: Manager sehen standardmäßig alle Issues, Normal User nur eigene
+$viewType = rex_request('view', 'string', $isManager ? 'all' : 'own');
 if (!$isManager) {
     $viewType = 'own'; // Force own view for non-managers
 }

@@ -40,6 +40,21 @@ $priorityClasses = [
         <!-- ========== LINKE SPALTE ========== -->
         <div class="col-md-8">
             
+            <!-- Filter für Manager -->
+            <?php if ($isManager): ?>
+            <div style="margin-bottom: 20px;">
+                <small style="display: block; margin-bottom: 8px;"><strong><?= $package->i18n('issue_tracker_filter_by_view') ?>:</strong></small>
+                <div class="btn-group" role="group">
+                    <a href="<?= rex_url::backendPage('issue_tracker/dashboard', ['view' => 'own']) ?>" class="btn btn-sm <?= $currentViewType === 'own' ? 'btn-primary' : 'btn-default' ?>">
+                        <i class="rex-icon fa-user"></i> <?= $package->i18n('issue_tracker_filter_personal') ?>
+                    </a>
+                    <a href="<?= rex_url::backendPage('issue_tracker/dashboard', ['view' => 'all']) ?>" class="btn btn-sm <?= $currentViewType === 'all' ? 'btn-primary' : 'btn-default' ?>">
+                        <i class="rex-icon fa-list"></i> <?= $package->i18n('issue_tracker_filter_all') ?>
+                    </a>
+                </div>
+            </div>
+            <?php endif; ?>
+            
             <!-- Statistik-Kacheln -->
             <div class="row">
                 <div class="col-sm-3">
@@ -76,36 +91,18 @@ $priorityClasses = [
                 </div>
             </div>
 
-            <!-- Filter für Manager -->
-            <?php if ($isManager): ?>
-            <div style="margin-bottom: 20px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
-                <small style="display: block; margin-bottom: 8px;"><strong><?= $package->i18n('issue_tracker_filter_by_view') ?>:</strong></small>
-                <a href="<?= rex_url::backendPage('issue_tracker/dashboard', ['view' => 'own']) ?>" class="btn btn-sm <?= $currentViewType === 'own' ? 'btn-primary' : 'btn-default' ?>">
-                    <i class="rex-icon fa-user"></i> <?= $package->i18n('issue_tracker_my_issues') ?>
-                </a>
-                <a href="<?= rex_url::backendPage('issue_tracker/dashboard', ['view' => 'all']) ?>" class="btn btn-sm <?= $currentViewType === 'all' ? 'btn-primary' : 'btn-default' ?>">
-                    <i class="rex-icon fa-list"></i> <?= $package->i18n('issue_tracker_all_issues') ?>
-                </a>
-            </div>
-            <?php endif; ?>
-
             <!-- Schnellzugriff -->
             <div style="margin-bottom: 20px;">
                 <a href="<?= rex_url::backendPage('issue_tracker/issues/create') ?>" class="btn btn-primary" style="color: #fff;">
                     <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_create_new') ?>
                 </a>
-                <?php if ($isManager): ?>
-                <a href="<?= rex_url::backendPage('issue_tracker/issues') ?>" class="btn btn-default">
-                    <i class="rex-icon fa-list"></i> <?= $package->i18n('issue_tracker_all_issues') ?>
-                </a>
-                <?php endif; ?>
             </div>
 
             <?php if (!empty($recentIssues)): ?>
             <!-- Meine letzten Issues -->
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title"><i class="rex-icon fa-list"></i> <?= $package->i18n('issue_tracker_my_recent_issues') ?></h3>
+                    <h3 class="panel-title"><i class="rex-icon fa-list"></i> <?= $currentViewType === 'all' ? $package->i18n('issue_tracker_all_recent_issues') : $package->i18n('issue_tracker_my_recent_issues') ?></h3>
                 </div>
                 <div class="panel-body" style="padding: 0;">
                     <table class="table table-striped table-hover" style="margin-bottom: 0;">
