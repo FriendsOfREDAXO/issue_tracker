@@ -94,16 +94,18 @@ $priorityClasses = [
                 <a href="<?= rex_url::backendPage('issue_tracker/issues/create') ?>" class="btn btn-primary" style="color: #fff;">
                     <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_create_new') ?>
                 </a>
+                <?php if ($isManager): ?>
                 <a href="<?= rex_url::backendPage('issue_tracker/issues') ?>" class="btn btn-default">
                     <i class="rex-icon fa-list"></i> <?= $package->i18n('issue_tracker_all_issues') ?>
                 </a>
+                <?php endif; ?>
             </div>
 
             <?php if (!empty($recentIssues)): ?>
             <!-- Meine letzten Issues -->
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title"><i class="rex-icon fa-list"></i> Meine letzten Issues</h3>
+                    <h3 class="panel-title"><i class="rex-icon fa-list"></i> <?= $package->i18n('issue_tracker_my_recent_issues') ?></h3>
                 </div>
                 <div class="panel-body" style="padding: 0;">
                     <table class="table table-striped table-hover" style="margin-bottom: 0;">
@@ -151,7 +153,7 @@ $priorityClasses = [
             <!-- Letzte Aktivitäten -->
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title"><i class="rex-icon fa-history"></i> Letzte Aktivitäten</h3>
+                    <h3 class="panel-title"><i class="rex-icon fa-history"></i> <?= $currentViewType === 'all' ? $package->i18n('issue_tracker_all_recent_activities') : $package->i18n('issue_tracker_my_recent_activities') ?></h3>
                 </div>
                 <div class="panel-body" style="padding: 0;">
                     <div class="list-group" style="margin-bottom: 0;">
