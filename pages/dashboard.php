@@ -12,7 +12,7 @@ $package = rex_addon::get('issue_tracker');
 $sql = rex_sql::factory();
 $currentUser = rex::getUser();
 $userId = $currentUser->getId();
-$isManager = $currentUser->isAdmin();
+$isManager = \FriendsOfREDAXO\IssueTracker\PermissionService::isAdminOrManager();
 
 // Filter: Manager sehen standardmäßig alle Issues, Normal User nur eigene
 $viewType = rex_request('view', 'string', $isManager ? 'all' : 'own');
