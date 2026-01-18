@@ -341,20 +341,6 @@ class Message
     }
 
     /**
-     * Prüft ob ein User Zugriff auf diese Nachricht hat
-     */
-    public function hasAccess(int $userId): bool
-    {
-        if ($userId === $this->senderId && !$this->deletedBySender) {
-            return true;
-        }
-        if ($userId === $this->recipientId && !$this->deletedByRecipient) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Gibt den Absender als rex_user zurück
      */
     public function getSender(): ?rex_user
