@@ -459,21 +459,29 @@ issue_tracker_statistics = Statistics
 issue_tracker_status_overdue = Overdue
 issue_tracker_due_date = Due Date
 
-# Duplicates
-issue_tracker_duplicate_of = Duplicate of
-issue_tracker_mark_as_duplicate = Mark as Duplicate
-issue_tracker_unmark_as_duplicate = Remove Duplicate Mark
-issue_tracker_duplicate_issue_id = Original Issue ID
-issue_tracker_duplicate_marked = Issue was marked as duplicate and closed
-issue_tracker_duplicate_unmarked = Duplicate mark was removed
-issue_tracker_duplicate_error = Error marking as duplicate
-issue_tracker_duplicate_invalid_id = Invalid Issue ID
-issue_tracker_duplicate_not_found = Original issue not found
-issue_tracker_duplicate_self_reference = An issue cannot be marked as duplicate of itself
-issue_tracker_duplicates = Duplicates
-issue_tracker_duplicates_of_this = Duplicates of this issue
-issue_tracker_no_duplicates = No duplicates
-issue_tracker_is_duplicate = Is duplicate of
-issue_tracker_view_original = View Original
-issue_tracker_duplicate_info = This issue was marked as duplicate
-issue_tracker_duplicate_closed_info = was automatically closed as duplicate
+# Related Issues
+issue_tracker_related_to = Related to
+issue_tracker_mark_as_related = Link related issue
+issue_tracker_unmark_as_related = Remove link
+issue_tracker_select_related_issue = Select related issue
+issue_tracker_related_marked = Issue was linked to related issue and closed
+issue_tracker_related_unmarked = Link was removed
+issue_tracker_related_error = Error linking issue
+issue_tracker_related_invalid_id = Invalid Issue ID
+issue_tracker_related_not_found = Related issue not found
+issue_tracker_related_self_reference = An issue cannot be linked to itself
+issue_tracker_related_issues = Related Issues
+issue_tracker_related_of_this = Related to this issue
+issue_tracker_no_related = No related issues
+issue_tracker_is_related_to = Related to
+issue_tracker_view_related = View related issue
+issue_tracker_related_info = This issue is related to another issue
+issue_tracker_related_closed_info = was automatically closed as related
+issue_tracker_select_open_issue = Select open issue
+
+# Email Templates
+issue_tracker_templates_reset = Reset Email Templates
+issue_tracker_templates_reset_help = All email templates will be reset to the default HTML templates. This action cannot be undone!
+issue_tracker_templates_reset_button = Reset to Default
+issue_tracker_templates_reset_confirm = Do you really want to reset all email templates to their default values? This action cannot be undone!
+issue_tracker_templates_reset_success = {0} email templates were successfully reset.

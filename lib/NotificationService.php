@@ -376,6 +376,12 @@ class NotificationService
             $mail->addAddress($to);
             $mail->Subject = $subject;
             $mail->isHTML(true);
+
+            // Wrap body content in HTML template if not already wrapped
+            if (!str_contains($body, '<!DOCTYPE html>')) {
+                $body = EmailTemplateService::getHtmlWrapper($body, $subject);
+            }
+
             $mail->Body = $body;
             $mail->AltBody = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $body));
 

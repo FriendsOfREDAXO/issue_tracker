@@ -461,21 +461,29 @@ issue_tracker_statistics = Statistiken
 issue_tracker_status_overdue = Überfällig
 issue_tracker_due_date = Fälligkeitsdatum
 
-# Duplikate
-issue_tracker_duplicate_of = Duplikat von
-issue_tracker_mark_as_duplicate = Als Duplikat markieren
-issue_tracker_unmark_as_duplicate = Duplikat-Markierung entfernen
-issue_tracker_duplicate_issue_id = Issue-ID des Originals
-issue_tracker_duplicate_marked = Issue wurde als Duplikat markiert und geschlossen
-issue_tracker_duplicate_unmarked = Duplikat-Markierung wurde entfernt
-issue_tracker_duplicate_error = Fehler beim Markieren als Duplikat
-issue_tracker_duplicate_invalid_id = Ungültige Issue-ID
-issue_tracker_duplicate_not_found = Original-Issue wurde nicht gefunden
-issue_tracker_duplicate_self_reference = Ein Issue kann nicht als Duplikat von sich selbst markiert werden
-issue_tracker_duplicates = Duplikate
-issue_tracker_duplicates_of_this = Duplikate von diesem Issue
-issue_tracker_no_duplicates = Keine Duplikate vorhanden
-issue_tracker_is_duplicate = Ist Duplikat von
-issue_tracker_view_original = Original anzeigen
-issue_tracker_duplicate_info = Dieses Issue wurde als Duplikat markiert
-issue_tracker_duplicate_closed_info = wurde automatisch als Duplikat geschlossen
+# Verwandte Issues
+issue_tracker_related_to = Verwandt mit
+issue_tracker_mark_as_related = Als verwandtes Issue verknüpfen
+issue_tracker_unmark_as_related = Verknüpfung entfernen
+issue_tracker_select_related_issue = Verwandtes Issue auswählen
+issue_tracker_related_marked = Issue wurde mit verwandtem Issue verknüpft und geschlossen
+issue_tracker_related_unmarked = Verknüpfung wurde entfernt
+issue_tracker_related_error = Fehler beim Verknüpfen
+issue_tracker_related_invalid_id = Ungültige Issue-ID
+issue_tracker_related_not_found = Verwandtes Issue wurde nicht gefunden
+issue_tracker_related_self_reference = Ein Issue kann nicht mit sich selbst verknüpft werden
+issue_tracker_related_issues = Verwandte Issues
+issue_tracker_related_of_this = Mit diesem Issue verwandt
+issue_tracker_no_related = Keine verwandten Issues vorhanden
+issue_tracker_is_related_to = Verwandt mit
+issue_tracker_view_related = Verwandtes Issue anzeigen
+issue_tracker_related_info = Dieses Issue ist mit einem anderen Issue verwandt
+issue_tracker_related_closed_info = wurde automatisch als verwandt geschlossen
+issue_tracker_select_open_issue = Offenes Issue auswählen
+
+# E-Mail Templates
+issue_tracker_templates_reset = E-Mail-Templates zurücksetzen
+issue_tracker_templates_reset_help = Alle E-Mail-Templates werden auf die Standard-HTML-Vorlagen zurückgesetzt. Diese Aktion kann nicht rückgängig gemacht werden!
+issue_tracker_templates_reset_button = Auf Standard zurücksetzen
+issue_tracker_templates_reset_confirm = Wollen Sie wirklich alle E-Mail-Templates auf die Standardwerte zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden!
+issue_tracker_templates_reset_success = {0} E-Mail-Templates wurden erfolgreich zurückgesetzt.
