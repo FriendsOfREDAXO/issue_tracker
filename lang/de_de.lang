@@ -492,3 +492,9 @@ issue_tracker_test_email_failed = Test-E-Mail konnte nicht gesendet werden
 issue_tracker_test_email_no_address = In Ihrem Profil ist keine E-Mail-Adresse hinterlegt. Bitte fügen Sie eine E-Mail-Adresse hinzu.
 issue_tracker_test_email_confirm = Möchten Sie eine Test-E-Mail an Ihre E-Mail-Adresse senden?
 issue_tracker_template_not_found = Template wurde nicht gefunden.
+
+# Aktionen & Buttons
+issue_tracker_link_action = Verknüpfen
+issue_tracker_change_status_action = Status ändern
+issue_tracker_send_test_email = Test-E-Mail senden
+issue_tracker_related_help_text = Dieses Issue wird mit dem ausgewählten Issue verknüpft und geschlossen.
