@@ -156,7 +156,7 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                     <div class="form-group">
                         <textarea name="email_template_new_issue_de" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_new_issue_de']) ?></textarea>
                         <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_new_issue_de')">
-                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                            <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_send_test_email') ?>
                         </button>
                     </div>
                     
@@ -164,7 +164,7 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                     <div class="form-group">
                         <textarea name="email_template_new_comment_de" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_new_comment_de']) ?></textarea>
                         <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_new_comment_de')">
-                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                            <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_send_test_email') ?>
                         </button>
                     </div>
                     
@@ -172,7 +172,7 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                     <div class="form-group">
                         <textarea name="email_template_status_change_de" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_status_change_de']) ?></textarea>
                         <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_status_change_de')">
-                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                            <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_send_test_email') ?>
                         </button>
                     </div>
                     
@@ -180,7 +180,7 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                     <div class="form-group">
                         <textarea name="email_template_assignment_de" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_assignment_de']) ?></textarea>
                         <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_assignment_de')">
-                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                            <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_send_test_email') ?>
                         </button>
                     </div>
                 </div>
@@ -191,7 +191,7 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                     <div class="form-group">
                         <textarea name="email_template_new_issue_en" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_new_issue_en']) ?></textarea>
                         <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_new_issue_en')">
-                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                            <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_send_test_email') ?>
                         </button>
                     </div>
                     
@@ -199,7 +199,7 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                     <div class="form-group">
                         <textarea name="email_template_new_comment_en" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_new_comment_en']) ?></textarea>
                         <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_new_comment_en')">
-                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                            <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_send_test_email') ?>
                         </button>
                     </div>
                     
@@ -207,7 +207,7 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                     <div class="form-group">
                         <textarea name="email_template_status_change_en" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_status_change_en']) ?></textarea>
                         <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_status_change_en')">
-                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                            <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_send_test_email') ?>
                         </button>
                     </div>
                     
@@ -215,7 +215,7 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                     <div class="form-group">
                         <textarea name="email_template_assignment_en" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_assignment_en']) ?></textarea>
                         <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_assignment_en')">
-                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                            <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_send_test_email') ?>
                         </button>
                     </div>
                 </div>

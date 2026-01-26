@@ -354,6 +354,9 @@ $priorityClass = [
                     <div class="col-md-9">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label for="related-issue-select"><?= $package->i18n('issue_tracker_select_related_issue') ?>:</label>
+                            <p class="help-block" style="margin-top: 5px; margin-bottom: 10px;">
+                                <small><?= $package->i18n('issue_tracker_related_help_text') ?></small>
+                            </p>
                             <select name="related_to" 
                                     id="related-issue-select" 
                                     class="form-control selectpicker" 
@@ -397,7 +400,7 @@ $priorityClass = [
                     <div class="col-md-3">
                         <label>&nbsp;</label>
                         <button type="submit" class="btn btn-info btn-block">
-                            <i class="rex-icon fa-link"></i> Verknüpfen
+                            <i class="rex-icon fa-link"></i> <?= $package->i18n('issue_tracker_link_action') ?>
                         </button>
                     </div>
                 </div>
