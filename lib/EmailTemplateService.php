@@ -49,7 +49,8 @@ class EmailTemplateService
                         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
                     }
                     .email-header {
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        background: linear-gradient(135deg, #4b9ad9 0%, #324050 100%);
+                        background-color: #4b9ad9;
                         color: #ffffff;
                         padding: 30px;
                         text-align: center;
@@ -63,25 +64,26 @@ class EmailTemplateService
                         padding: 30px;
                     }
                     .email-body h2 {
-                        color: #667eea;
+                        color: #4b9ad9;
                         font-size: 20px;
                         margin-top: 0;
                         margin-bottom: 20px;
                     }
                     .info-box {
                         background-color: #f8f9fa;
-                        border-left: 4px solid #667eea;
+                        border-left: 4px solid #4b9ad9;
                         padding: 15px;
                         margin: 20px 0;
                         border-radius: 4px;
                     }
                     .info-box strong {
-                        color: #667eea;
+                        color: #4b9ad9;
                     }
                     .button {
                         display: inline-block;
                         padding: 12px 24px;
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        background: linear-gradient(135deg, #4b9ad9 0%, #324050 100%);
+                        background-color: #4b9ad9;
                         color: #ffffff !important;
                         text-decoration: none;
                         border-radius: 6px;
@@ -129,7 +131,7 @@ class EmailTemplateService
                     .meta-info dt {
                         display: inline-block;
                         font-weight: 600;
-                        color: #667eea;
+                        color: #4b9ad9;
                         margin-right: 5px;
                     }
                     .meta-info dd {
