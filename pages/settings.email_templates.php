@@ -8,6 +8,7 @@
 
 use FriendsOfREDAXO\IssueTracker\EmailTemplateService;
 use FriendsOfREDAXO\IssueTracker\PermissionService;
+use FriendsOfREDAXO\IssueTracker\NotificationService;
 
 $package = rex_addon::get('issue_tracker');
 
@@ -15,6 +16,74 @@ $package = rex_addon::get('issue_tracker');
 if (!PermissionService::canManageSettings()) {
     echo rex_view::error($package->i18n('issue_tracker_no_permission'));
     return;
+}
+
+// Test-E-Mail senden
+if (rex_post('test_template', 'string', '') !== '') {
+    $testUser = rex::getUser();
+    $testEmail = $testUser->getValue('email');
+    
+    if (!$testEmail) {
+        echo rex_view::error($package->i18n('issue_tracker_test_email_no_address'));
+    } else {
+        $templateKey = rex_post('test_template', 'string', '');
+        $templateType = str_replace(['email_template_', '_de', '_en'], '', $templateKey);
+        $lang = strpos($templateKey, '_de') !== false ? 'de' : 'en';
+        
+        // Template laden
+        $sql = rex_sql::factory();
+        $sql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = ?', [$templateKey]);
+        
+        if ($sql->getRows() > 0) {
+            $templateContent = $sql->getValue('setting_value');
+            
+            // Test-Daten für Platzhalter
+            $testData = [
+                'recipient_name' => $testUser->getValue('name') ?: 'Test User',
+                'issue_id' => '42',
+                'issue_title' => 'Test Issue: Login-Problem beheben',
+                'issue_category' => 'Bug',
+                'issue_priority' => 'high',
+                'issue_description' => "Dies ist eine Test-Beschreibung.\n\nMit mehreren Zeilen und **Markdown** Formatierung.",
+                'creator_name' => 'Max Mustermann',
+                'comment_text' => 'Das ist ein Test-Kommentar mit wichtigen Informationen.',
+                'old_status' => 'open',
+                'new_status' => 'in_progress',
+                'issue_url' => rex::getServer() . rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => 42]),
+            ];
+            
+            // Platzhalter ersetzen
+            foreach ($testData as $key => $value) {
+                $templateContent = str_replace('{{' . $key . '}}', $value, $templateContent);
+            }
+            
+            // HTML-Wrapper hinzufügen falls nötig
+            if (false === strpos($templateContent, '<!DOCTYPE html>')) {
+                $templateContent = EmailTemplateService::getHtmlWrapper($templateContent, 'Test: ' . $package->i18n('issue_tracker_template_' . $templateType));
+            }
+            
+            // E-Mail senden
+            try {
+                $mail = new rex_mailer();
+                $mail->setFrom(rex::getProperty('server'), 'REDAXO Issue Tracker (Test)');
+                $mail->addAddress($testEmail);
+                $mail->Subject = '[TEST] ' . $package->i18n('issue_tracker_template_' . $templateType);
+                $mail->isHTML(true);
+                $mail->Body = $templateContent;
+                $mail->AltBody = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $templateContent));
+                
+                if ($mail->send()) {
+                    echo rex_view::success($package->i18n('issue_tracker_test_email_sent', $testEmail));
+                } else {
+                    echo rex_view::error($package->i18n('issue_tracker_test_email_failed') . ': ' . $mail->ErrorInfo);
+                }
+            } catch (Exception $e) {
+                echo rex_view::error($package->i18n('issue_tracker_test_email_failed') . ': ' . $e->getMessage());
+            }
+        } else {
+            echo rex_view::error($package->i18n('issue_tracker_template_not_found'));
+        }
+    }
 }
 
 // Templates auf Standard zurücksetzen
@@ -86,21 +155,33 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                     <h4><?= $package->i18n('issue_tracker_template_new_issue') ?></h4>
                     <div class="form-group">
                         <textarea name="email_template_new_issue_de" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_new_issue_de']) ?></textarea>
+                        <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_new_issue_de')">
+                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                        </button>
                     </div>
                     
                     <h4><?= $package->i18n('issue_tracker_template_new_comment') ?></h4>
                     <div class="form-group">
                         <textarea name="email_template_new_comment_de" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_new_comment_de']) ?></textarea>
+                        <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_new_comment_de')">
+                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                        </button>
                     </div>
                     
                     <h4><?= $package->i18n('issue_tracker_template_status_change') ?></h4>
                     <div class="form-group">
                         <textarea name="email_template_status_change_de" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_status_change_de']) ?></textarea>
+                        <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_status_change_de')">
+                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                        </button>
                     </div>
                     
                     <h4><?= $package->i18n('issue_tracker_template_assignment') ?></h4>
                     <div class="form-group">
                         <textarea name="email_template_assignment_de" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_assignment_de']) ?></textarea>
+                        <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_assignment_de')">
+                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                        </button>
                     </div>
                 </div>
                 
@@ -109,21 +190,33 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                     <h4><?= $package->i18n('issue_tracker_template_new_issue') ?></h4>
                     <div class="form-group">
                         <textarea name="email_template_new_issue_en" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_new_issue_en']) ?></textarea>
+                        <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_new_issue_en')">
+                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                        </button>
                     </div>
                     
                     <h4><?= $package->i18n('issue_tracker_template_new_comment') ?></h4>
                     <div class="form-group">
                         <textarea name="email_template_new_comment_en" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_new_comment_en']) ?></textarea>
+                        <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_new_comment_en')">
+                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                        </button>
                     </div>
                     
                     <h4><?= $package->i18n('issue_tracker_template_status_change') ?></h4>
                     <div class="form-group">
                         <textarea name="email_template_status_change_en" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_status_change_en']) ?></textarea>
+                        <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_status_change_en')">
+                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                        </button>
                     </div>
                     
                     <h4><?= $package->i18n('issue_tracker_template_assignment') ?></h4>
                     <div class="form-group">
                         <textarea name="email_template_assignment_en" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_assignment_en']) ?></textarea>
+                        <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_assignment_en')">
+                            <i class="rex-icon fa-envelope"></i> Test-E-Mail senden
+                        </button>
                     </div>
                 </div>
             </div>
@@ -135,6 +228,22 @@ foreach ($defaultTemplates as $key => $defaultValue) {
         </div>
     </div>
 </form>
+
+<!-- Verstecktes Form für Test-E-Mails -->
+<form method="post" id="test-email-form" style="display: none;">
+    <input type="hidden" name="test_template" id="test-template-key" value="" />
+</form>
+
+<script>
+function testTemplate(templateKey) {
+    if (!confirm('<?= $package->i18n('issue_tracker_test_email_confirm') ?>')) {
+        return;
+    }
+    
+    document.getElementById('test-template-key').value = templateKey;
+    document.getElementById('test-email-form').submit();
+}
+</script>
 
 <!-- Reset Button -->
 <form method="post" onsubmit="return confirm('<?= $package->i18n('issue_tracker_templates_reset_confirm') ?>');">
