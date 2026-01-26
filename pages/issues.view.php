@@ -35,45 +35,45 @@ if (!PermissionService::canView($issue)) {
     return;
 }
 
-// Als Duplikat markieren
-if (rex_post('func', 'string', '') === 'mark_duplicate' && rex::getUser()->isAdmin()) {
-    $duplicateOfId = rex_post('duplicate_of', 'int', 0);
+// Als verwandtes Issue markieren
+if (rex_post('func', 'string', '') === 'mark_related' && rex::getUser()->isAdmin()) {
+    $relatedToId = rex_post('related_to', 'int', 0);
     
-    if ($duplicateOfId > 0 && $duplicateOfId !== $issue->getId()) {
-        if ($issue->markAsDuplicate($duplicateOfId, PermissionService::getUserId())) {
-            echo rex_view::success($package->i18n('issue_tracker_duplicate_marked'));
+    if ($relatedToId > 0 && $relatedToId !== $issue->getId()) {
+        if ($issue->markAsDuplicate($relatedToId, PermissionService::getUserId())) {
+            echo rex_view::success($package->i18n('issue_tracker_related_marked'));
             
             // Benachrichtigungen senden
-            $originalIssue = Issue::get($duplicateOfId);
-            if ($originalIssue) {
-                NotificationService::sendDuplicateMarked($issue, $originalIssue);
+            $relatedIssue = Issue::get($relatedToId);
+            if ($relatedIssue) {
+                NotificationService::sendDuplicateMarked($issue, $relatedIssue);
             }
             
             // Issue neu laden
             $issue = Issue::get($issueId);
         } else {
-            if (Issue::get($duplicateOfId) === null) {
-                echo rex_view::error($package->i18n('issue_tracker_duplicate_not_found'));
+            if (Issue::get($relatedToId) === null) {
+                echo rex_view::error($package->i18n('issue_tracker_related_not_found'));
             } else {
-                echo rex_view::error($package->i18n('issue_tracker_duplicate_error'));
+                echo rex_view::error($package->i18n('issue_tracker_related_error'));
             }
         }
-    } elseif ($duplicateOfId === $issue->getId()) {
-        echo rex_view::error($package->i18n('issue_tracker_duplicate_self_reference'));
+    } elseif ($relatedToId === $issue->getId()) {
+        echo rex_view::error($package->i18n('issue_tracker_related_self_reference'));
     } else {
-        echo rex_view::error($package->i18n('issue_tracker_duplicate_invalid_id'));
+        echo rex_view::error($package->i18n('issue_tracker_related_invalid_id'));
     }
 }
 
-// Duplikat-Markierung entfernen
-if (rex_post('func', 'string', '') === 'unmark_duplicate' && rex::getUser()->isAdmin()) {
+// Verknüpfung entfernen
+if (rex_post('func', 'string', '') === 'unmark_related' && rex::getUser()->isAdmin()) {
     if ($issue->unmarkAsDuplicate(PermissionService::getUserId())) {
-        echo rex_view::success($package->i18n('issue_tracker_duplicate_unmarked'));
+        echo rex_view::success($package->i18n('issue_tracker_related_unmarked'));
         
         // Issue neu laden
         $issue = Issue::get($issueId);
     } else {
-        echo rex_view::error($package->i18n('issue_tracker_duplicate_error'));
+        echo rex_view::error($package->i18n('issue_tracker_related_error'));
     }
 }
 

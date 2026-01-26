@@ -253,37 +253,37 @@ $priorityClass = [
                         <?php endif; ?>
 
                         <?php 
-                        // Duplikat-Information anzeigen
-                        $duplicateOf = $issue->getDuplicateOf();
-                        if ($duplicateOf !== null): 
-                            $originalIssue = $issue->getDuplicateIssue();
+                        // Verwandtes Issue anzeigen
+                        $relatedTo = $issue->getDuplicateOf();
+                        if ($relatedTo !== null): 
+                            $relatedIssue = $issue->getDuplicateIssue();
                         ?>
-                        <dt><?= $package->i18n('issue_tracker_duplicate_of') ?>:</dt>
+                        <dt><?= $package->i18n('issue_tracker_related_to') ?>:</dt>
                         <dd>
-                            <?php if ($originalIssue): ?>
-                                <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $originalIssue->getId()]) ?>" 
-                                   class="label label-warning">
-                                    <i class="rex-icon fa-clone"></i> #<?= $originalIssue->getId() ?> - <?= rex_escape($originalIssue->getTitle()) ?>
+                            <?php if ($relatedIssue): ?>
+                                <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $relatedIssue->getId()]) ?>" 
+                                   class="label label-info">
+                                    <i class="rex-icon fa-link"></i> #<?= $relatedIssue->getId() ?> - <?= rex_escape($relatedIssue->getTitle()) ?>
                                 </a>
                             <?php else: ?>
                                 <span class="label label-warning">
-                                    <i class="rex-icon fa-clone"></i> #<?= $duplicateOf ?> (<?= $package->i18n('issue_tracker_duplicate_not_found') ?>)
+                                    <i class="rex-icon fa-link"></i> #<?= $relatedTo ?> (<?= $package->i18n('issue_tracker_related_not_found') ?>)
                                 </span>
                             <?php endif; ?>
                         </dd>
                         <?php endif; ?>
 
                         <?php 
-                        // Duplikate dieses Issues anzeigen
-                        $duplicates = $issue->getDuplicates();
-                        if (!empty($duplicates)): 
+                        // Verwandte Issues anzeigen
+                        $relatedIssues = $issue->getDuplicates();
+                        if (!empty($relatedIssues)): 
                         ?>
-                        <dt><?= $package->i18n('issue_tracker_duplicates') ?>:</dt>
+                        <dt><?= $package->i18n('issue_tracker_related_issues') ?>:</dt>
                         <dd>
-                            <?php foreach ($duplicates as $duplicate): ?>
-                                <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $duplicate->getId()]) ?>" 
+                            <?php foreach ($relatedIssues as $related): ?>
+                                <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $related->getId()]) ?>" 
                                    class="label label-default" style="display: inline-block; margin-bottom: 3px;">
-                                    <i class="rex-icon fa-clone"></i> #<?= $duplicate->getId() ?> - <?= rex_escape($duplicate->getTitle()) ?>
+                                    <i class="rex-icon fa-link"></i> #<?= $related->getId() ?> - <?= rex_escape($related->getTitle()) ?>
                                 </a><br>
                             <?php endforeach; ?>
                         </dd>
@@ -331,39 +331,7 @@ $priorityClass = [
                         </form>
                     </div>
 
-                    <!-- Duplikat markieren -->
-                    <?php if ($currentUser->isAdmin() && $duplicateOf === null): ?>
-                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                        <form method="post" id="mark-duplicate-form">
-                            <input type="hidden" name="func" value="mark_duplicate" />
-                            <div class="form-group">
-                                <label><strong><i class="rex-icon fa-clone"></i> <?= $package->i18n('issue_tracker_mark_as_duplicate') ?>:</strong></label>
-                                <input type="number" 
-                                       name="duplicate_of" 
-                                       class="form-control" 
-                                       placeholder="<?= $package->i18n('issue_tracker_duplicate_issue_id') ?>" 
-                                       min="1" 
-                                       required>
-                                <small class="help-block"><?= $package->i18n('issue_tracker_duplicate_issue_id') ?></small>
-                            </div>
-                            <button type="submit" class="btn btn-sm btn-warning btn-block">
-                                <i class="rex-icon fa-clone"></i> <?= $package->i18n('issue_tracker_mark_as_duplicate') ?>
-                            </button>
-                        </form>
-                    </div>
-                    <?php endif; ?>
-
-                    <!-- Duplikat-Markierung entfernen -->
-                    <?php if ($currentUser->isAdmin() && $duplicateOf !== null): ?>
-                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                        <form method="post">
-                            <input type="hidden" name="func" value="unmark_duplicate" />
-                            <button type="submit" class="btn btn-sm btn-default btn-block">
-                                <i class="rex-icon fa-times"></i> <?= $package->i18n('issue_tracker_unmark_as_duplicate') ?>
-                            </button>
-                        </form>
-                    </div>
-                    <?php endif; ?>
+                    <!-- Verwandtes Issue markieren - ENTFERNT (wird als separates Panel unter Header angezeigt) -->
                     </div>
                     <?php endif; ?>
                 </div>
@@ -371,16 +339,114 @@ $priorityClass = [
         </div>
     </div>
 
+    <!-- Verwandtes Issue Panel (außerhalb der Sidebar, admin-only) -->
+    <?php if ($currentUser->isAdmin() && $relatedTo === null): ?>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                <i class="rex-icon fa-link"></i> <?= $package->i18n('issue_tracker_mark_as_related') ?>
+            </h3>
+        </div>
+        <div class="panel-body">
+            <form method="post" id="mark-related-form">
+                <input type="hidden" name="func" value="mark_related" />
+                <div class="row">
+                    <div class="col-md-9">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="related-issue-select"><?= $package->i18n('issue_tracker_select_related_issue') ?>:</label>
+                            <select name="related_to" 
+                                    id="related-issue-select" 
+                                    class="form-control selectpicker" 
+                                    data-live-search="true"
+                                    data-width="100%"
+                                    data-size="10"
+                                    required>
+                                <option value="">-- <?= $package->i18n('issue_tracker_select_open_issue') ?> --</option>
+                                <?php 
+                                // Offene Issues laden
+                                $sql = rex_sql::factory();
+                                $sql->setQuery('
+                                    SELECT id, title, category, priority, status
+                                    FROM ' . rex::getTable('issue_tracker_issues') . '
+                                    WHERE id != ?
+                                    AND status IN ("open", "in_progress", "planned")
+                                    ORDER BY id DESC
+                                    LIMIT 100
+                                ', [$issue->getId()]);
+                                
+                                while ($sql->hasNext()) {
+                                    $issueOption = $sql->getRow();
+                                    $statusLabels = [
+                                        'open' => '🔴',
+                                        'in_progress' => '🟡',
+                                        'planned' => '🔵'
+                                    ];
+                                    $statusIcon = $statusLabels[$issueOption['status']] ?? '⚪';
+                                    
+                                    echo '<option value="' . (int) $issueOption['id'] . '">'
+                                        . $statusIcon . ' #' . (int) $issueOption['id'] . ' - ' . rex_escape($issueOption['title'])
+                                        . ' (' . rex_escape($issueOption['category']) . ')'
+                                        . '</option>';
+                                }
+                                ?>
+                            </select>
+                            <small class="help-block">
+                                <i class="rex-icon fa-info-circle"></i> Dieses Issue wird mit dem ausgewählten Issue verknüpft und geschlossen.
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn btn-info btn-block">
+                            <i class="rex-icon fa-link"></i> Verknüpfen
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- Verknüpfung entfernen Panel -->
+    <?php if ($currentUser->isAdmin() && $relatedTo !== null): ?>
+    <div class="panel panel-warning">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                <i class="rex-icon fa-link"></i> <?= $package->i18n('issue_tracker_related_info') ?>
+            </h3>
+        </div>
+        <div class="panel-body">
+            <p>
+                <?php if ($relatedIssue): ?>
+                    Dieses Issue ist verknüpft mit 
+                    <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $relatedIssue->getId()]) ?>" 
+                       class="label label-info">
+                        <i class="rex-icon fa-link"></i> #<?= $relatedIssue->getId() ?> - <?= rex_escape($relatedIssue->getTitle()) ?>
+                    </a>
+                <?php else: ?>
+                    <?= $package->i18n('issue_tracker_related_to') ?> #<?= $relatedTo ?>
+                <?php endif; ?>
+            </p>
+            <form method="post" style="margin-top: 15px;">
+                <input type="hidden" name="func" value="unmark_related" />
+                <button type="submit" class="btn btn-warning">
+                    <i class="rex-icon fa-unlink"></i> <?= $package->i18n('issue_tracker_unmark_as_related') ?>
+                </button>
+            </form>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <?php 
-    // Duplikat-Warnung anzeigen
-    if ($duplicateOf !== null && $originalIssue): 
+    // Verwandtes Issue Warnung anzeigen
+    if ($relatedTo !== null && $relatedIssue): 
     ?>
-    <div class="alert alert-warning">
-        <h4><i class="rex-icon fa-clone"></i> <?= $package->i18n('issue_tracker_duplicate_info') ?></h4>
+    <div class="alert alert-info">
+        <h4><i class="rex-icon fa-link"></i> <?= $package->i18n('issue_tracker_related_info') ?></h4>
         <p>
-            <?= $package->i18n('issue_tracker_duplicate_closed_info') ?>: 
-            <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $originalIssue->getId()]) ?>">
-                #<?= $originalIssue->getId() ?> - <?= rex_escape($originalIssue->getTitle()) ?>
+            Dieses Issue wurde als verwandt markiert mit: 
+            <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $relatedIssue->getId()]) ?>">
+                #<?= $relatedIssue->getId() ?> - <?= rex_escape($relatedIssue->getTitle()) ?>
             </a>
         </p>
     </div>
