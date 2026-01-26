@@ -460,3 +460,22 @@ issue_tracker_no_issues = Keine Themen gefunden
 issue_tracker_statistics = Statistiken
 issue_tracker_status_overdue = Überfällig
 issue_tracker_due_date = Fälligkeitsdatum
+
+# Duplikate
+issue_tracker_duplicate_of = Duplikat von
+issue_tracker_mark_as_duplicate = Als Duplikat markieren
+issue_tracker_unmark_as_duplicate = Duplikat-Markierung entfernen
+issue_tracker_duplicate_issue_id = Issue-ID des Originals
+issue_tracker_duplicate_marked = Issue wurde als Duplikat markiert und geschlossen
+issue_tracker_duplicate_unmarked = Duplikat-Markierung wurde entfernt
+issue_tracker_duplicate_error = Fehler beim Markieren als Duplikat
+issue_tracker_duplicate_invalid_id = Ungültige Issue-ID
+issue_tracker_duplicate_not_found = Original-Issue wurde nicht gefunden
+issue_tracker_duplicate_self_reference = Ein Issue kann nicht als Duplikat von sich selbst markiert werden
+issue_tracker_duplicates = Duplikate
+issue_tracker_duplicates_of_this = Duplikate von diesem Issue
+issue_tracker_no_duplicates = Keine Duplikate vorhanden
+issue_tracker_is_duplicate = Ist Duplikat von
+issue_tracker_view_original = Original anzeigen
+issue_tracker_duplicate_info = Dieses Issue wurde als Duplikat markiert
+issue_tracker_duplicate_closed_info = wurde automatisch als Duplikat geschlossen

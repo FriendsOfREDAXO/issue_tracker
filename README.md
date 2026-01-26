@@ -73,28 +73,30 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 
 1. Addon-Ordner nach `/redaxo/src/addons/issue_tracker/` kopieren
 2. Im REDAXO-Backend unter "AddOns" das AddOn installieren und aktivieren
-3. **Media Manager Typen erstellen** (wichtig für Dateianhänge!)
+3. Die **Media Manager Typen werden automatisch erstellt** (falls Media Manager verfügbar ist)
 4. Berechtigungen für Benutzer einrichten (siehe unten)
 
-### Media Manager Typen einrichten
+### Media Manager Integration
 
-Das Issue Tracker AddOn benötigt zwei Media Manager Typen für die Anzeige von Dateianhängen:
+Das Issue Tracker AddOn erstellt bei der Installation automatisch zwei Media Manager Typen für die Anzeige von Dateianhängen:
 
-#### 1. `issue_tracker_attachment` (Vollansicht)
+#### Automatisch erstellte Typen:
 
-Gehe zu "Media Manager" → "Medientypen" → "Typ hinzufügen":
-- **Name**: `issue_tracker_attachment`
-- **Effekt hinzufügen**: "Issue Tracker Attachment"
-- Optional weitere Effekte wie "resize" oder "compress" hinzufügen
+1. **`issue_tracker_attachment`** (Vollansicht)
+   - Lädt Originalanhänge aus dem Issue Tracker Datenverzeichnis
+   - Wird für Downloads und vollständige Anzeige verwendet
 
-#### 2. `issue_tracker_thumbnail` (Vorschaubilder)
+2. **`issue_tracker_thumbnail`** (Vorschaubilder)
+   - Erstellt 200×200px Thumbnails von Bildern
+   - Wird für Vorschauen in Listen verwendet
 
-Gehe zu "Media Manager" → "Medientypen" → "Typ hinzufügen":
-- **Name**: `issue_tracker_thumbnail`
-- **Effekt 1**: "Issue Tracker Attachment"
-- **Effekt 2**: "resize" (Breite: 300px, Höhe: 300px, Modus: fit)
+**Hinweis**: 
+- Die Media Manager Typen werden bei der Installation automatisch erstellt
+- Bei Updates werden fehlende Typen nachinstalliert
+- Bei Deinstallation werden die Typen automatisch entfernt
+- Der Effekt "Issue Tracker Attachment" wird automatisch registriert
 
-**Hinweis**: Der Effekt "Issue Tracker Attachment" wird automatisch beim Installieren des AddOns registriert.
+Weitere Details siehe [MEDIA_MANAGER.md](MEDIA_MANAGER.md)
 
 ## Konfiguration
 

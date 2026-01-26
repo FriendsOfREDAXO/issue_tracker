@@ -458,3 +458,22 @@ issue_tracker_no_issues = No issues found
 issue_tracker_statistics = Statistics
 issue_tracker_status_overdue = Overdue
 issue_tracker_due_date = Due Date
+
+# Duplicates
+issue_tracker_duplicate_of = Duplicate of
+issue_tracker_mark_as_duplicate = Mark as Duplicate
+issue_tracker_unmark_as_duplicate = Remove Duplicate Mark
+issue_tracker_duplicate_issue_id = Original Issue ID
+issue_tracker_duplicate_marked = Issue was marked as duplicate and closed
+issue_tracker_duplicate_unmarked = Duplicate mark was removed
+issue_tracker_duplicate_error = Error marking as duplicate
+issue_tracker_duplicate_invalid_id = Invalid Issue ID
+issue_tracker_duplicate_not_found = Original issue not found
+issue_tracker_duplicate_self_reference = An issue cannot be marked as duplicate of itself
+issue_tracker_duplicates = Duplicates
+issue_tracker_duplicates_of_this = Duplicates of this issue
+issue_tracker_no_duplicates = No duplicates
+issue_tracker_is_duplicate = Is duplicate of
+issue_tracker_view_original = View Original
+issue_tracker_duplicate_info = This issue was marked as duplicate
+issue_tracker_duplicate_closed_info = was automatically closed as duplicate

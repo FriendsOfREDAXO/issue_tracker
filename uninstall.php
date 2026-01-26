@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Deinstallation des Issue Tracker AddOns
+ * Deinstallation des Issue Tracker AddOns.
  *
  * Löscht alle Tabellen und Daten des AddOns.
  *
@@ -54,4 +54,47 @@ rex_sql_table::get(rex::getTable('issue_tracker_projects'))->drop();
 $dataDir = rex_path::addonData('issue_tracker');
 if (is_dir($dataDir)) {
     rex_dir::delete($dataDir);
+}
+
+// Media Manager Typen für Issue Tracker entfernen (falls Media Manager verfügbar)
+if (rex_addon::get('media_manager')->isAvailable()) {
+    $sql = rex_sql::factory();
+
+    // Type "issue_tracker_attachment" löschen
+    $sql->setQuery('SELECT id FROM ' . rex::getTable('media_manager_type') . ' WHERE name = ?', ['issue_tracker_attachment']);
+    if ($sql->getRows() > 0) {
+        $typeId = (int) $sql->getValue('id');
+
+        // Cache löschen
+        rex_media_manager::deleteCacheByType($typeId);
+
+        // Effekte löschen
+        $sql->setTable(rex::getTable('media_manager_type_effect'));
+        $sql->setWhere(['type_id' => $typeId]);
+        $sql->delete();
+
+        // Type löschen
+        $sql->setTable(rex::getTable('media_manager_type'));
+        $sql->setWhere(['id' => $typeId]);
+        $sql->delete();
+    }
+
+    // Type "issue_tracker_thumbnail" löschen
+    $sql->setQuery('SELECT id FROM ' . rex::getTable('media_manager_type') . ' WHERE name = ?', ['issue_tracker_thumbnail']);
+    if ($sql->getRows() > 0) {
+        $typeId = (int) $sql->getValue('id');
+
+        // Cache löschen
+        rex_media_manager::deleteCacheByType($typeId);
+
+        // Effekte löschen
+        $sql->setTable(rex::getTable('media_manager_type_effect'));
+        $sql->setWhere(['type_id' => $typeId]);
+        $sql->delete();
+
+        // Type löschen
+        $sql->setTable(rex::getTable('media_manager_type'));
+        $sql->setWhere(['id' => $typeId]);
+        $sql->delete();
+    }
 }

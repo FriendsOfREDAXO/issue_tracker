@@ -251,6 +251,43 @@ $priorityClass = [
                             </a>
                         </dd>
                         <?php endif; ?>
+
+                        <?php 
+                        // Duplikat-Information anzeigen
+                        $duplicateOf = $issue->getDuplicateOf();
+                        if ($duplicateOf !== null): 
+                            $originalIssue = $issue->getDuplicateIssue();
+                        ?>
+                        <dt><?= $package->i18n('issue_tracker_duplicate_of') ?>:</dt>
+                        <dd>
+                            <?php if ($originalIssue): ?>
+                                <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $originalIssue->getId()]) ?>" 
+                                   class="label label-warning">
+                                    <i class="rex-icon fa-clone"></i> #<?= $originalIssue->getId() ?> - <?= rex_escape($originalIssue->getTitle()) ?>
+                                </a>
+                            <?php else: ?>
+                                <span class="label label-warning">
+                                    <i class="rex-icon fa-clone"></i> #<?= $duplicateOf ?> (<?= $package->i18n('issue_tracker_duplicate_not_found') ?>)
+                                </span>
+                            <?php endif; ?>
+                        </dd>
+                        <?php endif; ?>
+
+                        <?php 
+                        // Duplikate dieses Issues anzeigen
+                        $duplicates = $issue->getDuplicates();
+                        if (!empty($duplicates)): 
+                        ?>
+                        <dt><?= $package->i18n('issue_tracker_duplicates') ?>:</dt>
+                        <dd>
+                            <?php foreach ($duplicates as $duplicate): ?>
+                                <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $duplicate->getId()]) ?>" 
+                                   class="label label-default" style="display: inline-block; margin-bottom: 3px;">
+                                    <i class="rex-icon fa-clone"></i> #<?= $duplicate->getId() ?> - <?= rex_escape($duplicate->getTitle()) ?>
+                                </a><br>
+                            <?php endforeach; ?>
+                        </dd>
+                        <?php endif; ?>
                     </dl>
 
                     <!-- Tags -->
@@ -293,12 +330,61 @@ $priorityClass = [
                             </button>
                         </form>
                     </div>
+
+                    <!-- Duplikat markieren -->
+                    <?php if ($currentUser->isAdmin() && $duplicateOf === null): ?>
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                        <form method="post" id="mark-duplicate-form">
+                            <input type="hidden" name="func" value="mark_duplicate" />
+                            <div class="form-group">
+                                <label><strong><i class="rex-icon fa-clone"></i> <?= $package->i18n('issue_tracker_mark_as_duplicate') ?>:</strong></label>
+                                <input type="number" 
+                                       name="duplicate_of" 
+                                       class="form-control" 
+                                       placeholder="<?= $package->i18n('issue_tracker_duplicate_issue_id') ?>" 
+                                       min="1" 
+                                       required>
+                                <small class="help-block"><?= $package->i18n('issue_tracker_duplicate_issue_id') ?></small>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-warning btn-block">
+                                <i class="rex-icon fa-clone"></i> <?= $package->i18n('issue_tracker_mark_as_duplicate') ?>
+                            </button>
+                        </form>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Duplikat-Markierung entfernen -->
+                    <?php if ($currentUser->isAdmin() && $duplicateOf !== null): ?>
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                        <form method="post">
+                            <input type="hidden" name="func" value="unmark_duplicate" />
+                            <button type="submit" class="btn btn-sm btn-default btn-block">
+                                <i class="rex-icon fa-times"></i> <?= $package->i18n('issue_tracker_unmark_as_duplicate') ?>
+                            </button>
+                        </form>
+                    </div>
+                    <?php endif; ?>
                     </div>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
+
+    <?php 
+    // Duplikat-Warnung anzeigen
+    if ($duplicateOf !== null && $originalIssue): 
+    ?>
+    <div class="alert alert-warning">
+        <h4><i class="rex-icon fa-clone"></i> <?= $package->i18n('issue_tracker_duplicate_info') ?></h4>
+        <p>
+            <?= $package->i18n('issue_tracker_duplicate_closed_info') ?>: 
+            <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $originalIssue->getId()]) ?>">
+                #<?= $originalIssue->getId() ?> - <?= rex_escape($originalIssue->getTitle()) ?>
+            </a>
+        </p>
+    </div>
+    <?php endif; ?>
 
     <!-- Kommentare -->
     <div class="panel panel-default">

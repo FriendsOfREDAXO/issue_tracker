@@ -1,24 +1,28 @@
 <?php
 
 /**
- * Notification Service für E-Mail-Benachrichtigungen
+ * Notification Service für E-Mail-Benachrichtigungen.
  *
  * @package issue_tracker
  */
 
 namespace FriendsOfREDAXO\IssueTracker;
 
+use Exception;
 use rex;
-use rex_sql;
-use rex_user;
+use rex_logger;
 use rex_mailer;
-use rex_i18n;
+use rex_sql;
 use rex_url;
+use rex_user;
+
+use function in_array;
+use function sprintf;
 
 class NotificationService
 {
     /**
-     * Sendet E-Mail-Benachrichtigungen für ein neues Issue
+     * Sendet E-Mail-Benachrichtigungen für ein neues Issue.
      */
     public static function notifyNewIssue(Issue $issue): void
     {
@@ -28,7 +32,7 @@ class NotificationService
 
         $users = self::getUsersForNotification('email_on_new');
         $creator = $issue->getCreator();
-        
+
         foreach ($users as $user) {
             // Ersteller nicht benachrichtigen
             if ($user->getId() === $issue->getCreatedBy()) {
@@ -38,13 +42,13 @@ class NotificationService
             self::sendMail(
                 $user->getValue('email'),
                 'Neues Issue: ' . $issue->getTitle(),
-                self::getNewIssueTemplate($issue, $creator, $user)
+                self::getNewIssueTemplate($issue, $creator, $user),
             );
         }
     }
 
     /**
-     * Sendet E-Mail-Benachrichtigungen für einen neuen Kommentar
+     * Sendet E-Mail-Benachrichtigungen für einen neuen Kommentar.
      */
     public static function notifyNewComment(Comment $comment, Issue $issue): void
     {
@@ -54,7 +58,7 @@ class NotificationService
 
         $users = self::getUsersForNotification('email_on_comment');
         $creator = $comment->getCreator();
-        
+
         foreach ($users as $user) {
             // Kommentar-Autor nicht benachrichtigen
             if ($user->getId() === $comment->getCreatedBy()) {
@@ -64,13 +68,13 @@ class NotificationService
             self::sendMail(
                 $user->getValue('email'),
                 'Neuer Kommentar zu Issue #' . $issue->getId() . ': ' . $issue->getTitle(),
-                self::getNewCommentTemplate($comment, $issue, $creator, $user)
+                self::getNewCommentTemplate($comment, $issue, $creator, $user),
             );
         }
     }
 
     /**
-     * Sendet E-Mail-Benachrichtigungen für Status-Änderung
+     * Sendet E-Mail-Benachrichtigungen für Status-Änderung.
      */
     public static function notifyStatusChange(Issue $issue, string $oldStatus, string $newStatus): void
     {
@@ -79,18 +83,18 @@ class NotificationService
         }
 
         $users = self::getUsersForNotification('email_on_status_change');
-        
+
         foreach ($users as $user) {
             self::sendMail(
                 $user->getValue('email'),
                 'Status geändert: Issue #' . $issue->getId() . ': ' . $issue->getTitle(),
-                self::getStatusChangeTemplate($issue, $oldStatus, $newStatus, $user)
+                self::getStatusChangeTemplate($issue, $oldStatus, $newStatus, $user),
             );
         }
     }
 
     /**
-     * Sendet E-Mail-Benachrichtigungen für Zuweisung
+     * Sendet E-Mail-Benachrichtigungen für Zuweisung.
      */
     public static function notifyAssignment(Issue $issue, rex_user $assignedUser): void
     {
@@ -108,14 +112,58 @@ class NotificationService
             self::sendMail(
                 $assignedUser->getValue('email'),
                 'Issue zugewiesen: #' . $issue->getId() . ': ' . $issue->getTitle(),
-                self::getAssignmentTemplate($issue, $assignedUser)
+                self::getAssignmentTemplate($issue, $assignedUser),
             );
         }
     }
 
     /**
-     * Sendet Broadcast-Nachricht an User
-     * 
+     * Sendet E-Mail-Benachrichtigung wenn Issue als Duplikat markiert wurde.
+     */
+    public static function sendDuplicateMarked(Issue $duplicate, Issue $original): void
+    {
+        if (!self::isEmailEnabled()) {
+            return;
+        }
+
+        // Benachrichtige Ersteller des Duplikats
+        $duplicateCreator = $duplicate->getCreator();
+        if ($duplicateCreator && $duplicateCreator->getValue('email')) {
+            $subject = 'Issue #' . $duplicate->getId() . ' als Duplikat markiert';
+            $message = sprintf(
+                "Hallo %s,\n\nIhr Issue #%d \"%s\" wurde als Duplikat von #%d \"%s\" markiert und automatisch geschlossen.\n\nWeitere Informationen finden Sie im Original-Issue:\n%s\n\n---\nDiese E-Mail wurde automatisch vom REDAXO Issue Tracker generiert.",
+                $duplicateCreator->getName(),
+                $duplicate->getId(),
+                $duplicate->getTitle(),
+                $original->getId(),
+                $original->getTitle(),
+                rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $original->getId()], false),
+            );
+
+            self::sendMail($duplicateCreator->getValue('email'), $subject, $message);
+        }
+
+        // Benachrichtige Ersteller des Originals
+        $originalCreator = $original->getCreator();
+        if ($originalCreator && $originalCreator->getValue('email') && $originalCreator->getId() !== $duplicateCreator?->getId()) {
+            $subject = 'Duplikat zu Issue #' . $original->getId() . ' gefunden';
+            $message = sprintf(
+                "Hallo %s,\n\nIssue #%d \"%s\" wurde als Duplikat Ihres Issues #%d \"%s\" markiert.\n\nZum Issue:\n%s\n\n---\nDiese E-Mail wurde automatisch vom REDAXO Issue Tracker generiert.",
+                $originalCreator->getName(),
+                $duplicate->getId(),
+                $duplicate->getTitle(),
+                $original->getId(),
+                $original->getTitle(),
+                rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $original->getId()], false),
+            );
+
+            self::sendMail($originalCreator->getValue('email'), $subject, $message);
+        }
+    }
+
+    /**
+     * Sendet Broadcast-Nachricht an User.
+     *
      * @param string $subject Betreff der Nachricht
      * @param string $message Nachrichtentext
      * @param string $method Versandart: 'message' (Nachrichtensystem), 'email' (nur E-Mail), 'both' (beides)
@@ -125,30 +173,30 @@ class NotificationService
     public static function sendBroadcast(string $subject, string $message, string $method = 'message', string $recipients = 'issue_tracker'): int
     {
         // Bei E-Mail-Versand nur User mit E-Mail holen
-        $requireEmail = ($method === 'email' || $method === 'both');
-        
+        $requireEmail = ('email' === $method || 'both' === $method);
+
         // User holen je nach Empfängergruppe
-        if ($recipients === 'all') {
+        if ('all' === $recipients) {
             $users = self::getAllRedaxoUsers($requireEmail);
             // Bei "alle User" nur E-Mail erlauben (Sicherheit)
             $method = 'email';
         } else {
             $users = self::getAllIssueTrackerUsers($requireEmail);
         }
-        
+
         $count = 0;
-        $currentUserId = \rex::getUser()->getId();
+        $currentUserId = rex::getUser()->getId();
 
         foreach ($users as $user) {
             // Absender nicht benachrichtigen
             if ($user->getId() === $currentUserId) {
                 continue;
             }
-            
+
             $sent = false;
-            
+
             // Nachricht über das interne Nachrichtensystem senden
-            if ($method === 'message' || $method === 'both') {
+            if ('message' === $method || 'both' === $method) {
                 $msg = new Message();
                 $msg->setSenderId($currentUserId);
                 $msg->setRecipientId($user->getId());
@@ -158,17 +206,17 @@ class NotificationService
                     $sent = true;
                 }
             }
-            
+
             // E-Mail senden
-            if ($method === 'email' || $method === 'both') {
+            if ('email' === $method || 'both' === $method) {
                 $email = $user->getValue('email');
                 if ($email && self::sendMail($email, $subject, $message)) {
                     $sent = true;
                 }
             }
-            
+
             if ($sent) {
-                $count++;
+                ++$count;
             }
         }
 
@@ -176,7 +224,7 @@ class NotificationService
     }
 
     /**
-     * Prüft ob E-Mail-Benachrichtigungen aktiviert sind
+     * Prüft ob E-Mail-Benachrichtigungen aktiviert sind.
      */
     private static function isEmailEnabled(): bool
     {
@@ -186,11 +234,11 @@ class NotificationService
             WHERE setting_key = "email_enabled"
         ');
 
-        return $sql->getRows() > 0 && $sql->getValue('setting_value') === '1';
+        return $sql->getRows() > 0 && '1' === $sql->getValue('setting_value');
     }
 
     /**
-     * Gibt alle User zurück, die eine bestimmte Benachrichtigung aktiviert haben
+     * Gibt alle User zurück, die eine bestimmte Benachrichtigung aktiviert haben.
      */
     private static function getUsersForNotification(string $notificationType): array
     {
@@ -215,8 +263,8 @@ class NotificationService
     }
 
     /**
-     * Gibt alle berechtigten Issue-Tracker User zurück
-     * 
+     * Gibt alle berechtigten Issue-Tracker User zurück.
+     *
      * @param bool $requireEmail Wenn true, werden nur User mit E-Mail zurückgegeben
      */
     private static function getAllIssueTrackerUsers(bool $requireEmail = false): array
@@ -233,7 +281,7 @@ class NotificationService
                 if (!$user->isAdmin() && !$user->hasPerm('issue_tracker[]')) {
                     continue;
                 }
-                
+
                 // Wenn E-Mail erforderlich, nur User mit E-Mail hinzufügen
                 if ($requireEmail && !$user->getValue('email')) {
                     continue;
@@ -246,8 +294,8 @@ class NotificationService
     }
 
     /**
-     * Gibt alle aktiven REDAXO User zurück (unabhängig von Berechtigungen)
-     * 
+     * Gibt alle aktiven REDAXO User zurück (unabhängig von Berechtigungen).
+     *
      * @param bool $requireEmail Wenn true, werden nur User mit E-Mail zurückgegeben
      */
     private static function getAllRedaxoUsers(bool $requireEmail = true): array
@@ -271,13 +319,13 @@ class NotificationService
     }
 
     /**
-     * Erstellt einen Token für Deep Links zu Issues in E-Mails
+     * Erstellt einen Token für Deep Links zu Issues in E-Mails.
      */
     private static function createEmailToken(int $issueId): string
     {
         $token = bin2hex(random_bytes(32));
-        
-        $sql = \rex_sql::factory();
+
+        $sql = rex_sql::factory();
         $sql->setTable(rex::getTable('issue_tracker_email_tokens'));
         $sql->setValue('token', $token);
         $sql->setValue('issue_id', $issueId);
@@ -285,18 +333,18 @@ class NotificationService
         $sql->setValue('created_at', date('Y-m-d H:i:s'));
         $sql->setValue('expires_at', date('Y-m-d H:i:s', strtotime('+30 days')));
         $sql->insert();
-        
+
         return $token;
     }
 
     /**
-     * Erstellt einen Token für Deep Links zu Nachrichten in E-Mails
+     * Erstellt einen Token für Deep Links zu Nachrichten in E-Mails.
      */
     public static function createMessageEmailToken(int $messageId): string
     {
         $token = bin2hex(random_bytes(32));
-        
-        $sql = \rex_sql::factory();
+
+        $sql = rex_sql::factory();
         $sql->setTable(rex::getTable('issue_tracker_email_tokens'));
         $sql->setValue('token', $token);
         $sql->setValue('message_id', $messageId);
@@ -304,27 +352,27 @@ class NotificationService
         $sql->setValue('created_at', date('Y-m-d H:i:s'));
         $sql->setValue('expires_at', date('Y-m-d H:i:s', strtotime('+30 days')));
         $sql->insert();
-        
+
         return $token;
     }
 
     /**
-     * Sendet eine E-Mail
+     * Sendet eine E-Mail.
      */
     private static function sendMail(string $to, string $subject, string $body): bool
     {
         try {
-            $mail = new \rex_mailer();
-            
-            $sql = \rex_sql::factory();
+            $mail = new rex_mailer();
+
+            $sql = rex_sql::factory();
             $sql->setQuery('
-                SELECT setting_value FROM ' . \rex::getTable('issue_tracker_settings') . '
+                SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . '
                 WHERE setting_key = "email_from_name"
             ');
-            
+
             $fromName = $sql->getRows() > 0 ? $sql->getValue('setting_value') : 'REDAXO Issue Tracker';
-            
-            $mail->setFrom(\rex::getProperty('server'), $fromName);
+
+            $mail->setFrom(rex::getProperty('server'), $fromName);
             $mail->addAddress($to);
             $mail->Subject = $subject;
             $mail->isHTML(true);
@@ -332,20 +380,20 @@ class NotificationService
             $mail->AltBody = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $body));
 
             $result = $mail->send();
-            
+
             if (!$result) {
-                \rex_logger::factory()->log('info', 'Issue Tracker: E-Mail konnte nicht an ' . $to . ' gesendet werden: ' . $mail->ErrorInfo);
+                rex_logger::factory()->log('info', 'Issue Tracker: E-Mail konnte nicht an ' . $to . ' gesendet werden: ' . $mail->ErrorInfo);
             }
-            
+
             return $result;
-        } catch (\Exception $e) {
-            \rex_logger::logException($e);
+        } catch (Exception $e) {
+            rex_logger::logException($e);
             return false;
         }
     }
 
     /**
-     * Template für neue Issues
+     * Template für neue Issues.
      */
     private static function getNewIssueTemplate(Issue $issue, ?rex_user $creator, rex_user $recipient): string
     {
@@ -354,7 +402,7 @@ class NotificationService
         $url = rex::getServer() . 'index.php?rex-api-call=issue_tracker_link&token=' . $token;
 
         $template = self::getTemplate('new_issue', $recipient);
-        
+
         return self::replaceTemplatePlaceholders($template, [
             'recipient_name' => $recipient->getValue('name'),
             'issue_id' => $issue->getId(),
@@ -363,12 +411,12 @@ class NotificationService
             'issue_priority' => $issue->getPriority(),
             'issue_description' => $issue->getDescription(),
             'creator_name' => $creatorName,
-            'issue_url' => $url
+            'issue_url' => $url,
         ]);
     }
 
     /**
-     * Template für neue Kommentare
+     * Template für neue Kommentare.
      */
     private static function getNewCommentTemplate(Comment $comment, Issue $issue, ?rex_user $creator, rex_user $recipient): string
     {
@@ -377,19 +425,19 @@ class NotificationService
         $url = rex::getServer() . 'index.php?rex-api-call=issue_tracker_link&token=' . $token;
 
         $template = self::getTemplate('new_comment', $recipient);
-        
+
         return self::replaceTemplatePlaceholders($template, [
             'recipient_name' => $recipient->getValue('name'),
             'issue_id' => $issue->getId(),
             'issue_title' => $issue->getTitle(),
             'creator_name' => $creatorName,
             'comment_text' => $comment->getComment(),
-            'issue_url' => $url
+            'issue_url' => $url,
         ]);
     }
 
     /**
-     * Template für Status-Änderungen
+     * Template für Status-Änderungen.
      */
     private static function getStatusChangeTemplate(Issue $issue, string $oldStatus, string $newStatus, rex_user $recipient): string
     {
@@ -397,19 +445,19 @@ class NotificationService
         $url = rex::getServer() . 'index.php?rex-api-call=issue_tracker_link&token=' . $token;
 
         $template = self::getTemplate('status_change', $recipient);
-        
+
         return self::replaceTemplatePlaceholders($template, [
             'recipient_name' => $recipient->getValue('name'),
             'issue_id' => $issue->getId(),
             'issue_title' => $issue->getTitle(),
             'old_status' => $oldStatus,
             'new_status' => $newStatus,
-            'issue_url' => $url
+            'issue_url' => $url,
         ]);
     }
 
     /**
-     * Template für Zuweisungen
+     * Template für Zuweisungen.
      */
     private static function getAssignmentTemplate(Issue $issue, rex_user $assignedUser): string
     {
@@ -417,7 +465,7 @@ class NotificationService
         $url = rex::getServer() . 'index.php?rex-api-call=issue_tracker_link&token=' . $token;
 
         $template = self::getTemplate('assignment', $assignedUser);
-        
+
         return self::replaceTemplatePlaceholders($template, [
             'recipient_name' => $assignedUser->getValue('name'),
             'issue_id' => $issue->getId(),
@@ -425,12 +473,12 @@ class NotificationService
             'issue_category' => $issue->getCategory(),
             'issue_priority' => $issue->getPriority(),
             'issue_description' => $issue->getDescription(),
-            'issue_url' => $url
+            'issue_url' => $url,
         ]);
     }
-    
+
     /**
-     * Lädt ein E-Mail-Template aus der Datenbank
+     * Lädt ein E-Mail-Template aus der Datenbank.
      */
     private static function getTemplate(string $templateName, rex_user $user): string
     {
@@ -444,33 +492,33 @@ class NotificationService
                 $lang = 'en';
             }
         }
-        
-        $sql = \rex_sql::factory();
+
+        $sql = rex_sql::factory();
         $sql->setQuery('
             SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . '
             WHERE setting_key = ?
         ', ['email_template_' . $templateName . '_' . $lang]);
-        
+
         if ($sql->getRows() > 0) {
             return $sql->getValue('setting_value');
         }
-        
+
         // Fallback auf deutsche Version
         $sql->setQuery('
             SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . '
             WHERE setting_key = ?
         ', ['email_template_' . $templateName . '_de']);
-        
+
         if ($sql->getRows() > 0) {
             return $sql->getValue('setting_value');
         }
-        
+
         // Hard-coded Fallback
         return self::getDefaultTemplate($templateName, $lang);
     }
-    
+
     /**
-     * Ersetzt Platzhalter im Template
+     * Ersetzt Platzhalter im Template.
      */
     private static function replaceTemplatePlaceholders(string $template, array $data): string
     {
@@ -479,9 +527,9 @@ class NotificationService
         }
         return $template;
     }
-    
+
     /**
-     * Gibt Default-Template zurück als Fallback
+     * Gibt Default-Template zurück als Fallback.
      */
     private static function getDefaultTemplate(string $templateName, string $lang): string
     {
@@ -751,9 +799,9 @@ class NotificationService
         This email was automatically generated by REDAXO Issue Tracker.
     </div>
 </body>
-</html>'
+</html>',
         ];
-        
+
         $key = $templateName . '_' . $lang;
         return $defaults[$key] ?? $defaults[$templateName . '_de'] ?? '';
     }

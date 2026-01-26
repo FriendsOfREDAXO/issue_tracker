@@ -35,6 +35,48 @@ if (!PermissionService::canView($issue)) {
     return;
 }
 
+// Als Duplikat markieren
+if (rex_post('func', 'string', '') === 'mark_duplicate' && rex::getUser()->isAdmin()) {
+    $duplicateOfId = rex_post('duplicate_of', 'int', 0);
+    
+    if ($duplicateOfId > 0 && $duplicateOfId !== $issue->getId()) {
+        if ($issue->markAsDuplicate($duplicateOfId, PermissionService::getUserId())) {
+            echo rex_view::success($package->i18n('issue_tracker_duplicate_marked'));
+            
+            // Benachrichtigungen senden
+            $originalIssue = Issue::get($duplicateOfId);
+            if ($originalIssue) {
+                NotificationService::sendDuplicateMarked($issue, $originalIssue);
+            }
+            
+            // Issue neu laden
+            $issue = Issue::get($issueId);
+        } else {
+            if (Issue::get($duplicateOfId) === null) {
+                echo rex_view::error($package->i18n('issue_tracker_duplicate_not_found'));
+            } else {
+                echo rex_view::error($package->i18n('issue_tracker_duplicate_error'));
+            }
+        }
+    } elseif ($duplicateOfId === $issue->getId()) {
+        echo rex_view::error($package->i18n('issue_tracker_duplicate_self_reference'));
+    } else {
+        echo rex_view::error($package->i18n('issue_tracker_duplicate_invalid_id'));
+    }
+}
+
+// Duplikat-Markierung entfernen
+if (rex_post('func', 'string', '') === 'unmark_duplicate' && rex::getUser()->isAdmin()) {
+    if ($issue->unmarkAsDuplicate(PermissionService::getUserId())) {
+        echo rex_view::success($package->i18n('issue_tracker_duplicate_unmarked'));
+        
+        // Issue neu laden
+        $issue = Issue::get($issueId);
+    } else {
+        echo rex_view::error($package->i18n('issue_tracker_duplicate_error'));
+    }
+}
+
 // Kommentar löschen
 if (rex_post('delete_comment', 'int', 0) > 0) {
     $commentId = rex_post('delete_comment', 'int', 0);

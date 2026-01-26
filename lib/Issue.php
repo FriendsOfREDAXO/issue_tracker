@@ -1,17 +1,20 @@
 <?php
 
 /**
- * Issue Model
+ * Issue Model.
  *
  * @package issue_tracker
  */
 
 namespace FriendsOfREDAXO\IssueTracker;
 
+use DateTime;
+use Exception;
 use rex;
 use rex_sql;
 use rex_user;
-use DateTime;
+
+use function is_array;
 
 class Issue
 {
@@ -31,21 +34,22 @@ class Issue
     private ?DateTime $createdAt = null;
     private ?DateTime $updatedAt = null;
     private ?DateTime $closedAt = null;
-    /** @var int[] */
+    /** @var array<int> */
     private array $domainIds = [];
-    /** @var string[] */
+    /** @var array<string> */
     private array $yformTables = [];
     private ?int $projectId = null;
+    private ?int $duplicateOf = null;
 
     /**
-     * Lädt ein Issue aus der Datenbank
+     * Lädt ein Issue aus der Datenbank.
      */
     public static function get(int $id): ?self
     {
         $sql = rex_sql::factory();
         $sql->setQuery('SELECT * FROM ' . rex::getTable('issue_tracker_issues') . ' WHERE id = ?', [$id]);
-        
-        if ($sql->getRows() === 0) {
+
+        if (0 === $sql->getRows()) {
             return null;
         }
 
@@ -53,7 +57,7 @@ class Issue
     }
 
     /**
-     * Gibt alle Issues zurück
+     * Gibt alle Issues zurück.
      */
     public static function getAll(?string $status = null, ?string $category = null): array
     {
@@ -61,12 +65,12 @@ class Issue
         $where = [];
         $params = [];
 
-        if ($status !== null) {
+        if (null !== $status) {
             $where[] = 'status = ?';
             $params[] = $status;
         }
 
-        if ($category !== null) {
+        if (null !== $category) {
             $where[] = 'category = ?';
             $params[] = $category;
         }
@@ -74,7 +78,7 @@ class Issue
         $whereClause = $where ? ' WHERE ' . implode(' AND ', $where) : '';
         $sql->setQuery(
             'SELECT * FROM ' . rex::getTable('issue_tracker_issues') . $whereClause . ' ORDER BY created_at DESC',
-            $params
+            $params,
         );
 
         $issues = [];
@@ -86,7 +90,7 @@ class Issue
     }
 
     /**
-     * Erstellt ein Issue aus SQL-Daten
+     * Erstellt ein Issue aus SQL-Daten.
      */
     private static function fromSql(rex_sql $sql): self
     {
@@ -105,11 +109,11 @@ class Issue
         $issue->createdBy = (int) $sql->getValue('created_by');
         $issue->createdAt = new DateTime((string) $sql->getValue('created_at'));
         $issue->updatedAt = new DateTime((string) $sql->getValue('updated_at'));
-        
+
         if ($sql->hasValue('due_date') && $sql->getValue('due_date')) {
             $issue->dueDate = new DateTime((string) $sql->getValue('due_date'));
         }
-        
+
         if ($sql->hasValue('closed_at') && $sql->getValue('closed_at')) {
             $issue->closedAt = new DateTime((string) $sql->getValue('closed_at'));
         }
@@ -119,7 +123,7 @@ class Issue
             $decoded = json_decode((string) $sql->getValue('domain_ids'), true);
             $issue->domainIds = is_array($decoded) ? array_map('intval', $decoded) : [];
         }
-        
+
         // YForm Tables aus JSON laden
         if ($sql->hasValue('yform_tables') && $sql->getValue('yform_tables')) {
             $decoded = json_decode((string) $sql->getValue('yform_tables'), true);
@@ -131,11 +135,16 @@ class Issue
             $issue->projectId = (int) $sql->getValue('project_id');
         }
 
+        // Duplicate Of laden
+        if ($sql->hasValue('duplicate_of') && $sql->getValue('duplicate_of')) {
+            $issue->duplicateOf = (int) $sql->getValue('duplicate_of');
+        }
+
         return $issue;
     }
 
     /**
-     * Speichert das Issue
+     * Speichert das Issue.
      */
     public function save(): bool
     {
@@ -156,6 +165,7 @@ class Issue
         $sql->setValue('domain_ids', !empty($this->domainIds) ? json_encode($this->domainIds) : null);
         $sql->setValue('yform_tables', !empty($this->yformTables) ? json_encode($this->yformTables) : null);
         $sql->setValue('project_id', $this->projectId);
+        $sql->setValue('duplicate_of', $this->duplicateOf);
         $sql->setValue('closed_at', $this->closedAt ? $this->closedAt->format('Y-m-d H:i:s') : null);
         $sql->setValue('updated_at', date('Y-m-d H:i:s'));
 
@@ -173,11 +183,11 @@ class Issue
     }
 
     /**
-     * Löscht das Issue
+     * Löscht das Issue.
      */
     public function delete(): bool
     {
-        if ($this->id === 0) {
+        if (0 === $this->id) {
             return false;
         }
 
@@ -188,13 +198,13 @@ class Issue
     }
 
     /**
-     * Schließt das Issue
+     * Schließt das Issue.
      */
     public function close(): void
     {
         $this->status = 'closed';
         $this->closedAt = new DateTime();
-        
+
         $sql = rex_sql::factory();
         $sql->setTable(rex::getTable('issue_tracker_issues'));
         $sql->setWhere(['id' => $this->id]);
@@ -203,7 +213,7 @@ class Issue
     }
 
     /**
-     * Gibt den Ersteller zurück
+     * Gibt den Ersteller zurück.
      */
     public function getCreator(): ?rex_user
     {
@@ -211,18 +221,18 @@ class Issue
     }
 
     /**
-     * Gibt den zugewiesenen User zurück
+     * Gibt den zugewiesenen User zurück.
      */
     public function getAssignedUser(): ?rex_user
     {
-        if ($this->assignedUserId === null) {
+        if (null === $this->assignedUserId) {
             return null;
         }
         return rex_user::get($this->assignedUserId);
     }
 
     /**
-     * Gibt die Kommentare zurück
+     * Gibt die Kommentare zurück.
      */
     public function getComments(): array
     {
@@ -230,7 +240,7 @@ class Issue
     }
 
     /**
-     * Gibt die Tags zurück
+     * Gibt die Tags zurück.
      */
     public function getTags(): array
     {
@@ -238,7 +248,7 @@ class Issue
     }
 
     /**
-     * Fügt einen Tag hinzu
+     * Fügt einen Tag hinzu.
      */
     public function addTag(int $tagId): void
     {
@@ -246,23 +256,23 @@ class Issue
         $sql->setTable(rex::getTable('issue_tracker_issue_tags'));
         $sql->setValue('issue_id', $this->id);
         $sql->setValue('tag_id', $tagId);
-        
+
         try {
             $sql->insert();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Tag bereits vorhanden, ignorieren
         }
     }
 
     /**
-     * Entfernt einen Tag
+     * Entfernt einen Tag.
      */
     public function removeTag(int $tagId): void
     {
         $sql = rex_sql::factory();
         $sql->setQuery(
             'DELETE FROM ' . rex::getTable('issue_tracker_issue_tags') . ' WHERE issue_id = ? AND tag_id = ?',
-            [$this->id, $tagId]
+            [$this->id, $tagId],
         );
     }
 
@@ -311,13 +321,13 @@ class Issue
     {
         $oldStatus = $this->status;
         $this->status = $status;
-        
+
         // Wenn Status auf "closed" gesetzt wird, closedAt setzen
-        if ($status === 'closed' && $oldStatus !== 'closed') {
-            $this->closedAt = new \DateTime();
+        if ('closed' === $status && 'closed' !== $oldStatus) {
+            $this->closedAt = new DateTime();
         }
         // Wenn Status von "closed" auf etwas anderes wechselt, closedAt löschen
-        elseif ($status !== 'closed' && $oldStatus === 'closed') {
+        elseif ('closed' !== $status && 'closed' === $oldStatus) {
             $this->closedAt = null;
         }
     }
@@ -419,7 +429,7 @@ class Issue
 
     public function isOverdue(): bool
     {
-        if (!$this->dueDate || $this->status === 'closed') {
+        if (!$this->dueDate || 'closed' === $this->status) {
             return false;
         }
         return $this->dueDate < new DateTime();
@@ -431,7 +441,7 @@ class Issue
     }
 
     /**
-     * @param int[] $domainIds
+     * @param array<int> $domainIds
      */
     public function setDomainIds(array $domainIds): void
     {
@@ -439,7 +449,7 @@ class Issue
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      */
     public function getYformTables(): array
     {
@@ -447,7 +457,7 @@ class Issue
     }
 
     /**
-     * @param string[] $yformTables
+     * @param array<string> $yformTables
      */
     public function setYformTables(array $yformTables): void
     {
@@ -464,26 +474,159 @@ class Issue
         $this->projectId = $projectId;
     }
 
+    public function getDuplicateOf(): ?int
+    {
+        return $this->duplicateOf;
+    }
+
+    public function setDuplicateOf(?int $duplicateOf): void
+    {
+        $this->duplicateOf = $duplicateOf;
+    }
+
     /**
-     * Gibt das zugehörige Projekt zurück
+     * Gibt das Issue zurück, von dem dieses Issue ein Duplikat ist.
+     */
+    public function getDuplicateIssue(): ?self
+    {
+        if (null === $this->duplicateOf) {
+            return null;
+        }
+        return self::get($this->duplicateOf);
+    }
+
+    /**
+     * Gibt alle Issues zurück, die Duplikate von diesem Issue sind.
+     */
+    public function getDuplicates(): array
+    {
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'SELECT * FROM ' . rex::getTable('issue_tracker_issues') . ' WHERE duplicate_of = ? ORDER BY created_at DESC',
+            [$this->id],
+        );
+
+        $issues = [];
+        foreach ($sql as $row) {
+            $issues[] = self::fromSql($row);
+        }
+
+        return $issues;
+    }
+
+    /**
+     * Markiert dieses Issue als Duplikat von einem anderen Issue und schließt es.
+     *
+     * @param int $duplicateOfId ID des Original-Issues
+     * @param int|null $userId ID des Benutzers, der die Änderung durchführt
+     * @return bool True bei Erfolg, False wenn das Original-Issue nicht existiert
+     */
+    public function markAsDuplicate(int $duplicateOfId, ?int $userId = null): bool
+    {
+        // Prüfen ob Original-Issue existiert
+        $originalIssue = self::get($duplicateOfId);
+        if (null === $originalIssue) {
+            return false;
+        }
+
+        // Verhindere zirkuläre Referenzen
+        if ($duplicateOfId === $this->id) {
+            return false;
+        }
+
+        // Wenn das Original selbst ein Duplikat ist, verwende dessen Original
+        if (null !== $originalIssue->getDuplicateOf()) {
+            $duplicateOfId = $originalIssue->getDuplicateOf();
+        }
+
+        $oldStatus = $this->status;
+        $oldDuplicateOf = $this->duplicateOf;
+
+        // Als Duplikat markieren und schließen
+        $this->duplicateOf = $duplicateOfId;
+        $this->status = 'closed';
+        $this->closedAt = new DateTime();
+
+        if ($this->save()) {
+            // History-Eintrag für Status-Änderung
+            if (null !== $userId) {
+                HistoryService::add(
+                    $this->id,
+                    $userId,
+                    'status_changed',
+                    'status',
+                    $oldStatus,
+                    'closed',
+                );
+
+                // History-Eintrag für Duplikat-Markierung
+                HistoryService::add(
+                    $this->id,
+                    $userId,
+                    'marked_as_duplicate',
+                    'duplicate_of',
+                    null !== $oldDuplicateOf ? (string) $oldDuplicateOf : '',
+                    (string) $duplicateOfId,
+                );
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Entfernt die Duplikat-Markierung von diesem Issue.
+     *
+     * @param int|null $userId ID des Benutzers, der die Änderung durchführt
+     * @return bool True bei Erfolg
+     */
+    public function unmarkAsDuplicate(?int $userId = null): bool
+    {
+        $oldDuplicateOf = $this->duplicateOf;
+
+        $this->duplicateOf = null;
+
+        if ($this->save()) {
+            // History-Eintrag
+            if (null !== $userId && null !== $oldDuplicateOf) {
+                HistoryService::add(
+                    $this->id,
+                    $userId,
+                    'unmarked_as_duplicate',
+                    'duplicate_of',
+                    (string) $oldDuplicateOf,
+                    '',
+                );
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Gibt das zugehörige Projekt zurück.
      */
     public function getProject(): ?Project
     {
-        if ($this->projectId === null) {
+        if (null === $this->projectId) {
             return null;
         }
         return Project::get($this->projectId);
     }
 
     /**
-     * Gibt alle Issues eines Projekts zurück
+     * Gibt alle Issues eines Projekts zurück.
      */
     public static function getByProject(int $projectId): array
     {
         $sql = rex_sql::factory();
         $sql->setQuery(
             'SELECT * FROM ' . rex::getTable('issue_tracker_issues') . ' WHERE project_id = ? ORDER BY created_at DESC',
-            [$projectId]
+            [$projectId],
         );
 
         $issues = [];
