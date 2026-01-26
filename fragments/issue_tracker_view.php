@@ -364,8 +364,8 @@ $priorityClass = [
                                 <option value="">-- <?= $package->i18n('issue_tracker_select_open_issue') ?> --</option>
                                 <?php 
                                 // Offene Issues laden
-                                $sql = rex_sql::factory();
-                                $sql->setQuery('
+                                $sqlIssues = rex_sql::factory();
+                                $sqlIssues->setQuery('
                                     SELECT id, title, category, priority, status
                                     FROM ' . rex::getTable('issue_tracker_issues') . '
                                     WHERE id != ?
@@ -374,18 +374,17 @@ $priorityClass = [
                                     LIMIT 100
                                 ', [$issue->getId()]);
                                 
-                                while ($sql->hasNext()) {
-                                    $issueOption = $sql->getRow();
+                                foreach ($sqlIssues as $issueOption) {
                                     $statusLabels = [
                                         'open' => '🔴',
                                         'in_progress' => '🟡',
                                         'planned' => '🔵'
                                     ];
-                                    $statusIcon = $statusLabels[$issueOption['status']] ?? '⚪';
+                                    $statusIcon = $statusLabels[$issueOption->getValue('status')] ?? '⚪';
                                     
-                                    echo '<option value="' . (int) $issueOption['id'] . '">'
-                                        . $statusIcon . ' #' . (int) $issueOption['id'] . ' - ' . rex_escape($issueOption['title'])
-                                        . ' (' . rex_escape($issueOption['category']) . ')'
+                                    echo '<option value="' . (int) $issueOption->getValue('id') . '">'
+                                        . $statusIcon . ' #' . (int) $issueOption->getValue('id') . ' - ' . rex_escape($issueOption->getValue('title'))
+                                        . ' (' . rex_escape($issueOption->getValue('category')) . ')'
                                         . '</option>';
                                 }
                                 ?>
