@@ -7,7 +7,7 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 ### Kernfunktionen
 - ✅ **Issue-Verwaltung**: Erstellen, Bearbeiten, Löschen und Kommentieren von Issues
 - ✅ **Dashboard**: Übersicht über den aktuellen Status aller Issues mit Statistiken und Widgets
-- ✅ **Status-Tracking**: Offen, In Arbeit, Geplant, Abgelehnt, Erledigt
+- ✅ **Status-Tracking**: Offen, In Arbeit, Geplant, Info, Abgelehnt, Erledigt
 - ✅ **Prioritäten**: Niedrig, Normal, Hoch, Dringend
 - ✅ **Kategorien**: Frei konfigurierbare Kategorien in den Einstellungen
 - ✅ **Tags**: Flexible Tag-Verwaltung mit Farbcodierung und Zufallsfarben für neue Tags
@@ -19,6 +19,7 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - ✅ **Fälligkeitsdatum**: Issues können mit Deadlines versehen werden, überfällige Issues werden markiert
 - ✅ **Aktivitätsverlauf**: Vollständiges Tracking aller Änderungen an Issues
 - ✅ **Dateianhänge**: Upload von Bildern, Dokumenten und anderen Dateien zu Issues
+- ✅ **Lightbox**: Bilder und Videos direkt in einer Lightbox ansehen
 - ✅ **Gespeicherte Filter**: Häufig verwendete Filtereinstellungen speichern und als Standard festlegen
 - ✅ **Session-Filter**: Filter bleiben während der Sitzung erhalten
 - ✅ **Erweiterte Filter**: Nach Status, Kategorie, Tags, Ersteller und Text durchsuchbar (inkl. "Alle Issues" und "Nur Geschlossene")

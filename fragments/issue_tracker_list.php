@@ -126,6 +126,7 @@ function getSortIcon($column, $currentColumn, $currentOrder) {
                         'in_progress' => 'label-info',
                         'closed' => 'label-success',
                         'rejected' => 'label-danger',
+                        'info' => 'label-primary',
                     ];
                     
                     $priorityClasses = [

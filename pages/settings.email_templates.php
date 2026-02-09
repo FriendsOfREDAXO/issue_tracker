@@ -137,7 +137,7 @@ foreach ($defaultTemplates as $key => $defaultValue) {
         <div class="panel-body">
             <p class="help-block">
                 <?= $package->i18n('issue_tracker_email_templates_help') ?><br>
-                <strong><?= $package->i18n('issue_tracker_available_placeholders') ?>:</strong>
+                <?= $package->i18n('issue_tracker_available_placeholders') ?>:
                 <code>{{recipient_name}}</code>, <code>{{issue_id}}</code>, <code>{{issue_title}}</code>,
                 <code>{{issue_category}}</code>, <code>{{issue_priority}}</code>, <code>{{issue_description}}</code>,
                 <code>{{creator_name}}</code>, <code>{{comment_text}}</code>, <code>{{old_status}}</code>,

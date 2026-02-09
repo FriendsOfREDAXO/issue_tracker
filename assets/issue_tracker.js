@@ -43,6 +43,56 @@
             // $(this).closest('form').submit();
         });
 
+        // Lightbox Handler
+        $(document).on('click', '.issue-attachment-lightbox', function(e) {
+            e.preventDefault();
+            var url = $(this).attr('href');
+            var type = $(this).data('type') || 'image';
+            var title = $(this).attr('title') || '';
+            
+            var modalId = 'issue-tracker-lightbox-modal';
+            var $modal = $('#' + modalId);
+            
+            if ($modal.length === 0) {
+                // Modal erstellen
+                var modalHtml = 
+                    '<div class="modal fade" id="' + modalId + '" tabindex="-1" role="dialog" style="z-index: 1060;">' +
+                        '<div class="modal-dialog modal-lg" role="document" style="width: 90%; max-width: 1200px;">' +
+                            '<div class="modal-content" style="background-color: transparent; border: none; box-shadow: none;">' +
+                                '<div class="modal-header" style="border: none; padding: 10px;">' +
+                                    '<button type="button" class="close" data-dismiss="modal" style="color: #fff; opacity: 0.8; font-size: 30px; text-shadow: none;">&times;</button>' +
+                                    '<h4 class="modal-title" style="color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);"></h4>' +
+                                '</div>' +
+                                '<div class="modal-body" style="text-align: center; padding: 0;"></div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+                
+                $('body').append(modalHtml);
+                $modal = $('#' + modalId);
+                
+                // Video anhalten wenn Modal geschlossen wird
+                $modal.on('hidden.bs.modal', function() {
+                    $(this).find('.modal-body').empty();
+                });
+            }
+            
+            var content = '';
+            if (type === 'video') {
+                content = '<div style="background: rgba(0,0,0,0.8); padding: 5px; border-radius: 4px; display: inline-block;">' +
+                          '<video controls autoplay style="max-width: 100%; max-height: 80vh; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">' + 
+                          '<source src="' + url + '">' + 
+                          'Ihr Browser unterstützt dieses Video-Format nicht.' + 
+                          '</video></div>';
+            } else {
+                content = '<img src="' + url + '" class="img-responsive" style="display: inline-block; max-height: 80vh; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-radius: 4px;">';
+            }
+            
+            $modal.find('.modal-title').text(title);
+            $modal.find('.modal-body').html(content);
+            $modal.modal('show');
+        });
+
         // EasyMDE Markdown Editor initialisieren
         if (typeof EasyMDE !== 'undefined') {
             // Globale Variable für aktuellen Editor

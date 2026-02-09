@@ -227,6 +227,7 @@ $defaultStatuses = [
     'open' => 'Offen',
     'in_progress' => 'In Arbeit',
     'planned' => 'Geplant',
+    'info' => 'Info',
     'rejected' => 'Abgelehnt',
     'closed' => 'Erledigt',
 ];

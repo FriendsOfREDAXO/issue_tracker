@@ -97,3 +97,19 @@ if (rex_addon::get('media_manager')->isAvailable()) {
         $sql->insert();
     }
 }
+
+// Status "Info" hinzufügen falls noch nicht vorhanden
+$sql = rex_sql::factory();
+$sql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "statuses"');
+if ($sql->getRows() > 0) {
+    $statuses = json_decode($sql->getValue('setting_value'), true);
+    if (is_array($statuses) && !isset($statuses['info'])) {
+        $statuses['info'] = 'Info';
+        
+        $updateSql = rex_sql::factory();
+        $updateSql->setTable(rex::getTable('issue_tracker_settings'));
+        $updateSql->setWhere(['setting_key' => 'statuses']);
+        $updateSql->setValue('setting_value', json_encode($statuses));
+        $updateSql->update();
+    }
+}

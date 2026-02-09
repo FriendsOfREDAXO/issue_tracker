@@ -25,7 +25,8 @@ $statusClass = [
     'in_progress' => 'warning',
     'planned' => 'info',
     'rejected' => 'default',
-    'closed' => 'success'
+    'closed' => 'success',
+    'info' => 'primary'
 ];
 
 $priorityClass = [
@@ -111,11 +112,18 @@ $priorityClass = [
                                 <div class="col-sm-6 col-md-4" style="margin-bottom: 15px;">
                                     <div class="thumbnail">
                                         <?php if ($attachment->isImage()): ?>
-                                            <img src="<?= $attachment->getThumbnailUrl() ?>" alt="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="max-height: 150px; width: auto;">
+                                            <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="image" title="<?= rex_escape($attachment->getOriginalFilename()) ?>">
+                                                <img src="<?= $attachment->getThumbnailUrl() ?>" alt="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="max-height: 150px; width: auto;">
+                                            </a>
                                         <?php elseif ($attachment->isVideo()): ?>
-                                            <div style="padding: 30px; text-align: center; background: #f5f5f5;">
-                                                <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 48px; color: #999;"></i>
-                                            </div>
+                                            <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="video" title="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="text-decoration: none; display: block;">
+                                                <div style="padding: 30px; text-align: center; background: #f5f5f5; position: relative;">
+                                                    <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 48px; color: #999;"></i>
+                                                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
+                                                        <i class="rex-icon fa-play-circle" style="font-size: 32px;"></i>
+                                                    </div>
+                                                </div>
+                                            </a>
                                         <?php else: ?>
                                             <div style="padding: 30px; text-align: center; background: #f5f5f5;">
                                                 <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 48px; color: #999;"></i>
@@ -561,13 +569,23 @@ $priorityClass = [
                                 <div class="col-sm-6 col-md-3" style="margin-bottom: 10px;">
                                     <div class="thumbnail" style="margin-bottom: 0;">
                                         <?php if ($attachment->isImage()): ?>
-                                            <a href="<?= $attachment->getUrl() ?>" target="_blank">
+                                            <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="image" title="<?= rex_escape($attachment->getOriginalFilename()) ?>">
                                                 <img src="<?= $attachment->getThumbnailUrl() ?>" alt="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="max-height: 100px; width: auto;">
                                             </a>
                                         <?php elseif ($attachment->isVideo()): ?>
-                                            <div style="padding: 20px; text-align: center; background: #f5f5f5;">
-                                                <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
-                                            </div>
+                                            <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="video" title="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="text-decoration: none; display: block;">
+                                                <div style="padding: 20px; text-align: center; background: #f5f5f5; position: relative;">
+                                                    <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
+                                                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
+                                                        <i class="rex-icon fa-play-circle" style="font-size: 24px;"></i>
+                                                    </div>
+                                                </div>
+                                            </a   <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
+                                                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
+                                                        <i class="rex-icon fa-play-circle" style="font-size: 24px;"></i>
+                                                    </div>
+                                                </div>
+                                            </a>
                                         <?php else: ?>
                                             <div style="padding: 20px; text-align: center; background: #f5f5f5;">
                                                 <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
@@ -685,13 +703,18 @@ $priorityClass = [
                             <div class="col-sm-6 col-md-3" style="margin-bottom: 10px;">
                                 <div class="thumbnail" style="margin-bottom: 0;">
                                     <?php if ($attachment->isImage()): ?>
-                                        <a href="<?= $attachment->getUrl() ?>" target="_blank">
+                                        <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="image" title="<?= rex_escape($attachment->getOriginalFilename()) ?>">
                                             <img src="<?= $attachment->getThumbnailUrl() ?>" alt="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="max-height: 100px; width: auto;">
                                         </a>
                                     <?php elseif ($attachment->isVideo()): ?>
-                                        <div style="padding: 20px; text-align: center; background: #f5f5f5;">
-                                            <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
-                                        </div>
+                                        <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="video" title="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="text-decoration: none; display: block;">
+                                            <div style="padding: 20px; text-align: center; background: #f5f5f5; position: relative;">
+                                                <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
+                                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
+                                                    <i class="rex-icon fa-play-circle" style="font-size: 24px;"></i>
+                                                </div>
+                                            </div>
+                                        </a>
                                     <?php else: ?>
                                         <div style="padding: 20px; text-align: center; background: #f5f5f5;">
                                             <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
@@ -759,8 +782,17 @@ $priorityClass = [
                                     <div class="col-sm-6 col-md-3" style="margin-bottom: 10px;">
                                         <div class="thumbnail" style="margin-bottom: 0;">
                                             <?php if ($attachment->isImage()): ?>
-                                                <a href="<?= $attachment->getUrl() ?>" target="_blank">
+                                                <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="image" title="<?= rex_escape($attachment->getOriginalFilename()) ?>">
                                                     <img src="<?= $attachment->getThumbnailUrl() ?>" alt="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="max-height: 100px; width: auto;">
+                                                </a>
+                                            <?php elseif ($attachment->isVideo()): ?>
+                                                <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="video" title="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="text-decoration: none; display: block;">
+                                                    <div style="padding: 20px; text-align: center; background: #f5f5f5; position: relative;">
+                                                        <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
+                                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
+                                                            <i class="rex-icon fa-play-circle" style="font-size: 24px;"></i>
+                                                        </div>
+                                                    </div>
                                                 </a>
                                             <?php else: ?>
                                                 <div style="padding: 20px; text-align: center; background: #f5f5f5;">
