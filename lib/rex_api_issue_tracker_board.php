@@ -77,8 +77,9 @@ class rex_api_issue_tracker_board extends rex_api_function
         // Status aktualisieren
         $issue->setStatus($newStatus);
         
-        // Transaktionen für Atomizität verwenden
+        // Transaktionen für Atomizität verwenden mit READ COMMITTED Isolation Level
         $sql = rex_sql::factory();
+        $sql->setQuery('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
         $sql->setQuery('START TRANSACTION');
         
         try {
@@ -94,15 +95,16 @@ class rex_api_issue_tracker_board extends rex_api_function
                 // Issue auf neue Position setzen
                 $issue->setSortOrder($newPosition);
                 
-                // Alte Spalte neu ordnen (Lücken schließen)
-                $sql->setQuery(
+                // Alte Spalte neu ordnen (Lücken schließen) - separate SQL Instanz verwenden
+                $resultSql = rex_sql::factory();
+                $resultSql->setQuery(
                     'SELECT id, sort_order FROM ' . rex::getTable('issue_tracker_issues') . 
                     ' WHERE project_id = ? AND status = ? ORDER BY sort_order ASC',
                     [$projectId, $oldStatus]
                 );
                 
                 $position = 0;
-                foreach ($sql as $row) {
+                foreach ($resultSql as $row) {
                     $updateSql = rex_sql::factory();
                     $updateSql->setTable(rex::getTable('issue_tracker_issues'));
                     $updateSql->setWhere(['id' => $row->getValue('id')]);
