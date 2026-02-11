@@ -79,7 +79,11 @@ $priorityClasses = [
 $currentUser = rex::getUser();
 ?>
 
-<div class="kanban-board" id="kanban-board" data-project-id="<?= $project->getId() ?>" data-can-write="<?= $canWrite ? '1' : '0' ?>">
+<div class="kanban-board" id="kanban-board" 
+     data-project-id="<?= $project->getId() ?>" 
+     data-can-write="<?= $canWrite ? '1' : '0' ?>"
+     data-api-url="<?= rex::getServer() ?>index.php?rex-api-call=issue_tracker_board"
+     data-empty-text="<?= rex_escape($package->i18n('issue_tracker_no_issues')) ?>">
     <?php foreach ($allStatuses as $status): 
         $statusLabel = $statuses[$status] ?? $package->i18n('issue_tracker_status_' . $status);
         $statusClass = $statusClasses[$status] ?? 'default';
