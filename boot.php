@@ -25,9 +25,9 @@ if (rex::isBackend() && rex::getUser()) {
     rex_view::addJsFile($this->getAssetsUrl('easymde.min.js'));
     rex_view::addJsFile($this->getAssetsUrl('issue_tracker.js'));
     
-    // SortableJS für Kanban Board (nur wenn auf Projektseite)
+    // Kanban Board Drag & Drop (nur wenn auf Projektseite)
     if (rex_be_controller::getCurrentPage() === 'issue_tracker/projects/view') {
-        rex_view::addJsFile('https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js');
+        rex_view::addJsFile($this->getAssetsUrl('issue_tracker_board.js'));
     }
 }
 

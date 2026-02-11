@@ -643,8 +643,20 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.kanban-card.sortable-ghost {
-    opacity: 0.4;
+.kanban-card.kanban-card-dragging {
+    opacity: 0.5;
+    cursor: move;
+}
+
+.kanban-card-placeholder {
+    background: rgba(0, 123, 255, 0.1);
+    border: 2px dashed #007bff;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
+
+.kanban-column-drag-over {
+    background: rgba(0, 123, 255, 0.05);
 }
 
 .kanban-card-id {
