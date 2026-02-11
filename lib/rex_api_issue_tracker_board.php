@@ -79,9 +79,9 @@ class rex_api_issue_tracker_board extends rex_api_function
         // Status aktualisieren
         $issue->setStatus($newStatus);
         
-        // Transaktionen für Atomizität verwenden
-        // Note: Transaction isolation level should be configured at database connection level
-        // Default READ COMMITTED is suitable for this use case
+        // Use database transactions to ensure atomicity and prevent race conditions
+        // Note: For high-concurrency scenarios, consider implementing optimistic locking
+        // by adding a version column to track concurrent modifications
         $sql = rex_sql::factory();
         $sql->setQuery('START TRANSACTION');
         

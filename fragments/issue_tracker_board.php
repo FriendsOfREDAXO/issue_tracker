@@ -39,11 +39,14 @@ foreach ($issuesByStatus as $status => &$statusIssues) {
 $issueIds = array_map(function($issue) { return $issue->getId(); }, $issues);
 $tagsByIssue = [];
 if (!empty($issueIds)) {
+    // Create placeholders for parameterized query
+    $placeholders = rtrim(str_repeat('?,', count($issueIds)), ',');
     $tagSql = rex_sql::factory();
     $tagSql->setQuery(
         'SELECT it.issue_id, t.name, t.color FROM ' . rex::getTable('issue_tracker_tags') . ' t ' .
         'INNER JOIN ' . rex::getTable('issue_tracker_issue_tags') . ' it ON t.id = it.tag_id ' .
-        'WHERE it.issue_id IN (' . implode(',', array_map('intval', $issueIds)) . ')'
+        'WHERE it.issue_id IN (' . $placeholders . ')',
+        $issueIds
     );
     foreach ($tagSql as $row) {
         $issueId = (int) $row->getValue('issue_id');
