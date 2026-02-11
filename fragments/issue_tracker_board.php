@@ -14,7 +14,7 @@ $canWrite = $this->getVar('canWrite', false);
 
 // Organize issues by status with sort_order
 $issuesByStatus = [];
-$allStatuses = ['open', 'in_progress', 'planned', 'info', 'rejected', 'closed'];
+$allStatuses = !empty($statuses) ? array_keys($statuses) : ['open', 'in_progress', 'planned', 'info', 'rejected', 'closed'];
 
 foreach ($allStatuses as $status) {
     $issuesByStatus[$status] = [];
@@ -34,6 +34,7 @@ foreach ($issuesByStatus as $status => &$statusIssues) {
         return $a->getSortOrder() - $b->getSortOrder();
     });
 }
+unset($statusIssues);
 
 // Pre-load all tags for all issues to avoid N+1 queries
 $issueIds = array_map(function($issue) { return $issue->getId(); }, $issues);
@@ -77,6 +78,7 @@ $priorityClasses = [
 ];
 
 $currentUser = rex::getUser();
+$now = new DateTime(); // Create once for all isOverdue comparisons
 ?>
 
 <div class="kanban-board" id="kanban-board" 
@@ -101,7 +103,7 @@ $currentUser = rex::getUser();
                 <?php foreach ($columnIssues as $issue): 
                     $assignedUser = $issue->getAssignedUserId() ? rex_user::get($issue->getAssignedUserId()) : null;
                     $dueDate = $issue->getDueDate();
-                    $isOverdue = $dueDate && $dueDate < new DateTime();
+                    $isOverdue = $dueDate && $dueDate < $now;
                     
                     // Get pre-loaded tags for this issue
                     $tags = $tagsByIssue[$issue->getId()] ?? [];

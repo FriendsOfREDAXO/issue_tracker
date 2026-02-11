@@ -189,8 +189,9 @@ $existingUserIds = array_column($users, 'user_id');
         ?>
         
         <!-- Team Mitglieder (volle Breite im Board-Modus) -->
-        <div class="col-md-12">
-            <div class="panel panel-default">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         <i class="rex-icon fa-users"></i> <?= $package->i18n('issue_tracker_project_members') ?> (<?= count($users) ?>)
@@ -242,6 +243,7 @@ $existingUserIds = array_column($users, 'user_id');
                 </div>
                 <?php endif; ?>
             </div>
+        </div>
         </div>
     <?php else: ?>
         <!-- Liste Ansicht -->

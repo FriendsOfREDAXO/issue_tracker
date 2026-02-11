@@ -10,7 +10,6 @@ namespace FriendsOfREDAXO\IssueTracker;
 
 use rex;
 use rex_api_function;
-use rex_api_result;
 use rex_request;
 use rex_response;
 use rex_sql;
@@ -35,11 +34,22 @@ class rex_api_issue_tracker_board extends rex_api_function
         }
 
         $issueId = rex_request('issue_id', 'int', 0);
-        $newStatus = rex_request('status', 'string', '');
+        $newStatusRaw = rex_request('status', 'string', '');
+        $newStatus = trim($newStatusRaw);
         $newPosition = rex_request('position', 'int', 0);
+        // Clamp position to >= 0 to avoid negative indices / unsigned DB issues
+        if ($newPosition < 0) {
+            $newPosition = 0;
+        }
         $projectId = rex_request('project_id', 'int', 0);
 
-        if ($issueId === 0 || $newStatus === '' || $projectId === 0) {
+        // Basic validation: ensure required params are set and status has an allowed format
+        if (
+            $issueId === 0
+            || $projectId === 0
+            || $newStatus === ''
+            || !preg_match('/^[A-Za-z0-9_\-]+$/', $newStatus)
+        ) {
             rex_response::sendJson([
                 'success' => false,
                 'message' => $package->i18n('issue_tracker_board_invalid_params'),
@@ -98,26 +108,29 @@ class rex_api_issue_tracker_board extends rex_api_function
                 // Issue auf neue Position setzen
                 $issue->setSortOrder($newPosition);
                 
-                // Alte Spalte neu ordnen (Lücken schließen) - separate SQL Instanz verwenden
-                $resultSql = rex_sql::factory();
-                $resultSql->setQuery(
-                    'SELECT id, sort_order FROM ' . rex::getTable('issue_tracker_issues') . 
-                    ' WHERE project_id = ? AND status = ? ORDER BY sort_order ASC',
-                    [$projectId, $oldStatus]
+                // Alte Spalte neu ordnen (Lücken schließen) - set-basiertes Update verwenden
+                // Exclude the moved issue from reordering
+                $table = rex::getTable('issue_tracker_issues');
+                $reorderSql = rex_sql::factory();
+                
+                // Initialize counter variable
+                $reorderSql->setQuery('SET @pos := -1');
+                
+                // Reindex all issues in the old column in one statement
+                $reorderSql->setQuery(
+                    'UPDATE ' . $table . ' AS t ' .
+                    'JOIN ( ' .
+                    '    SELECT id, (@pos := @pos + 1) AS new_sort_order ' .
+                    '    FROM ' . $table . ' ' .
+                    '    WHERE project_id = ? AND status = ? AND id <> ? ' .
+                    '    ORDER BY sort_order ASC, id ASC ' .
+                    ') AS seq ON seq.id = t.id ' .
+                    'SET t.sort_order = seq.new_sort_order',
+                    [$projectId, $oldStatus, $issueId]
                 );
                 
-                $position = 0;
-                foreach ($resultSql as $row) {
-                    $updateSql = rex_sql::factory();
-                    $updateSql->setTable(rex::getTable('issue_tracker_issues'));
-                    $updateSql->setWhere(['id' => $row->getValue('id')]);
-                    $updateSql->setValue('sort_order', $position);
-                    $updateSql->update();
-                    $position++;
-                }
-                
                 // History-Eintrag für Statusänderung
-                HistoryService::logChange(
+                HistoryService::add(
                     $issueId,
                     rex::getUser()->getId(),
                     'status_changed',
@@ -170,9 +183,12 @@ class rex_api_issue_tracker_board extends rex_api_function
             // Rollback bei Exception
             $sql->setQuery('ROLLBACK');
             
+            // Log the exception server-side for debugging
+            \rex_logger::logException($e);
+            
             rex_response::sendJson([
                 'success' => false,
-                'message' => $package->i18n('issue_tracker_board_save_error') . ': ' . $e->getMessage(),
+                'message' => $package->i18n('issue_tracker_board_save_error'),
             ]);
             exit;
         }
