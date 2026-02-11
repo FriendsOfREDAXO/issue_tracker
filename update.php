@@ -194,22 +194,26 @@ if ((int) $checkSortOrder->getValue('unordered') > 0) {
         $projectId = $row->getValue('project_id');
         $status = $row->getValue('status');
         
-        // Initialize counter
-        $updateSql = rex_sql::factory();
-        $updateSql->setQuery('SET @pos := -1');
+        // Get all issues that need reordering
+        $issuesSql = rex_sql::factory();
+        $whereClause = $projectId ? 'project_id = ? AND status = ? AND sort_order = 0' : 'project_id IS NULL AND status = ? AND sort_order = 0';
+        $params = $projectId ? [$projectId, $status] : [$status];
         
-        // Update sort_order for this project_id and status combination
-        $table = rex::getTable('issue_tracker_issues');
-        $updateSql->setQuery(
-            'UPDATE ' . $table . ' AS t ' .
-            'JOIN ( ' .
-            '    SELECT id, (@pos := @pos + 1) AS new_sort_order ' .
-            '    FROM ' . $table . ' ' .
-            '    WHERE ' . ($projectId ? 'project_id = ?' : 'project_id IS NULL') . ' AND status = ? AND sort_order = 0 ' .
-            '    ORDER BY created_at ASC, id ASC ' .
-            ') AS seq ON seq.id = t.id ' .
-            'SET t.sort_order = seq.new_sort_order',
-            $projectId ? [$projectId, $status] : [$status]
+        $issuesSql->setQuery(
+            'SELECT id FROM ' . rex::getTable('issue_tracker_issues') . 
+            ' WHERE ' . $whereClause . ' ORDER BY created_at ASC, id ASC',
+            $params
         );
+        
+        // Update sort_order for each issue using PHP loop for reliability
+        $position = 0;
+        $updateSql = rex_sql::factory();
+        foreach ($issuesSql as $issueRow) {
+            $updateSql->setTable(rex::getTable('issue_tracker_issues'));
+            $updateSql->setWhere(['id' => $issueRow->getValue('id')]);
+            $updateSql->setValue('sort_order', $position);
+            $updateSql->update();
+            $position++;
+        }
     }
 }
