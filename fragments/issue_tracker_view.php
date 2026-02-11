@@ -152,165 +152,186 @@ $priorityClass = [
 
                 <!-- Sidebar mit Metadaten -->
                 <div class="col-sm-3">
-                    <dl class="dl-horizontal">
-                        <dt><?= $package->i18n('issue_tracker_status') ?>:</dt>
-                        <dd>
-                            <span class="label label-<?= $statusClass[$issue->getStatus()] ?? 'default' ?>">
-                                <?= rex_escape($statuses[$issue->getStatus()] ?? $issue->getStatus()) ?>
-                            </span>
-                        </dd>
 
-                        <dt><?= $package->i18n('issue_tracker_priority') ?>:</dt>
-                        <dd>
-                            <span class="label label-<?= $priorityClass[$issue->getPriority()] ?? 'default' ?>">
-                                <?= rex_escape($issue->getPriority()) ?>
-                            </span>
-                        </dd>
-
-                        <dt><?= $package->i18n('issue_tracker_category') ?>:</dt>
-                        <dd><?= rex_escape($issue->getCategory()) ?></dd>
-
-                        <?php if ($issue->getAssignedAddon()): ?>
-                        <dt><?= $package->i18n('issue_tracker_addon') ?>:</dt>
-                        <dd><?= rex_escape($issue->getAssignedAddon()) ?></dd>
-                        <?php endif; ?>
-
-                        <?php if ($issue->getVersion()): ?>
-                        <dt><?= $package->i18n('issue_tracker_version') ?>:</dt>
-                        <dd><?= rex_escape($issue->getVersion()) ?></dd>
-                        <?php endif; ?>
-
-                        <dt><?= $package->i18n('issue_tracker_assigned') ?>:</dt>
-                        <dd><?= $assignedUser ? rex_escape($assignedUser->getValue('name')) : '-' ?></dd>
-
-                        <dt><?= $package->i18n('issue_tracker_created_by') ?>:</dt>
-                        <dd><?= $createdBy ? rex_escape($createdBy->getValue('name')) : '-' ?></dd>
-
-                        <dt><?= $package->i18n('issue_tracker_created_at') ?>:</dt>
-                        <dd><?= $issue->getCreatedAt() ? $issue->getCreatedAt()->format('d.m.Y H:i') : '-' ?></dd>
-
-                        <?php if ($issue->getUpdatedAt()): ?>
-                        <dt><?= $package->i18n('issue_tracker_updated_at') ?>:</dt>
-                        <dd><?= $issue->getUpdatedAt()->format('d.m.Y H:i') ?></dd>
-                        <?php endif; ?>
-
-                        <?php if ($issue->getClosedAt()): ?>
-                        <dt><?= $package->i18n('issue_tracker_closed') ?>:</dt>
-                        <dd><?= $issue->getClosedAt()->format('d.m.Y H:i') ?></dd>
-                        <?php endif; ?>
-
-                        <?php if ($issue->getDueDate()): ?>
-                        <dt><?= $package->i18n('issue_tracker_due_date') ?>:</dt>
-                        <dd>
-                            <?php if ($issue->isOverdue()): ?>
-                                <span class="label label-danger">
-                                    <i class="rex-icon fa-exclamation-triangle"></i> <?= $issue->getDueDate()->format('d.m.Y H:i') ?>
+                    <!-- Panel 1: Status & Priorität -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading" style="padding: 8px 12px;">
+                            <strong><i class="rex-icon fa-info-circle"></i> <?= $package->i18n('issue_tracker_status') ?> & <?= $package->i18n('issue_tracker_priority') ?></strong>
+                        </div>
+                        <div class="panel-body" style="padding: 12px;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+                                <span class="label label-<?= $statusClass[$issue->getStatus()] ?? 'default' ?>" style="font-size: 13px; padding: 4px 10px;">
+                                    <?= rex_escape($statuses[$issue->getStatus()] ?? $issue->getStatus()) ?>
                                 </span>
-                            <?php else: ?>
-                                <?= $issue->getDueDate()->format('d.m.Y H:i') ?>
+                                <span class="label label-<?= $priorityClass[$issue->getPriority()] ?? 'default' ?>" style="font-size: 13px; padding: 4px 10px;">
+                                    <?= rex_escape($issue->getPriority()) ?>
+                                </span>
+                            </div>
+                            <?php if ($issue->getDueDate()): ?>
+                            <div style="margin-top: 6px;">
+                                <small class="text-muted"><i class="rex-icon fa-calendar"></i> <?= $package->i18n('issue_tracker_due_date') ?>:</small><br>
+                                <?php if ($issue->isOverdue()): ?>
+                                    <span class="label label-danger"><i class="rex-icon fa-exclamation-triangle"></i> <?= $issue->getDueDate()->format('d.m.Y H:i') ?></span>
+                                <?php else: ?>
+                                    <span style="font-size: 12px;"><?= $issue->getDueDate()->format('d.m.Y H:i') ?></span>
+                                <?php endif; ?>
+                            </div>
                             <?php endif; ?>
-                        </dd>
-                        <?php endif; ?>
 
-                        <?php 
-                        // Domains anzeigen
-                        $domainIds = $issue->getDomainIds();
-                        if (!empty($domainIds) && rex_addon::exists('yrewrite') && rex_addon::get('yrewrite')->isAvailable()): 
-                        ?>
-                        <dt><?= $package->i18n('issue_tracker_domain') ?>:</dt>
-                        <dd>
                             <?php 
-                            $domainNames = [];
-                            foreach (rex_yrewrite::getDomains() as $domainName => $domain) {
-                                $domainId = method_exists($domain, 'getId') ? (int) $domain->getId() : null;
-                                if ($domainId !== null && in_array($domainId, $domainIds, true)) {
-                                    $domainNames[] = '<span class="label label-info"><i class="rex-icon fa-globe"></i> ' . rex_escape($domainName) . '</span>';
-                                }
-                            }
-                            echo implode(' ', $domainNames);
-                            ?>
-                        </dd>
-                        <?php endif; ?>
-
-                        <?php 
-                        // YForm Tabellen anzeigen
-                        $yformTables = $issue->getYformTables();
-                        if (!empty($yformTables)): 
-                        ?>
-                        <dt><?= $package->i18n('issue_tracker_yform_table') ?>:</dt>
-                        <dd>
-                            <?php foreach ($yformTables as $tableName): ?>
-                                <span class="label label-default"><i class="rex-icon fa-database"></i> <?= rex_escape($tableName) ?></span>
-                            <?php endforeach; ?>
-                        </dd>
-                        <?php endif; ?>
-
-                        <?php 
-                        // Projekt anzeigen
-                        $project = $issue->getProject();
-                        if ($project): 
-                        ?>
-                        <dt><?= $package->i18n('issue_tracker_project') ?>:</dt>
-                        <dd>
-                            <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId()]) ?>" 
-                               class="label" style="background-color: <?= rex_escape($project->getColor()) ?>; display: inline-block;">
-                                <?php if ($project->getIsPrivate()): ?><i class="rex-icon fa-lock"></i> <?php endif; ?>
-                                <i class="rex-icon fa-folder-open"></i> <?= rex_escape($project->getName()) ?>
-                            </a>
-                        </dd>
-                        <?php endif; ?>
-
-                        <?php 
-                        // Verwandtes Issue anzeigen
-                        $relatedTo = $issue->getDuplicateOf();
-                        if ($relatedTo !== null): 
-                            $relatedIssue = $issue->getDuplicateIssue();
-                        ?>
-                        <dt><?= $package->i18n('issue_tracker_related_to') ?>:</dt>
-                        <dd>
-                            <?php if ($relatedIssue): ?>
-                                <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $relatedIssue->getId()]) ?>" 
-                                   class="label label-info">
-                                    <i class="rex-icon fa-link"></i> #<?= $relatedIssue->getId() ?> - <?= rex_escape($relatedIssue->getTitle()) ?>
-                                </a>
-                            <?php else: ?>
-                                <span class="label label-warning">
-                                    <i class="rex-icon fa-link"></i> #<?= $relatedTo ?> (<?= $package->i18n('issue_tracker_related_not_found') ?>)
-                                </span>
+                            // Tags direkt unter Status/Priorität
+                            if (!empty($tags)): ?>
+                            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #eee;">
+                                <?php foreach ($tags as $tag): ?>
+                                    <span class="label" style="background-color: <?= rex_escape($tag->getColor()) ?>; margin: 1px; font-size: 11px;">
+                                        <?= rex_escape($tag->getName()) ?>
+                                    </span>
+                                <?php endforeach; ?>
+                            </div>
                             <?php endif; ?>
-                        </dd>
-                        <?php endif; ?>
-
-                        <?php 
-                        // Verwandte Issues anzeigen
-                        $relatedIssues = $issue->getDuplicates();
-                        if (!empty($relatedIssues)): 
-                        ?>
-                        <dt><?= $package->i18n('issue_tracker_related_issues') ?>:</dt>
-                        <dd>
-                            <?php foreach ($relatedIssues as $related): ?>
-                                <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $related->getId()]) ?>" 
-                                   class="label label-default" style="display: inline-block; margin-bottom: 3px;">
-                                    <i class="rex-icon fa-link"></i> #<?= $related->getId() ?> - <?= rex_escape($related->getTitle()) ?>
-                                </a><br>
-                            <?php endforeach; ?>
-                        </dd>
-                        <?php endif; ?>
-                    </dl>
-
-                    <!-- Tags -->
-                    <?php if (!empty($tags)): ?>
-                    <div style="margin-top: 20px;">
-                        <strong><?= $package->i18n('issue_tracker_tags') ?>:</strong><br>
-                        <?php foreach ($tags as $tag): ?>
-                            <span class="label" style="background-color: <?= rex_escape($tag->getColor()) ?>; margin: 2px;">
-                                <?= rex_escape($tag->getName()) ?>
-                            </span>
-                        <?php endforeach; ?>
+                        </div>
                     </div>
-                    <?php endif; ?>
 
-                    <!-- Quick Status Change -->
+                    <!-- Panel 2: Personen -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading" style="padding: 8px 12px;">
+                            <strong><i class="rex-icon fa-users"></i> <?= $package->i18n('issue_tracker_people') ?></strong>
+                        </div>
+                        <div class="panel-body" style="padding: 0;">
+                            <table class="table" style="margin: 0; font-size: 13px;">
+                                <tr>
+                                    <td style="padding: 8px 12px; width: 40%; color: #888; border-top: none;"><?= $package->i18n('issue_tracker_assigned') ?></td>
+                                    <td style="padding: 8px 12px; border-top: none; font-weight: 500;"><?= $assignedUser ? rex_escape($assignedUser->getValue('name')) : '<span class="text-muted">–</span>' ?></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 12px; color: #888;"><?= $package->i18n('issue_tracker_created_by') ?></td>
+                                    <td style="padding: 8px 12px;"><?= $createdBy ? rex_escape($createdBy->getValue('name')) : '–' ?></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Panel 3: Details (Kategorie, AddOn, Domain, etc.) -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading" style="padding: 8px 12px;">
+                            <strong><i class="rex-icon fa-list"></i> <?= $package->i18n('issue_tracker_details') ?></strong>
+                        </div>
+                        <div class="panel-body" style="padding: 0;">
+                            <table class="table" style="margin: 0; font-size: 13px;">
+                                <tr>
+                                    <td style="padding: 6px 12px; width: 40%; color: #888; border-top: none;"><?= $package->i18n('issue_tracker_category') ?></td>
+                                    <td style="padding: 6px 12px; border-top: none;"><?= rex_escape($issue->getCategory()) ?></td>
+                                </tr>
+                                <?php if ($issue->getAssignedAddon()): ?>
+                                <tr>
+                                    <td style="padding: 6px 12px; color: #888;"><?= $package->i18n('issue_tracker_addon') ?></td>
+                                    <td style="padding: 6px 12px;"><?= rex_escape($issue->getAssignedAddon()) ?></td>
+                                </tr>
+                                <?php endif; ?>
+                                <?php if ($issue->getVersion()): ?>
+                                <tr>
+                                    <td style="padding: 6px 12px; color: #888;"><?= $package->i18n('issue_tracker_version') ?></td>
+                                    <td style="padding: 6px 12px;"><?= rex_escape($issue->getVersion()) ?></td>
+                                </tr>
+                                <?php endif; ?>
+                                <tr>
+                                    <td style="padding: 6px 12px; color: #888;"><?= $package->i18n('issue_tracker_created_at') ?></td>
+                                    <td style="padding: 6px 12px;"><?= $issue->getCreatedAt() ? $issue->getCreatedAt()->format('d.m.Y H:i') : '–' ?></td>
+                                </tr>
+                                <?php if ($issue->getUpdatedAt()): ?>
+                                <tr>
+                                    <td style="padding: 6px 12px; color: #888;"><?= $package->i18n('issue_tracker_updated_at') ?></td>
+                                    <td style="padding: 6px 12px;"><?= $issue->getUpdatedAt()->format('d.m.Y H:i') ?></td>
+                                </tr>
+                                <?php endif; ?>
+                                <?php if ($issue->getClosedAt()): ?>
+                                <tr>
+                                    <td style="padding: 6px 12px; color: #888;"><?= $package->i18n('issue_tracker_closed') ?></td>
+                                    <td style="padding: 6px 12px;"><?= $issue->getClosedAt()->format('d.m.Y H:i') ?></td>
+                                </tr>
+                                <?php endif; ?>
+                                <?php 
+                                $domainIds = $issue->getDomainIds();
+                                if (!empty($domainIds) && rex_addon::exists('yrewrite') && rex_addon::get('yrewrite')->isAvailable()): 
+                                ?>
+                                <tr>
+                                    <td style="padding: 6px 12px; color: #888;"><?= $package->i18n('issue_tracker_domain') ?></td>
+                                    <td style="padding: 6px 12px;">
+                                        <?php 
+                                        foreach (rex_yrewrite::getDomains() as $domainName => $domain) {
+                                            $domainId = method_exists($domain, 'getId') ? (int) $domain->getId() : null;
+                                            if ($domainId !== null && in_array($domainId, $domainIds, true)) {
+                                                echo '<span class="label label-info" style="font-size: 10px; margin: 1px;"><i class="rex-icon fa-globe"></i> ' . rex_escape($domainName) . '</span> ';
+                                            }
+                                        }
+                                        ?>
+                                    </td>
+                                </tr>
+                                <?php endif; ?>
+                                <?php 
+                                $yformTables = $issue->getYformTables();
+                                if (!empty($yformTables)): 
+                                ?>
+                                <tr>
+                                    <td style="padding: 6px 12px; color: #888;"><?= $package->i18n('issue_tracker_yform_table') ?></td>
+                                    <td style="padding: 6px 12px;">
+                                        <?php foreach ($yformTables as $tableName): ?>
+                                            <span class="label label-default" style="font-size: 10px; margin: 1px;"><i class="rex-icon fa-database"></i> <?= rex_escape($tableName) ?></span>
+                                        <?php endforeach; ?>
+                                    </td>
+                                </tr>
+                                <?php endif; ?>
+                                <?php 
+                                $project = $issue->getProject();
+                                if ($project): 
+                                ?>
+                                <tr>
+                                    <td style="padding: 6px 12px; color: #888;"><?= $package->i18n('issue_tracker_project') ?></td>
+                                    <td style="padding: 6px 12px;">
+                                        <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId()]) ?>" 
+                                           class="label" style="background-color: <?= rex_escape($project->getColor()) ?>; font-size: 10px;">
+                                            <?php if ($project->getIsPrivate()): ?><i class="rex-icon fa-lock"></i> <?php endif; ?>
+                                            <i class="rex-icon fa-folder-open"></i> <?= rex_escape($project->getName()) ?>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endif; ?>
+                            </table>
+
+                            <?php 
+                            $relatedTo = $issue->getDuplicateOf();
+                            if ($relatedTo !== null): 
+                                $relatedIssue = $issue->getDuplicateIssue();
+                            ?>
+                            <div style="padding: 6px 12px; border-top: 1px solid #ddd;">
+                                <small class="text-muted"><?= $package->i18n('issue_tracker_related_to') ?>:</small><br>
+                                <?php if ($relatedIssue): ?>
+                                    <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $relatedIssue->getId()]) ?>" class="label label-info" style="font-size: 10px;">
+                                        <i class="rex-icon fa-link"></i> #<?= $relatedIssue->getId() ?> – <?= rex_escape($relatedIssue->getTitle()) ?>
+                                    </a>
+                                <?php else: ?>
+                                    <span class="label label-warning" style="font-size: 10px;"><i class="rex-icon fa-link"></i> #<?= $relatedTo ?> (<?= $package->i18n('issue_tracker_related_not_found') ?>)</span>
+                                <?php endif; ?>
+                            </div>
+                            <?php endif; ?>
+
+                            <?php 
+                            $relatedIssues = $issue->getDuplicates();
+                            if (!empty($relatedIssues)): 
+                            ?>
+                            <div style="padding: 6px 12px; border-top: 1px solid #ddd;">
+                                <small class="text-muted"><?= $package->i18n('issue_tracker_related_issues') ?>:</small><br>
+                                <?php foreach ($relatedIssues as $related): ?>
+                                    <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $related->getId()]) ?>" class="label label-default" style="display: inline-block; margin: 1px; font-size: 10px;">
+                                        <i class="rex-icon fa-link"></i> #<?= $related->getId() ?> – <?= rex_escape($related->getTitle()) ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Panel 4: Aktionen -->
                     <?php 
                     $currentUser = rex::getUser();
                     $canChangeStatus = $currentUser->isAdmin() || 
@@ -318,53 +339,139 @@ $priorityClass = [
                                        $issue->getCreatedBy() === $currentUser->getId();
                     if ($canChangeStatus): 
                     ?>
-                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                        <form method="post" id="status-change-form">
-                            <input type="hidden" name="change_status" value="1" />
-                            <div class="form-group">
-                                <label><strong><i class="rex-icon fa-exchange"></i> <?= $package->i18n('issue_tracker_change_status') ?>:</strong></label>
-                                <select name="status" class="form-control selectpicker" data-width="100%" id="status-select">
-                                    <?php foreach ($statuses as $statusKey => $statusLabel): ?>
-                                    <option value="<?= rex_escape($statusKey) ?>" 
-                                            <?= $issue->getStatus() === $statusKey ? 'selected' : '' ?>
-                                            data-content="<span class='label label-<?= ['open' => 'danger', 'in_progress' => 'warning', 'planned' => 'info', 'rejected' => 'default', 'closed' => 'success'][$statusKey] ?? 'default' ?>'><?= $package->i18n('issue_tracker_status_' . $statusKey) ?></span>">
-                                        <?= $package->i18n('issue_tracker_status_' . $statusKey) ?>
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
+                    <div class="panel panel-default">
+                        <div class="panel-heading" style="padding: 8px 12px;">
+                            <strong><i class="rex-icon fa-cogs"></i> <?= $package->i18n('issue_tracker_actions') ?></strong>
+                        </div>
+                        <div class="panel-body" style="padding: 12px;">
+                            <!-- Status ändern -->
+                            <form method="post" id="status-change-form">
+                                <input type="hidden" name="change_status" value="1" />
+                                <div class="form-group" style="margin-bottom: 8px;">
+                                    <label style="font-size: 12px; margin-bottom: 4px;"><i class="rex-icon fa-exchange"></i> <?= $package->i18n('issue_tracker_change_status') ?></label>
+                                    <select name="status" class="form-control selectpicker" data-width="100%" id="status-select">
+                                        <?php foreach ($statuses as $statusKey => $statusLabel): ?>
+                                        <option value="<?= rex_escape($statusKey) ?>" 
+                                                <?= $issue->getStatus() === $statusKey ? 'selected' : '' ?>
+                                                data-content="<span class='label label-<?= ['open' => 'danger', 'in_progress' => 'warning', 'planned' => 'info', 'rejected' => 'default', 'closed' => 'success'][$statusKey] ?? 'default' ?>'><?= $package->i18n('issue_tracker_status_' . $statusKey) ?></span>">
+                                            <?= $package->i18n('issue_tracker_status_' . $statusKey) ?>
+                                        </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-success btn-block">
+                                    <i class="rex-icon fa-check"></i> <?= $package->i18n('issue_tracker_change_status') ?>
+                                </button>
+                            </form>
+
+                            <!-- Reminder -->
+                            <?php 
+                            $canSendReminder = $this->getVar('canSendReminder', false);
+                            $lastReminderAt = $this->getVar('lastReminderAt', null);
+                            $assignedUser = $issue->getAssignedUser();
+                            if ($assignedUser && !in_array($issue->getStatus(), ['closed', 'rejected'], true)): 
+                            ?>
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
+                                <form method="post" onsubmit="return confirm('<?= $package->i18n('issue_tracker_reminder_confirm') ?>')">
+                                    <input type="hidden" name="send_reminder" value="1" />
+                                    <button type="submit" class="btn btn-sm btn-block <?= $canSendReminder ? 'btn-warning' : 'btn-default' ?>" <?= $canSendReminder ? '' : 'disabled' ?>>
+                                        <i class="rex-icon fa-bell"></i> <?= $package->i18n('issue_tracker_reminder_send') ?>
+                                    </button>
+                                    <?php if ($lastReminderAt): ?>
+                                    <p class="text-muted text-center" style="font-size: 10px; margin-top: 4px; margin-bottom: 0;">
+                                        <i class="rex-icon fa-clock-o"></i> 
+                                        <?= $package->i18n('issue_tracker_reminder_last_sent', (new DateTime($lastReminderAt))->format('d.m.Y H:i')) ?>
+                                    </p>
+                                    <?php endif; ?>
+                                </form>
                             </div>
-                            <button type="submit" class="btn btn-sm btn-success btn-block">
-                                <i class="rex-icon fa-check"></i> Status ändern
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Reminder Button -->
-                    <?php 
-                    $canSendReminder = $this->getVar('canSendReminder', false);
-                    $lastReminderAt = $this->getVar('lastReminderAt', null);
-                    $assignedUser = $issue->getAssignedUser();
-                    if ($assignedUser && !in_array($issue->getStatus(), ['closed', 'rejected'], true)): 
-                    ?>
-                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
-                        <form method="post" onsubmit="return confirm('<?= $package->i18n('issue_tracker_reminder_confirm') ?>')">
-                            <input type="hidden" name="send_reminder" value="1" />
-                            <button type="submit" class="btn btn-sm btn-block <?= $canSendReminder ? 'btn-danger' : 'btn-default' ?>" <?= $canSendReminder ? '' : 'disabled' ?>>
-                                <i class="rex-icon fa-bell"></i> <?= $package->i18n('issue_tracker_reminder_send') ?>
-                            </button>
-                            <?php if ($lastReminderAt): ?>
-                            <p class="text-muted text-center" style="font-size: 11px; margin-top: 5px; margin-bottom: 0;">
-                                <i class="rex-icon fa-clock-o"></i> 
-                                <?= $package->i18n('issue_tracker_reminder_last_sent', (new DateTime($lastReminderAt))->format('d.m.Y H:i')) ?>
-                            </p>
                             <?php endif; ?>
-                        </form>
+                        </div>
                     </div>
                     <?php endif; ?>
 
-                    <!-- Verwandtes Issue markieren - ENTFERNT (wird als separates Panel unter Header angezeigt) -->
+                    <!-- Panel 5: Beobachter -->
+                    <?php
+                    $isWatching = $this->getVar('isWatching', false);
+                    $watcherCount = $this->getVar('watcherCount', 0);
+                    $watcherUsers = $this->getVar('watcherUsers', []);
+                    $canManageWatchers = $currentUser->isAdmin() 
+                        || $currentUser->hasPerm('issue_tracker[issue_manager]') 
+                        || $issue->getCreatedBy() === $currentUser->getId();
+                    ?>
+                    <div class="panel panel-default">
+                        <div class="panel-heading" style="padding: 8px 12px;">
+                            <strong><i class="rex-icon fa-eye"></i> <?= $package->i18n('issue_tracker_watchers') ?></strong>
+                            <?php if ($watcherCount > 0): ?>
+                            <span class="badge" style="font-size: 10px; background: #999;"><?= $watcherCount ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="panel-body" style="padding: 12px;">
+                            <!-- Toggle Watch -->
+                            <form method="post" style="margin-bottom: 0;">
+                                <input type="hidden" name="toggle_watch" value="1" />
+                                <?php if ($isWatching): ?>
+                                <button type="submit" class="btn btn-sm btn-block btn-default" style="margin-bottom: 8px;">
+                                    <i class="rex-icon fa-eye-slash"></i> <?= $package->i18n('issue_tracker_unwatch') ?>
+                                </button>
+                                <?php else: ?>
+                                <button type="submit" class="btn btn-sm btn-block btn-info" style="margin-bottom: 8px;">
+                                    <i class="rex-icon fa-eye"></i> <?= $package->i18n('issue_tracker_watch') ?>
+                                </button>
+                                <?php endif; ?>
+                            </form>
+
+                            <?php if ($watcherCount > 0): ?>
+                            <ul class="list-unstyled" style="font-size: 12px; margin: 0; padding: 0;">
+                                <?php foreach ($watcherUsers as $watcher): ?>
+                                <li style="padding: 3px 0; display: flex; align-items: center; justify-content: space-between;">
+                                    <span><i class="rex-icon fa-user" style="color: #aaa;"></i> <?= rex_escape($watcher['name']) ?></span>
+                                    <?php if ($canManageWatchers && $watcher['id'] !== $currentUser->getId()): ?>
+                                    <form method="post" style="display: inline; margin: 0;">
+                                        <input type="hidden" name="remove_watcher" value="<?= $watcher['id'] ?>" />
+                                        <button type="submit" class="btn btn-xs btn-link text-danger" title="<?= $package->i18n('issue_tracker_watcher_remove') ?>" style="padding: 0; line-height: 1;">
+                                            <i class="rex-icon fa-times"></i>
+                                        </button>
+                                    </form>
+                                    <?php endif; ?>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <?php endif; ?>
+
+                            <!-- Watcher einladen -->
+                            <?php if ($canManageWatchers): ?>
+                            <?php
+                            $availableUsers = $this->getVar('availableWatcherUsers', []);
+                            if (!empty($availableUsers)):
+                            ?>
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
+                                <form method="post">
+                                    <input type="hidden" name="add_watchers" value="1" />
+                                    <div class="form-group" style="margin-bottom: 6px;">
+                                        <select name="watcher_user_ids[]" class="form-control selectpicker" 
+                                                multiple="multiple" 
+                                                data-live-search="true" 
+                                                data-actions-box="true"
+                                                data-selected-text-format="count > 2"
+                                                data-size="8"
+                                                data-width="100%"
+                                                title="<?= $package->i18n('issue_tracker_watcher_add') ?>">
+                                            <?php foreach ($availableUsers as $uid => $uname): ?>
+                                            <option value="<?= $uid ?>"><?= rex_escape($uname) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-block btn-success">
+                                        <i class="rex-icon fa-user-plus"></i> <?= $package->i18n('issue_tracker_watcher_invite') ?>
+                                    </button>
+                                </form>
+                            </div>
+                            <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                    <?php endif; ?>
+
                 </div>
             </div>
         </div>

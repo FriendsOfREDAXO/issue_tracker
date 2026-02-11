@@ -117,6 +117,13 @@ if ($currentUser->isAdmin()) {
     $userProjects = \FriendsOfREDAXO\IssueTracker\Project::getByUser($userId);
 }
 
+// Beobachtete Issues laden
+$watchedIssues = [];
+$watchedIds = \FriendsOfREDAXO\IssueTracker\NotificationService::getWatchedIssues($userId);
+foreach ($watchedIds as $wIssue) {
+    $watchedIssues[] = $wIssue;
+}
+
 // Dashboard ausgeben
 $fragment = new rex_fragment();
 $fragment->setVar('openIssues', $openIssues);
@@ -129,6 +136,7 @@ $fragment->setVar('recentActivities', $recentActivities);
 $fragment->setVar('unreadMessages', $unreadMessages);
 $fragment->setVar('recentMessages', $recentMessages);
 $fragment->setVar('userProjects', $userProjects);
+$fragment->setVar('watchedIssues', $watchedIssues);
 $fragment->setVar('isManager', $isManager);
 $fragment->setVar('currentViewType', $viewType);
 echo $fragment->parse('issue_tracker_dashboard.php');

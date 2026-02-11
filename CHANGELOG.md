@@ -2,6 +2,43 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [1.5.1] – 2026-02-11
+
+### Verbesserungen
+- **Sidebar komplett neu gestaltet**: Issue-Detailansicht mit 5 klar getrennten Panels statt einer unübersichtlichen Einzelliste
+  - Panel 1: Status & Priorität (inkl. Fälligkeitsdatum, Tags)
+  - Panel 2: Personen (Zugewiesener, Ersteller)
+  - Panel 3: Details (Kategorie, AddOn, Version, Daten, Domain, YForm, Projekt, verwandte Issues)
+  - Panel 4: Aktionen (Statusänderung, Erinnerung) – nur für Berechtigte sichtbar
+  - Panel 5: Beobachter (Watch/Unwatch, Liste, Einladung)
+- **Einstellungen-Seite aktualisiert**: Benachrichtigungsbeschreibungen spiegeln jetzt das beteiligungsbasierte Modell wider
+- **Info-Box in Einstellungen**: Erklärt das Benachrichtigungsmodell (Ersteller, Zugewiesener, Kommentierer, Beobachter)
+- **Neue Sprachschlüssel**: Panel-Überschriften für Personen, Details und Aktionen (DE + EN)
+
+## [1.5.0] – 2026-02-11
+
+### Neue Funktionen
+- **Beteiligungsbasierte Benachrichtigungen**: E-Mails werden nur noch an beteiligte User gesendet (Ersteller, Zugewiesener, Kommentierer, Beobachter) statt an alle berechtigten User
+  - Neues Issue → nur der zugewiesene User wird informiert
+  - Kommentare → alle Beteiligten (außer Kommentar-Autor)
+  - Statusänderungen → alle Beteiligten (außer dem Ändernden)
+- **Beobachter-System (Watchers)**: User können Issues beobachten und erhalten Benachrichtigungen
+  - Watch/Unwatch-Button in der Issue-Detailansicht
+  - Beobachterliste mit Anzahl in der Sidebar
+  - Multi-Select zum Einladen weiterer Beobachter (für Ersteller, Manager, Admins)
+  - Eingeladene Beobachter erhalten eine einmalige E-Mail-Benachrichtigung
+  - Beobachter können von Managern/Admins wieder entfernt werden
+- **Dashboard: Beobachtete Issues**: Neues Panel in der rechten Spalte zeigt alle Issues, die der User beobachtet (max. 10, mit Status-Farbe, Überf\u00e4llig-Warnung)\n- **Zugewiesener User als Pflichtfeld**: Jedes Issue muss einem Benutzer zugewiesen werden
+  - Validierung sowohl client- als auch serverseitig
+  - Aussagekräftige Fehlermeldung bei fehlendem Zugewiesenem
+
+### Verbesserungen
+- **Neue DB-Tabelle `issue_tracker_watchers`**: Speichert Issue-Beobachter mit Unique-Index
+- **`getInvolvedUsers()`**: Neue Methode im NotificationService sammelt beteiligte User
+- **`hasNotificationEnabled()`**: Prüft einzelne Benachrichtigungsspräferenzen pro User
+- **Statusänderung**: Der ändernde User wird jetzt korrekt von der Benachrichtigung ausgeschlossen
+- **Update-Script**: Legt Standard-Benachrichtigungseinträge für alle berechtigten User an
+
 ## [1.4.1] – 2026-02-11
 
 ### Bugfixes

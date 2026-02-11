@@ -160,6 +160,18 @@ rex_sql_table::get(rex::getTable('issue_tracker_reminders'))
     ->ensureIndex(new rex_sql_index('sent_at', ['sent_at']))
     ->ensure();
 
+// Tabelle für Issue-Beobachter (Watchers)
+rex_sql_table::get(rex::getTable('issue_tracker_watchers'))
+    ->ensurePrimaryIdColumn()
+    ->ensureColumn(new rex_sql_column('issue_id', 'int(10) unsigned'))
+    ->ensureColumn(new rex_sql_column('user_id', 'int(10) unsigned'))
+    ->ensureColumn(new rex_sql_column('added_by', 'int(10) unsigned', true))
+    ->ensureColumn(new rex_sql_column('created_at', 'datetime'))
+    ->ensureIndex(new rex_sql_index('issue_user', ['issue_id', 'user_id'], rex_sql_index::UNIQUE))
+    ->ensureIndex(new rex_sql_index('issue_id', ['issue_id']))
+    ->ensureIndex(new rex_sql_index('user_id', ['user_id']))
+    ->ensure();
+
 // Tabelle für gespeicherte Filter
 rex_sql_table::get(rex::getTable('issue_tracker_saved_filters'))
     ->ensurePrimaryIdColumn()

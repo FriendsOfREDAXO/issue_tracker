@@ -277,14 +277,14 @@ issue_tracker_email_assignment_subject = Thema zugewiesen: #{0}: {1}
 
 # Benutzer-Einstellungen
 issue_tracker_email_notifications = E-Mail-Benachrichtigungen
-issue_tracker_email_on_new = Bei neuen Themen
-issue_tracker_email_on_new_desc = Ich möchte benachrichtigt werden, wenn ein neues Thema erstellt wird
+issue_tracker_email_on_new = Bei neuen Issues
+issue_tracker_email_on_new_desc = Benachrichtigung, wenn mir ein neues Issue zugewiesen wird
 issue_tracker_email_on_comment = Bei neuen Kommentaren
-issue_tracker_email_on_comment_desc = Ich möchte benachrichtigt werden, wenn ein Kommentar zu einem Thema hinzugefügt wird
-issue_tracker_email_on_status_change = Bei Status-Änderungen
-issue_tracker_email_on_status_change_desc = Ich möchte benachrichtigt werden, wenn sich der Status eines Themas ändert
+issue_tracker_email_on_comment_desc = Benachrichtigung bei neuen Kommentaren in Issues, an denen ich beteiligt bin
+issue_tracker_email_on_status_change = Bei Statusänderungen
+issue_tracker_email_on_status_change_desc = Benachrichtigung bei Statusänderungen in Issues, an denen ich beteiligt bin
 issue_tracker_email_on_assignment = Bei Zuweisung
-issue_tracker_email_on_assignment_desc = Ich möchte benachrichtigt werden, wenn mir ein Thema zugewiesen wird
+issue_tracker_email_on_assignment_desc = Benachrichtigung, wenn mir ein Issue zugewiesen wird
 issue_tracker_email_on_message = Bei privaten Nachrichten
 issue_tracker_email_on_message_desc = Ich möchte benachrichtigt werden, wenn ich eine private Nachricht erhalte
 issue_tracker_email_message_full_text = Vollständiger Nachrichtentext
@@ -515,4 +515,25 @@ issue_tracker_reminder_subject = Erinnerung: Issue #{0} - {1}
 issue_tracker_link_action = Verknüpfen
 issue_tracker_change_status_action = Status ändern
 issue_tracker_send_test_email = Test-E-Mail senden
+
+# Watchers / Beobachter
+issue_tracker_watchers = Beobachter
+issue_tracker_watch = Beobachten
+issue_tracker_unwatch = Nicht mehr beobachten
+issue_tracker_watched = Sie beobachten dieses Issue jetzt.
+issue_tracker_unwatched = Sie beobachten dieses Issue nicht mehr.
+issue_tracker_watchers_count = {0} Beobachter
+issue_tracker_watcher_add = Benutzer einladen…
+issue_tracker_watcher_invite = Einladen
+issue_tracker_watcher_remove = Beobachter entfernen
+issue_tracker_watcher_removed = Beobachter wurde entfernt.
+issue_tracker_watchers_added = {0} Beobachter hinzugefügt und benachrichtigt.
+issue_tracker_assigned_user_required = Bitte weisen Sie das Issue einem Benutzer zu. Der zugewiesene Benutzer ist ein Pflichtfeld.
+issue_tracker_watched_issues = Beobachtete Issues
+issue_tracker_more_watched = weitere beobachtete Issues
+issue_tracker_notification_info_title = Beteiligungsbasierte Benachrichtigungen
+issue_tracker_notification_info_text = Sie erhalten nur Benachrichtigungen für Issues, an denen Sie beteiligt sind – als Ersteller, Zugewiesener, Kommentierender oder Beobachter. Über den Beobachten-Button in der Issue-Ansicht können Sie weitere Issues verfolgen.
+issue_tracker_people = Personen
+issue_tracker_details = Details
+issue_tracker_actions = Aktionen
 issue_tracker_related_help_text = Dieses Issue wird mit dem ausgewählten Issue verknüpft und geschlossen.

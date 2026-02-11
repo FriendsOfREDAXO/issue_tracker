@@ -17,6 +17,7 @@ $recentActivities = $this->getVar('recentActivities', []);
 $unreadMessages = $this->getVar('unreadMessages', 0);
 $recentMessages = $this->getVar('recentMessages', []);
 $userProjects = $this->getVar('userProjects', []);
+$watchedIssues = $this->getVar('watchedIssues', []);
 $isManager = $this->getVar('isManager', false);
 $currentViewType = $this->getVar('currentViewType', 'own');
 
@@ -249,6 +250,48 @@ $priorityClasses = [
                     </div>
                 </div>
             </div>
+
+            <?php if (!empty($watchedIssues)): ?>
+            <!-- Beobachtete Issues -->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <i class="rex-icon fa-eye"></i> <?= $package->i18n('issue_tracker_watched_issues') ?>
+                        <span class="badge"><?= count($watchedIssues) ?></span>
+                    </h3>
+                </div>
+                <div class="panel-body" style="padding: 10px;">
+                    <?php foreach (array_slice($watchedIssues, 0, 10) as $wIssue): 
+                        $wStatusClass = $statusClasses[$wIssue->getStatus()] ?? 'default';
+                    ?>
+                    <div style="border-left: 3px solid <?= ['danger' => '#d9534f', 'warning' => '#f0ad4e', 'success' => '#5cb85c', 'info' => '#5bc0de', 'default' => '#999'][$wStatusClass] ?>; padding: 6px 10px; margin-bottom: 8px; background: rgba(0,0,0,0.02);">
+                        <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $wIssue->getId()]) ?>" style="color: inherit; text-decoration: none;">
+                            <strong>#<?= $wIssue->getId() ?></strong>
+                            <?php 
+                            $wTitle = rex_escape($wIssue->getTitle());
+                            echo mb_strlen($wTitle) > 30 ? mb_substr($wTitle, 0, 30) . '...' : $wTitle;
+                            ?>
+                        </a>
+                        <div style="margin-top: 3px;">
+                            <span class="label label-<?= $wStatusClass ?>" style="font-size: 10px;">
+                                <?= rex_escape($wIssue->getStatus()) ?>
+                            </span>
+                            <?php if ($wIssue->isOverdue()): ?>
+                            <span class="label label-danger" style="font-size: 9px; margin-left: 3px;"><i class="rex-icon fa-clock-o"></i> <?= $package->i18n('issue_tracker_overdue') ?></span>
+                            <?php endif; ?>
+                            <small class="text-muted pull-right"><?= $wIssue->getCreatedAt()->format('d.m.Y') ?></small>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+
+                    <?php if (count($watchedIssues) > 10): ?>
+                    <div class="text-center">
+                        <small class="text-muted">+ <?= count($watchedIssues) - 10 ?> <?= $package->i18n('issue_tracker_more_watched') ?></small>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <?php if (!empty($userProjects)): ?>
             <!-- Projekte -->

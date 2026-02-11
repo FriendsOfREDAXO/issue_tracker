@@ -91,6 +91,12 @@ if (rex_post('save', 'int', 0) === 1) {
     $issue->setAssignedAddon(rex_post('assigned_addon', 'string', null));
     $issue->setVersion(rex_post('version', 'string', null));
     $issue->setIsPrivate(rex_post('is_private', 'int', 0) === 1);
+
+    // Pflichtfeld: Zugewiesener User
+    if (!$issue->getAssignedUserId()) {
+        echo rex_view::error($package->i18n('issue_tracker_assigned_user_required'));
+        // Formular erneut anzeigen (weiter unten)
+    } else {
     
     // Domain IDs (Multiple) und YForm Tabellen (Multiple)
     $domainIds = rex_post('domain_ids', 'array', []);
@@ -190,7 +196,7 @@ if (rex_post('save', 'int', 0) === 1) {
         if ($isNew) {
             NotificationService::notifyNewIssue($issue);
         } elseif ($oldStatus !== $issue->getStatus()) {
-            NotificationService::notifyStatusChange($issue, $oldStatus, $issue->getStatus());
+            NotificationService::notifyStatusChange($issue, $oldStatus, $issue->getStatus(), rex::getUser()->getId());
         }
         
         if ($issue->getAssignedUserId() && $issue->getAssignedUserId() !== rex_post('old_assigned_user_id', 'int', 0)) {
@@ -211,6 +217,7 @@ if (rex_post('save', 'int', 0) === 1) {
     } else {
         echo rex_view::error($package->i18n('issue_tracker_issue_save_error'));
     }
+    } // Ende else (Pflichtfeld-Validierung)
 }
 
 // Kommentar hinzufügen

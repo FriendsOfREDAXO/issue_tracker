@@ -273,7 +273,7 @@ if (rex_post('change_status', 'int', 0) === 1) {
                 );
                 
                 // Benachrichtigung senden
-                NotificationService::notifyStatusChange($issue, $oldStatus, $newStatus);
+                NotificationService::notifyStatusChange($issue, $oldStatus, $newStatus, rex::getUser()->getId());
                 echo rex_view::success($package->i18n('issue_tracker_status_changed'));
             }
         }
@@ -307,6 +307,51 @@ if (rex_post('send_reminder', 'int', 0) === 1) {
     }
 }
 
+// Watch/Unwatch Toggle
+if (rex_post('toggle_watch', 'int', 0) === 1) {
+    $currentUserId = PermissionService::getUserId();
+    if (NotificationService::isWatching($issue->getId(), $currentUserId)) {
+        NotificationService::removeWatcher($issue->getId(), $currentUserId);
+        echo rex_view::success($package->i18n('issue_tracker_unwatched'));
+    } else {
+        NotificationService::addWatcher($issue->getId(), $currentUserId, $currentUserId);
+        echo rex_view::success($package->i18n('issue_tracker_watched'));
+    }
+}
+
+// Watcher entfernen
+if (rex_post('remove_watcher', 'int', 0) > 0) {
+    $removeUserId = rex_post('remove_watcher', 'int', 0);
+    $canManage = PermissionService::isAdmin()
+        || PermissionService::isManager()
+        || $issue->getCreatedBy() === PermissionService::getUserId();
+    if ($canManage) {
+        NotificationService::removeWatcher($issue->getId(), $removeUserId);
+        echo rex_view::success($package->i18n('issue_tracker_watcher_removed'));
+    }
+}
+
+// Watcher hinzufügen (Multi-Select / Einladen)
+if (rex_post('add_watchers', 'int', 0) === 1) {
+    $canManage = PermissionService::isAdmin()
+        || PermissionService::isManager()
+        || $issue->getCreatedBy() === PermissionService::getUserId();
+    if ($canManage) {
+        $watcherUserIds = rex_post('watcher_user_ids', 'array', []);
+        $addedUserIds = [];
+        foreach ($watcherUserIds as $wuid) {
+            $wuid = (int) $wuid;
+            if ($wuid > 0 && NotificationService::addWatcher($issue->getId(), $wuid, PermissionService::getUserId())) {
+                $addedUserIds[] = $wuid;
+            }
+        }
+        if (!empty($addedUserIds)) {
+            NotificationService::notifyWatchersAdded($issue, $addedUserIds, PermissionService::getUserId());
+            echo rex_view::success($package->i18n('issue_tracker_watchers_added', (string) count($addedUserIds)));
+        }
+    }
+}
+
 // Einstellungen laden
 $settingsSql = rex_sql::factory();
 $settingsSql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "statuses"');
@@ -335,6 +380,38 @@ if ($issue->getAssignedUserId()) {
     }
 }
 
+// Watcher-Daten laden
+$currentUserId = PermissionService::getUserId();
+$isWatching = NotificationService::isWatching($issue->getId(), $currentUserId);
+$watcherIds = NotificationService::getWatchers($issue->getId());
+$watcherCount = count($watcherIds);
+$watcherUsers = [];
+foreach ($watcherIds as $wid) {
+    $wUser = rex_user::get($wid);
+    if ($wUser) {
+        $watcherUsers[] = ['id' => $wUser->getId(), 'name' => $wUser->getName()];
+    }
+}
+
+// Verfügbare User für Watcher-Einladung (alle berechtigten User minus aktuelle Watcher)
+$availableWatcherUsers = [];
+$canManageWatchers = rex::getUser()->isAdmin()
+    || rex::getUser()->hasPerm('issue_tracker[issue_manager]')
+    || $issue->getCreatedBy() === $currentUserId;
+if ($canManageWatchers) {
+    $allUsersSql = rex_sql::factory();
+    $allUsersSql->setQuery('SELECT id FROM ' . rex::getTable('user') . ' WHERE status = 1');
+    foreach ($allUsersSql as $row) {
+        $uid = (int) $row->getValue('id');
+        $u = rex_user::get($uid);
+        if ($u && ($u->isAdmin() || $u->hasPerm('issue_tracker[]') || $u->hasPerm('issue_tracker[issuer]') || $u->hasPerm('issue_tracker[issue_manager]'))) {
+            if (!in_array($uid, $watcherIds, true)) {
+                $availableWatcherUsers[$uid] = $u->getName() . ' (' . $u->getLogin() . ')';
+            }
+        }
+    }
+}
+
 // Fragment ausgeben
 $fragment = new rex_fragment();
 $fragment->setVar('issue', $issue);
@@ -344,4 +421,8 @@ $fragment->setVar('statuses', $statuses);
 $fragment->setVar('history', $history);
 $fragment->setVar('canSendReminder', $canSendReminder);
 $fragment->setVar('lastReminderAt', $lastReminderAt);
+$fragment->setVar('isWatching', $isWatching);
+$fragment->setVar('watcherCount', $watcherCount);
+$fragment->setVar('watcherUsers', $watcherUsers);
+$fragment->setVar('availableWatcherUsers', $availableWatcherUsers);
 echo $fragment->parse('issue_tracker_view.php');

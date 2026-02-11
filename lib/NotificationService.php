@@ -22,7 +22,9 @@ use function sprintf;
 class NotificationService
 {
     /**
-     * Sendet E-Mail-Benachrichtigungen für ein neues Issue.
+     * Sendet E-Mail-Benachrichtigung für ein neues Issue.
+     *
+     * Nur der zugewiesene User wird benachrichtigt (nicht alle User).
      */
     public static function notifyNewIssue(Issue $issue): void
     {
@@ -30,25 +32,34 @@ class NotificationService
             return;
         }
 
-        $users = self::getUsersForNotification('email_on_new');
-        $creator = $issue->getCreator();
-
-        foreach ($users as $user) {
-            // Ersteller nicht benachrichtigen
-            if ($user->getId() === $issue->getCreatedBy()) {
-                continue;
-            }
-
-            self::sendMail(
-                $user->getValue('email'),
-                'Neues Issue: ' . $issue->getTitle(),
-                self::getNewIssueTemplate($issue, $creator, $user),
-            );
+        // Nur den zugewiesenen User benachrichtigen
+        $assignedUserId = $issue->getAssignedUserId();
+        if (!$assignedUserId || $assignedUserId === $issue->getCreatedBy()) {
+            return;
         }
+
+        $assignedUser = rex_user::get($assignedUserId);
+        if (!$assignedUser || !$assignedUser->getValue('email')) {
+            return;
+        }
+
+        // Prüfe ob der zugewiesene User Benachrichtigungen für neue Issues aktiviert hat
+        if (!self::hasNotificationEnabled($assignedUserId, 'email_on_new')) {
+            return;
+        }
+
+        $creator = $issue->getCreator();
+        self::sendMail(
+            $assignedUser->getValue('email'),
+            'Neues Issue: ' . $issue->getTitle(),
+            self::getNewIssueTemplate($issue, $creator, $assignedUser),
+        );
     }
 
     /**
      * Sendet E-Mail-Benachrichtigungen für einen neuen Kommentar.
+     *
+     * Nur beteiligte User (Ersteller, Zugewiesener, Kommentierer, Watcher) werden benachrichtigt.
      */
     public static function notifyNewComment(Comment $comment, Issue $issue): void
     {
@@ -56,15 +67,10 @@ class NotificationService
             return;
         }
 
-        $users = self::getUsersForNotification('email_on_comment');
+        $users = self::getInvolvedUsers($issue, 'email_on_comment', $comment->getCreatedBy());
         $creator = $comment->getCreator();
 
         foreach ($users as $user) {
-            // Kommentar-Autor nicht benachrichtigen
-            if ($user->getId() === $comment->getCreatedBy()) {
-                continue;
-            }
-
             self::sendMail(
                 $user->getValue('email'),
                 'Neuer Kommentar zu Issue #' . $issue->getId() . ': ' . $issue->getTitle(),
@@ -75,14 +81,18 @@ class NotificationService
 
     /**
      * Sendet E-Mail-Benachrichtigungen für Status-Änderung.
+     *
+     * Nur beteiligte User werden benachrichtigt. Der User, der den Status geändert hat, wird ausgeschlossen.
+     *
+     * @param int|null $changedBy User-ID des Ändernden (wird von Benachrichtigung ausgeschlossen)
      */
-    public static function notifyStatusChange(Issue $issue, string $oldStatus, string $newStatus): void
+    public static function notifyStatusChange(Issue $issue, string $oldStatus, string $newStatus, ?int $changedBy = null): void
     {
         if (!self::isEmailEnabled()) {
             return;
         }
 
-        $users = self::getUsersForNotification('email_on_status_change');
+        $users = self::getInvolvedUsers($issue, 'email_on_status_change', $changedBy);
 
         foreach ($users as $user) {
             self::sendMail(
@@ -238,10 +248,271 @@ class NotificationService
     }
 
     /**
+     * Gibt alle an einem Issue beteiligten User zurück, die eine bestimmte Benachrichtigung aktiviert haben.
+     *
+     * Beteiligte User = Ersteller + Zugewiesener + alle Kommentierer + Watcher.
+     *
+     * @param Issue $issue Das Issue
+     * @param string $notificationType Art der Benachrichtigung (z.B. 'email_on_comment')
+     * @param int|null $excludeUserId User-ID die ausgeschlossen werden soll (z.B. der Agierende)
+     * @return rex_user[]
+     */
+    private static function getInvolvedUsers(Issue $issue, string $notificationType, ?int $excludeUserId = null): array
+    {
+        $involvedUserIds = [];
+
+        // 1. Ersteller
+        if ($issue->getCreatedBy()) {
+            $involvedUserIds[] = $issue->getCreatedBy();
+        }
+
+        // 2. Zugewiesener User
+        if ($issue->getAssignedUserId()) {
+            $involvedUserIds[] = $issue->getAssignedUserId();
+        }
+
+        // 3. Alle Kommentierer
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'SELECT DISTINCT created_by FROM ' . rex::getTable('issue_tracker_comments') . ' WHERE issue_id = ?',
+            [$issue->getId()],
+        );
+        foreach ($sql as $row) {
+            $involvedUserIds[] = (int) $row->getValue('created_by');
+        }
+
+        // 4. Alle Watcher
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'SELECT user_id FROM ' . rex::getTable('issue_tracker_watchers') . ' WHERE issue_id = ?',
+            [$issue->getId()],
+        );
+        foreach ($sql as $row) {
+            $involvedUserIds[] = (int) $row->getValue('user_id');
+        }
+
+        // Deduplizieren
+        $involvedUserIds = array_unique($involvedUserIds);
+
+        // Agierenden User ausschließen
+        if ($excludeUserId !== null) {
+            $involvedUserIds = array_filter($involvedUserIds, static fn (int $id): bool => $id !== $excludeUserId);
+        }
+
+        // Nach Benachrichtigungspräferenz filtern
+        $users = [];
+        foreach ($involvedUserIds as $userId) {
+            $user = rex_user::get($userId);
+            if (!$user || !$user->getValue('email') || (int) $user->getValue('status') !== 1) {
+                continue;
+            }
+
+            if (!self::hasNotificationEnabled($userId, $notificationType)) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return $users;
+    }
+
+    /**
+     * Prüft ob ein User eine bestimmte Benachrichtigung aktiviert hat.
+     *
+     * Wenn kein Eintrag in der Notifications-Tabelle existiert, wird standardmäßig true (aktiviert) angenommen.
+     */
+    private static function hasNotificationEnabled(int $userId, string $notificationType): bool
+    {
+        $allowedTypes = ['email_on_new', 'email_on_comment', 'email_on_status_change', 'email_on_assignment', 'email_on_message'];
+        if (!in_array($notificationType, $allowedTypes, true)) {
+            return false;
+        }
+
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'SELECT ' . $notificationType . ' AS enabled FROM ' . rex::getTable('issue_tracker_notifications') . ' WHERE user_id = ?',
+            [$userId],
+        );
+
+        // Kein Eintrag = Standard: aktiviert
+        if ($sql->getRows() === 0) {
+            return true;
+        }
+
+        return (int) $sql->getValue('enabled') === 1;
+    }
+
+    // =========================================================================
+    // Watcher-Methoden
+    // =========================================================================
+
+    /**
+     * Fügt einen User als Watcher zu einem Issue hinzu.
+     *
+     * @return bool true wenn erfolgreich hinzugefügt, false wenn bereits vorhanden
+     */
+    public static function addWatcher(int $issueId, int $userId, ?int $addedBy = null): bool
+    {
+        if (self::isWatching($issueId, $userId)) {
+            return false;
+        }
+
+        $sql = rex_sql::factory();
+        $sql->setTable(rex::getTable('issue_tracker_watchers'));
+        $sql->setValue('issue_id', $issueId);
+        $sql->setValue('user_id', $userId);
+        $sql->setValue('added_by', $addedBy);
+        $sql->setValue('created_at', date('Y-m-d H:i:s'));
+        $sql->insert();
+
+        return true;
+    }
+
+    /**
+     * Entfernt einen User als Watcher von einem Issue.
+     */
+    public static function removeWatcher(int $issueId, int $userId): bool
+    {
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'DELETE FROM ' . rex::getTable('issue_tracker_watchers') . ' WHERE issue_id = ? AND user_id = ?',
+            [$issueId, $userId],
+        );
+
+        return true;
+    }
+
+    /**
+     * Prüft ob ein User ein Issue beobachtet.
+     */
+    public static function isWatching(int $issueId, int $userId): bool
+    {
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'SELECT id FROM ' . rex::getTable('issue_tracker_watchers') . ' WHERE issue_id = ? AND user_id = ?',
+            [$issueId, $userId],
+        );
+
+        return $sql->getRows() > 0;
+    }
+
+    /**
+     * Gibt alle Watcher-User-IDs für ein Issue zurück.
+     *
+     * @return int[]
+     */
+    public static function getWatchers(int $issueId): array
+    {
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'SELECT user_id FROM ' . rex::getTable('issue_tracker_watchers') . ' WHERE issue_id = ?',
+            [$issueId],
+        );
+
+        $watchers = [];
+        foreach ($sql as $row) {
+            $watchers[] = (int) $row->getValue('user_id');
+        }
+
+        return $watchers;
+    }
+
+    /**
+     * Gibt die Anzahl der Watcher für ein Issue zurück.
+     */
+    public static function getWatcherCount(int $issueId): int
+    {
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'SELECT COUNT(*) AS cnt FROM ' . rex::getTable('issue_tracker_watchers') . ' WHERE issue_id = ?',
+            [$issueId],
+        );
+
+        return (int) $sql->getValue('cnt');
+    }
+
+    /**
+     * Gibt alle Issues zurück, die ein User beobachtet.
+     *
+     * @return Issue[]
+     */
+    public static function getWatchedIssues(int $userId): array
+    {
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'SELECT w.issue_id FROM ' . rex::getTable('issue_tracker_watchers') . ' w
+             JOIN ' . rex::getTable('issue_tracker_issues') . ' i ON w.issue_id = i.id
+             WHERE w.user_id = ?
+             ORDER BY i.status != "closed", i.updated_at DESC',
+            [$userId],
+        );
+
+        $issues = [];
+        foreach ($sql as $row) {
+            $issue = Issue::get((int) $row->getValue('issue_id'));
+            if ($issue) {
+                $issues[] = $issue;
+            }
+        }
+
+        return $issues;
+    }
+
+    /**
+     * Sendet Benachrichtigungen an neu hinzugefügte Watcher (Einladung).
+     *
+     * Jeder hinzugefügte User bekommt genau eine Benachrichtigung.
+     *
+     * @param Issue $issue Das betroffene Issue
+     * @param int[] $userIds Die hinzugefügten User-IDs
+     * @param int $addedBy User-ID des Einladenden
+     */
+    public static function notifyWatchersAdded(Issue $issue, array $userIds, int $addedBy): void
+    {
+        if (!self::isEmailEnabled()) {
+            return;
+        }
+
+        $addedByUser = rex_user::get($addedBy);
+        $addedByName = $addedByUser ? $addedByUser->getName() : 'Unbekannt';
+
+        foreach ($userIds as $userId) {
+            $user = rex_user::get($userId);
+            if (!$user || !$user->getValue('email') || $userId === $addedBy) {
+                continue;
+            }
+
+            if (!self::hasNotificationEnabled($userId, 'email_on_new')) {
+                continue;
+            }
+
+            $issueUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()], false);
+
+            $body = sprintf(
+                "Hallo %s,\n\n%s hat Sie als Beobachter zu Issue #%d \"%s\" hinzugefügt.\n\nSie werden ab jetzt über Kommentare und Statusänderungen zu diesem Issue informiert.\n\nZum Issue:\n%s\n\n---\nDiese E-Mail wurde automatisch vom REDAXO Issue Tracker generiert.",
+                $user->getName(),
+                $addedByName,
+                $issue->getId(),
+                $issue->getTitle(),
+                $issueUrl,
+            );
+
+            self::sendMail(
+                $user->getValue('email'),
+                'Beobachter: Issue #' . $issue->getId() . ' – ' . $issue->getTitle(),
+                $body,
+            );
+        }
+    }
+
+    /**
      * Gibt alle User zurück, die eine bestimmte Benachrichtigung aktiviert haben.
      *
      * Berechtigungen werden über rex_user::hasPerm() geprüft, da die role-Spalte
      * nur Rollen-IDs enthält, nicht die Permission-Strings selbst.
+     *
+     * @deprecated Wird durch getInvolvedUsers() ersetzt. Nur noch für Broadcast verwendet.
      */
     private static function getUsersForNotification(string $notificationType): array
     {

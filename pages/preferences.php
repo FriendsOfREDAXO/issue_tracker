@@ -123,6 +123,13 @@ if ($sql->getRows() > 0) {
 // Formular
 $content = '';
 
+// Info-Hinweis zum Beteiligungsmodell
+$content .= '<div class="alert alert-info" style="margin-bottom: 20px;">';
+$content .= '<i class="rex-icon fa-info-circle"></i> ';
+$content .= '<strong>' . $package->i18n('issue_tracker_notification_info_title') . '</strong><br>';
+$content .= $package->i18n('issue_tracker_notification_info_text');
+$content .= '</div>';
+
 $formElements = [];
 
 $n = [];

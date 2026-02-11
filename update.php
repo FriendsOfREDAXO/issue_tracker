@@ -137,3 +137,39 @@ if ($sql->getRows() > 0) {
         $updateSql->update();
     }
 }
+
+// Standard-Benachrichtigungseinträge für alle aktiven berechtigten User sicherstellen
+$allUsersSql = rex_sql::factory();
+$allUsersSql->setQuery('SELECT id FROM ' . rex::getTable('user') . ' WHERE status = 1');
+foreach ($allUsersSql as $row) {
+    $userId = (int) $row->getValue('id');
+    $user = rex_user::get($userId);
+    if (!$user) {
+        continue;
+    }
+
+    // Nur User mit Issue-Tracker-Berechtigung
+    if (!$user->isAdmin() && !$user->hasPerm('issue_tracker[]') && !$user->hasPerm('issue_tracker[issuer]') && !$user->hasPerm('issue_tracker[issue_manager]')) {
+        continue;
+    }
+
+    // Prüfen ob Eintrag existiert
+    $checkSql = rex_sql::factory();
+    $checkSql->setQuery(
+        'SELECT id FROM ' . rex::getTable('issue_tracker_notifications') . ' WHERE user_id = ?',
+        [$userId],
+    );
+
+    if ($checkSql->getRows() === 0) {
+        $insertSql = rex_sql::factory();
+        $insertSql->setTable(rex::getTable('issue_tracker_notifications'));
+        $insertSql->setValue('user_id', $userId);
+        $insertSql->setValue('email_on_new', 1);
+        $insertSql->setValue('email_on_comment', 1);
+        $insertSql->setValue('email_on_status_change', 1);
+        $insertSql->setValue('email_on_assignment', 1);
+        $insertSql->setValue('email_on_message', 1);
+        $insertSql->setValue('email_message_full_text', 0);
+        $insertSql->insert();
+    }
+}
