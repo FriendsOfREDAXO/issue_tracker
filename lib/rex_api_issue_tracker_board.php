@@ -161,7 +161,7 @@ class rex_api_issue_tracker_board extends rex_api_function
             
             // Rollback bei Fehler
             $sql->setQuery('ROLLBACK');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // Rollback bei Exception
             $sql->setQuery('ROLLBACK');
             
