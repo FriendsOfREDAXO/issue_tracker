@@ -741,3 +741,8 @@
         border-bottom-color: #444;
     }
 }
+
+/* Tab Navigation */
+.project-view-tabs {
+    margin-bottom: 20px;
+}

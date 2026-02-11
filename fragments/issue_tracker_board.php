@@ -12,7 +12,7 @@ $issues = $this->getVar('issues', []);
 $statuses = $this->getVar('statuses', []);
 $canWrite = $this->getVar('canWrite', false);
 
-// Group issues by status with sort_order
+// Organize issues by status with sort_order
 $issuesByStatus = [];
 $allStatuses = ['open', 'in_progress', 'planned', 'info', 'rejected', 'closed'];
 

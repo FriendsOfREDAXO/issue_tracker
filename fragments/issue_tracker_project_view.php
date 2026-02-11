@@ -164,7 +164,7 @@ $existingUserIds = array_column($users, 'user_id');
     </div>
 
     <!-- Tab Navigation -->
-    <ul class="nav nav-tabs" style="margin-bottom: 20px;">
+    <ul class="nav nav-tabs project-view-tabs">
         <li class="<?= $view === 'list' ? 'active' : '' ?>">
             <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId(), 'view' => 'list']) ?>">
                 <i class="rex-icon fa-list"></i> <?= $package->i18n('issue_tracker_view_list') ?>
@@ -332,7 +332,7 @@ $existingUserIds = array_column($users, 'user_id');
                         <i class="rex-icon fa-user"></i>
                         <?= rex_escape($user['name']) ?>
                         <?php if ($canEdit && $user['user_id'] !== $currentUser->getId()): ?>
-                        <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId(), 'func' => 'remove_user', 'user_id' => $user['user_id']]) ?>" 
+                        <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId(), 'func' => 'remove_user', 'user_id' => $user['user_id'], 'view' => $view]) ?>" 
                            class="text-danger pull-right" style="margin-right: 10px;"
                            onclick="return confirm('<?= $package->i18n('issue_tracker_user_remove_confirm') ?>')">
                             <i class="rex-icon fa-times"></i>
