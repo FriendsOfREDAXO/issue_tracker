@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [1.4.1] – 2026-02-11
+
+### Bugfixes
+- **E-Mail-Benachrichtigungen nur für Admins**: Nicht-Admin-Benutzer erhielten keine E-Mails, da die Berechtigungsprüfung per `LIKE` auf der `role`-Spalte nach Permission-Strings suchte statt nach Rollen-IDs. Berechtigungen werden jetzt korrekt über `rex_user::hasPerm()` geprüft.
+- **issue_tracker[issue_manager]** wird jetzt bei Benachrichtigungen berücksichtigt (fehlte vorher)
+- **Deaktivierte Benutzer** werden bei Benachrichtigungen korrekt ausgeschlossen (`status = 1`)
+- **SQL-Injection-Schutz**: Whitelist-Validierung für Notification-Typ hinzugefügt
+
 ## [1.4.0] – 2026-02-11
 
 ### Neue Funktionen
