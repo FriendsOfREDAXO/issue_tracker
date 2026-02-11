@@ -19,6 +19,8 @@
             
             this.projectId = board.dataset.projectId;
             this.canWrite = board.dataset.canWrite === '1';
+            this.apiUrl = board.dataset.apiUrl;
+            this.emptyText = board.dataset.emptyText;
             
             // Only enable drag and drop if user has write permission
             if (!this.canWrite) return;
@@ -167,9 +169,8 @@
         
         updateIssue: function(issueId, newStatus, newPosition) {
             var self = this;
-            var serverUrl = window.location.origin + window.location.pathname;
             
-            fetch(serverUrl + '?rex-api-call=issue_tracker_board', {
+            fetch(this.apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -200,8 +201,7 @@
         },
         
         updateEmptyStates: function() {
-            var package_i18n = this.columns[0].querySelector('.kanban-empty') ? 
-                this.columns[0].querySelector('.kanban-empty').textContent : 'Keine Issues vorhanden';
+            var self = this;
             
             this.columns.forEach(function(column) {
                 var cards = column.querySelectorAll('.kanban-card');
@@ -210,7 +210,7 @@
                 if (cards.length === 0 && !empty) {
                     var emptyDiv = document.createElement('div');
                     emptyDiv.className = 'kanban-empty';
-                    emptyDiv.textContent = package_i18n;
+                    emptyDiv.textContent = self.emptyText;
                     column.appendChild(emptyDiv);
                 } else if (cards.length > 0 && empty) {
                     empty.remove();
