@@ -77,79 +77,97 @@ class rex_api_issue_tracker_board extends rex_api_function
         // Status aktualisieren
         $issue->setStatus($newStatus);
         
-        // Wenn Status geändert wurde, alle Issues in der neuen Spalte neu ordnen
-        if ($oldStatus !== $newStatus) {
-            // Alle Issues mit höherem sort_order in der neuen Spalte nach oben verschieben
-            $sql = rex_sql::factory();
-            $sql->setQuery(
-                'UPDATE ' . rex::getTable('issue_tracker_issues') . 
-                ' SET sort_order = sort_order + 1 WHERE project_id = ? AND status = ? AND sort_order >= ?',
-                [$projectId, $newStatus, $newPosition]
-            );
-            
-            // Issue auf neue Position setzen
-            $issue->setSortOrder($newPosition);
-            
-            // Alte Spalte neu ordnen (Lücken schließen)
-            $sql->setQuery(
-                'SELECT id, sort_order FROM ' . rex::getTable('issue_tracker_issues') . 
-                ' WHERE project_id = ? AND status = ? ORDER BY sort_order ASC',
-                [$projectId, $oldStatus]
-            );
-            
-            $position = 0;
-            foreach ($sql as $row) {
-                $updateSql = rex_sql::factory();
-                $updateSql->setTable(rex::getTable('issue_tracker_issues'));
-                $updateSql->setWhere(['id' => $row->getValue('id')]);
-                $updateSql->setValue('sort_order', $position);
-                $updateSql->update();
-                $position++;
-            }
-            
-            // History-Eintrag für Statusänderung
-            HistoryService::logChange(
-                $issueId,
-                rex::getUser()->getId(),
-                'status_changed',
-                'status',
-                $oldStatus,
-                $newStatus
-            );
-        } else {
-            // Nur Position innerhalb der gleichen Spalte geändert
-            $oldPosition = $issue->getSortOrder();
-            
-            if ($oldPosition !== $newPosition) {
-                $sql = rex_sql::factory();
+        // Transaktionen für Atomizität verwenden
+        $sql = rex_sql::factory();
+        $sql->setQuery('START TRANSACTION');
+        
+        try {
+            // Wenn Status geändert wurde, alle Issues in der neuen Spalte neu ordnen
+            if ($oldStatus !== $newStatus) {
+                // Alle Issues mit höherem sort_order in der neuen Spalte nach oben verschieben
+                $sql->setQuery(
+                    'UPDATE ' . rex::getTable('issue_tracker_issues') . 
+                    ' SET sort_order = sort_order + 1 WHERE project_id = ? AND status = ? AND sort_order >= ?',
+                    [$projectId, $newStatus, $newPosition]
+                );
                 
-                if ($newPosition < $oldPosition) {
-                    // Nach oben verschoben - alle dazwischenliegenden nach unten
-                    $sql->setQuery(
-                        'UPDATE ' . rex::getTable('issue_tracker_issues') . 
-                        ' SET sort_order = sort_order + 1 WHERE project_id = ? AND status = ? AND sort_order >= ? AND sort_order < ?',
-                        [$projectId, $newStatus, $newPosition, $oldPosition]
-                    );
-                } else {
-                    // Nach unten verschoben - alle dazwischenliegenden nach oben
-                    $sql->setQuery(
-                        'UPDATE ' . rex::getTable('issue_tracker_issues') . 
-                        ' SET sort_order = sort_order - 1 WHERE project_id = ? AND status = ? AND sort_order > ? AND sort_order <= ?',
-                        [$projectId, $newStatus, $oldPosition, $newPosition]
-                    );
+                // Issue auf neue Position setzen
+                $issue->setSortOrder($newPosition);
+                
+                // Alte Spalte neu ordnen (Lücken schließen)
+                $sql->setQuery(
+                    'SELECT id, sort_order FROM ' . rex::getTable('issue_tracker_issues') . 
+                    ' WHERE project_id = ? AND status = ? ORDER BY sort_order ASC',
+                    [$projectId, $oldStatus]
+                );
+                
+                $position = 0;
+                foreach ($sql as $row) {
+                    $updateSql = rex_sql::factory();
+                    $updateSql->setTable(rex::getTable('issue_tracker_issues'));
+                    $updateSql->setWhere(['id' => $row->getValue('id')]);
+                    $updateSql->setValue('sort_order', $position);
+                    $updateSql->update();
+                    $position++;
                 }
                 
-                $issue->setSortOrder($newPosition);
+                // History-Eintrag für Statusänderung
+                HistoryService::logChange(
+                    $issueId,
+                    rex::getUser()->getId(),
+                    'status_changed',
+                    'status',
+                    $oldStatus,
+                    $newStatus
+                );
+            } else {
+                // Nur Position innerhalb der gleichen Spalte geändert
+                $oldPosition = $issue->getSortOrder();
+                
+                if ($oldPosition !== $newPosition) {
+                    if ($newPosition < $oldPosition) {
+                        // Nach oben verschoben - alle dazwischenliegenden nach unten
+                        $sql->setQuery(
+                            'UPDATE ' . rex::getTable('issue_tracker_issues') . 
+                            ' SET sort_order = sort_order + 1 WHERE project_id = ? AND status = ? AND sort_order >= ? AND sort_order < ?',
+                            [$projectId, $newStatus, $newPosition, $oldPosition]
+                        );
+                    } else {
+                        // Nach unten verschoben - alle dazwischenliegenden nach oben
+                        $sql->setQuery(
+                            'UPDATE ' . rex::getTable('issue_tracker_issues') . 
+                            ' SET sort_order = sort_order - 1 WHERE project_id = ? AND status = ? AND sort_order > ? AND sort_order <= ?',
+                            [$projectId, $newStatus, $oldPosition, $newPosition]
+                        );
+                    }
+                    
+                    $issue->setSortOrder($newPosition);
+                }
             }
-        }
 
-        if ($issue->save()) {
+            if ($issue->save()) {
+                // Transaktion abschließen
+                $sql->setQuery('COMMIT');
+                
+                rex_response::sendJson([
+                    'success' => true,
+                    'message' => 'Position gespeichert',
+                    'issue_id' => $issueId,
+                    'status' => $newStatus,
+                    'position' => $newPosition,
+                ]);
+                exit;
+            }
+            
+            // Rollback bei Fehler
+            $sql->setQuery('ROLLBACK');
+        } catch (Exception $e) {
+            // Rollback bei Exception
+            $sql->setQuery('ROLLBACK');
+            
             rex_response::sendJson([
-                'success' => true,
-                'message' => 'Position gespeichert',
-                'issue_id' => $issueId,
-                'status' => $newStatus,
-                'position' => $newPosition,
+                'success' => false,
+                'message' => 'Fehler beim Speichern: ' . $e->getMessage(),
             ]);
             exit;
         }

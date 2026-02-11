@@ -12,7 +12,7 @@ $issues = $this->getVar('issues', []);
 $statuses = $this->getVar('statuses', []);
 $canWrite = $this->getVar('canWrite', false);
 
-// Grupp issues by status with sort_order
+// Group issues by status with sort_order
 $issuesByStatus = [];
 $allStatuses = ['open', 'in_progress', 'planned', 'info', 'rejected', 'closed'];
 
@@ -33,6 +33,28 @@ foreach ($issuesByStatus as $status => &$statusIssues) {
     usort($statusIssues, function($a, $b) {
         return $a->getSortOrder() - $b->getSortOrder();
     });
+}
+
+// Pre-load all tags for all issues to avoid N+1 queries
+$issueIds = array_map(function($issue) { return $issue->getId(); }, $issues);
+$tagsByIssue = [];
+if (!empty($issueIds)) {
+    $tagSql = rex_sql::factory();
+    $tagSql->setQuery(
+        'SELECT it.issue_id, t.name, t.color FROM ' . rex::getTable('issue_tracker_tags') . ' t ' .
+        'INNER JOIN ' . rex::getTable('issue_tracker_issue_tags') . ' it ON t.id = it.tag_id ' .
+        'WHERE it.issue_id IN (' . implode(',', array_map('intval', $issueIds)) . ')'
+    );
+    foreach ($tagSql as $row) {
+        $issueId = (int) $tagSql->getValue('issue_id');
+        if (!isset($tagsByIssue[$issueId])) {
+            $tagsByIssue[$issueId] = [];
+        }
+        $tagsByIssue[$issueId][] = [
+            'name' => $tagSql->getValue('name'),
+            'color' => $tagSql->getValue('color'),
+        ];
+    }
 }
 
 $statusClasses = [
@@ -61,7 +83,7 @@ $currentUser = rex::getUser();
         $columnIssues = $issuesByStatus[$status] ?? [];
     ?>
     <div class="kanban-column">
-        <div class="kanban-column-header" style="background-color: rgba(var(--bs-<?= $statusClass ?>-rgb, 200, 200, 200), 0.1);">
+        <div class="kanban-column-header kanban-column-header-<?= $statusClass ?>">
             <span><?= rex_escape($statusLabel) ?></span>
             <span class="badge"><?= count($columnIssues) ?></span>
         </div>
@@ -74,23 +96,10 @@ $currentUser = rex::getUser();
                     $dueDate = $issue->getDueDate();
                     $isOverdue = $dueDate && $dueDate < new DateTime();
                     
-                    // Get tags
-                    $tagSql = rex_sql::factory();
-                    $tagSql->setQuery(
-                        'SELECT t.name, t.color FROM ' . rex::getTable('issue_tracker_tags') . ' t ' .
-                        'INNER JOIN ' . rex::getTable('issue_tracker_issue_tags') . ' it ON t.id = it.tag_id ' .
-                        'WHERE it.issue_id = ?',
-                        [$issue->getId()]
-                    );
-                    $tags = [];
-                    foreach ($tagSql as $row) {
-                        $tags[] = [
-                            'name' => $tagSql->getValue('name'),
-                            'color' => $tagSql->getValue('color'),
-                        ];
-                    }
+                    // Get pre-loaded tags for this issue
+                    $tags = $tagsByIssue[$issue->getId()] ?? [];
                 ?>
-                <div class="kanban-card" 
+                <div class="kanban-card"
                      data-issue-id="<?= $issue->getId() ?>" 
                      data-status="<?= $issue->getStatus() ?>"
                      data-sort-order="<?= $issue->getSortOrder() ?>"
