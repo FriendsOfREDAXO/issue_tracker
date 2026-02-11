@@ -40,6 +40,7 @@ class Issue
     private array $yformTables = [];
     private ?int $projectId = null;
     private ?int $duplicateOf = null;
+    private int $sortOrder = 0;
 
     /**
      * Lädt ein Issue aus der Datenbank.
@@ -140,6 +141,11 @@ class Issue
             $issue->duplicateOf = (int) $sql->getValue('duplicate_of');
         }
 
+        // Sort Order laden
+        if ($sql->hasValue('sort_order')) {
+            $issue->sortOrder = (int) $sql->getValue('sort_order');
+        }
+
         return $issue;
     }
 
@@ -166,6 +172,7 @@ class Issue
         $sql->setValue('yform_tables', !empty($this->yformTables) ? json_encode($this->yformTables) : null);
         $sql->setValue('project_id', $this->projectId);
         $sql->setValue('duplicate_of', $this->duplicateOf);
+        $sql->setValue('sort_order', $this->sortOrder);
         $sql->setValue('closed_at', $this->closedAt ? $this->closedAt->format('Y-m-d H:i:s') : null);
         $sql->setValue('updated_at', date('Y-m-d H:i:s'));
 
@@ -482,6 +489,16 @@ class Issue
     public function setDuplicateOf(?int $duplicateOf): void
     {
         $this->duplicateOf = $duplicateOf;
+    }
+
+    public function getSortOrder(): int
+    {
+        return $this->sortOrder;
+    }
+
+    public function setSortOrder(int $sortOrder): void
+    {
+        $this->sortOrder = $sortOrder;
     }
 
     /**

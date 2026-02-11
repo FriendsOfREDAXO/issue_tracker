@@ -542,3 +542,14 @@ issue_tracker_people = Personen
 issue_tracker_details = Details
 issue_tracker_actions = Aktionen
 issue_tracker_related_help_text = Dieses Issue wird mit dem ausgewählten Issue verknüpft und geschlossen.
+
+# Kanban Board
+issue_tracker_view_list = Liste
+issue_tracker_view_board = Board
+issue_tracker_board_not_logged_in = Nicht eingeloggt
+issue_tracker_board_invalid_params = Ungültige Parameter
+issue_tracker_board_issue_not_found = Issue nicht gefunden
+issue_tracker_board_issue_wrong_project = Issue gehört nicht zu diesem Projekt
+issue_tracker_board_no_permission = Keine Berechtigung
+issue_tracker_board_position_saved = Position gespeichert
+issue_tracker_board_save_error = Fehler beim Speichern

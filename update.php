@@ -173,3 +173,47 @@ foreach ($allUsersSql as $row) {
         $insertSql->insert();
     }
 }
+
+// Initialize sort_order for existing issues (data migration for Kanban board)
+// This ensures all existing issues have a deterministic sort_order per (project_id, status)
+$checkSortOrder = rex_sql::factory();
+$checkSortOrder->setQuery(
+    'SELECT COUNT(*) as unordered FROM ' . rex::getTable('issue_tracker_issues') . ' WHERE sort_order = 0'
+);
+if ((int) $checkSortOrder->getValue('unordered') > 0) {
+    // Initialize sort_order based on created_at and id for deterministic ordering
+    $migrationSql = rex_sql::factory();
+    
+    // Get all unique (project_id, status) combinations
+    $migrationSql->setQuery(
+        'SELECT DISTINCT project_id, status FROM ' . rex::getTable('issue_tracker_issues') . 
+        ' WHERE sort_order = 0 ORDER BY project_id, status'
+    );
+    
+    foreach ($migrationSql as $row) {
+        $projectId = $row->getValue('project_id');
+        $status = $row->getValue('status');
+        
+        // Get all issues that need reordering
+        $issuesSql = rex_sql::factory();
+        $whereClause = $projectId ? 'project_id = ? AND status = ? AND sort_order = 0' : 'project_id IS NULL AND status = ? AND sort_order = 0';
+        $params = $projectId ? [$projectId, $status] : [$status];
+        
+        $issuesSql->setQuery(
+            'SELECT id FROM ' . rex::getTable('issue_tracker_issues') . 
+            ' WHERE ' . $whereClause . ' ORDER BY created_at ASC, id ASC',
+            $params
+        );
+        
+        // Update sort_order for each issue using PHP loop for reliability
+        $position = 0;
+        $updateSql = rex_sql::factory();
+        foreach ($issuesSql as $issueRow) {
+            $updateSql->setTable(rex::getTable('issue_tracker_issues'));
+            $updateSql->setWhere(['id' => $issueRow->getValue('id')]);
+            $updateSql->setValue('sort_order', $position);
+            $updateSql->update();
+            $position++;
+        }
+    }
+}

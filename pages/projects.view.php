@@ -13,6 +13,8 @@ $package = rex_addon::get('issue_tracker');
 $currentUser = rex::getUser();
 
 $projectId = rex_request('project_id', 'int', 0);
+$view = rex_request('view', 'string', 'list'); // list oder board
+$view = in_array($view, ['list', 'board'], true) ? $view : 'list';
 
 if ($projectId === 0) {
     echo rex_view::error($package->i18n('issue_tracker_project_not_found'));
@@ -72,4 +74,5 @@ $fragment->setVar('users', $users);
 $fragment->setVar('statuses', $statuses);
 $fragment->setVar('canEdit', $project->isOwner($currentUser->getId()));
 $fragment->setVar('canWrite', $project->canWrite($currentUser->getId()));
+$fragment->setVar('view', $view);
 echo $fragment->parse('issue_tracker_project_view.php');
