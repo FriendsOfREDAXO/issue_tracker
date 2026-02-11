@@ -26,6 +26,7 @@ rex_sql_table::get(rex::getTable('issue_tracker_issues'))
     ->ensureColumn(new rex_sql_column('yform_tables', 'text', true, null))
     ->ensureColumn(new rex_sql_column('project_id', 'int(10) unsigned', true))
     ->ensureColumn(new rex_sql_column('duplicate_of', 'int(10) unsigned', true))
+    ->ensureColumn(new rex_sql_column('sort_order', 'int(10) unsigned', false, '0'))
     ->ensureColumn(new rex_sql_column('created_by', 'int(10) unsigned'))
     ->ensureColumn(new rex_sql_column('created_at', 'datetime'))
     ->ensureColumn(new rex_sql_column('updated_at', 'datetime'))
@@ -36,6 +37,7 @@ rex_sql_table::get(rex::getTable('issue_tracker_issues'))
     ->ensureIndex(new rex_sql_index('assigned_user_id', ['assigned_user_id']))
     ->ensureIndex(new rex_sql_index('created_by', ['created_by']))
     ->ensureIndex(new rex_sql_index('due_date', ['due_date']))
+    ->ensureIndex(new rex_sql_index('project_status_sort', ['project_id', 'status', 'sort_order']))
     ->ensure();
 
 // Tabelle für Kommentare
