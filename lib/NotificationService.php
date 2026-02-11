@@ -239,24 +239,45 @@ class NotificationService
 
     /**
      * Gibt alle User zurück, die eine bestimmte Benachrichtigung aktiviert haben.
+     *
+     * Berechtigungen werden über rex_user::hasPerm() geprüft, da die role-Spalte
+     * nur Rollen-IDs enthält, nicht die Permission-Strings selbst.
      */
     private static function getUsersForNotification(string $notificationType): array
     {
+        $allowedTypes = ['email_on_new', 'email_on_comment', 'email_on_status_change', 'email_on_assignment', 'email_on_message'];
+        if (!in_array($notificationType, $allowedTypes, true)) {
+            return [];
+        }
+
         $sql = rex_sql::factory();
         $sql->setQuery('
-            SELECT DISTINCT u.id 
+            SELECT u.id, n.' . $notificationType . ' AS notification_enabled, n.id AS notification_id
             FROM ' . rex::getTable('user') . ' u
             LEFT JOIN ' . rex::getTable('issue_tracker_notifications') . ' n ON u.id = n.user_id
-            WHERE (u.admin = 1 OR u.role LIKE "%|issue_tracker[]|%" OR u.role LIKE "%|issue_tracker[issuer]|%")
-            AND (n.' . $notificationType . ' = 1 OR n.id IS NULL)
+            WHERE u.status = 1
         ');
 
         $users = [];
         foreach ($sql as $row) {
             $user = rex_user::get((int) $row->getValue('id'));
-            if ($user && $user->getValue('email')) {
-                $users[] = $user;
+            if (!$user || !$user->getValue('email')) {
+                continue;
             }
+
+            // Berechtigung prüfen: Admin oder issue_tracker Berechtigung
+            if (!$user->isAdmin() && !$user->hasPerm('issue_tracker[]') && !$user->hasPerm('issue_tracker[issuer]') && !$user->hasPerm('issue_tracker[issue_manager]')) {
+                continue;
+            }
+
+            // Benachrichtigung aktiv? (NULL = kein Eintrag = Standard: aktiviert)
+            $notificationId = $row->getValue('notification_id');
+            $notificationEnabled = $row->getValue('notification_enabled');
+            if ($notificationId !== null && (int) $notificationEnabled !== 1) {
+                continue;
+            }
+
+            $users[] = $user;
         }
 
         return $users;
