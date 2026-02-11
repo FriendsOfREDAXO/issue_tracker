@@ -108,26 +108,25 @@ class rex_api_issue_tracker_board extends rex_api_function
                 // Issue auf neue Position setzen
                 $issue->setSortOrder($newPosition);
                 
-                // Alte Spalte neu ordnen (Lücken schließen) - set-basiertes Update verwenden
-                // Exclude the moved issue from reordering
-                $table = rex::getTable('issue_tracker_issues');
+                // Alte Spalte neu ordnen (Lücken schließen)
+                // Use PHP-based reordering for reliable behavior across DB configurations
                 $reorderSql = rex_sql::factory();
-                
-                // Initialize counter variable
-                $reorderSql->setQuery('SET @pos := -1');
-                
-                // Reindex all issues in the old column in one statement
                 $reorderSql->setQuery(
-                    'UPDATE ' . $table . ' AS t ' .
-                    'JOIN ( ' .
-                    '    SELECT id, (@pos := @pos + 1) AS new_sort_order ' .
-                    '    FROM ' . $table . ' ' .
-                    '    WHERE project_id = ? AND status = ? AND id <> ? ' .
-                    '    ORDER BY sort_order ASC, id ASC ' .
-                    ') AS seq ON seq.id = t.id ' .
-                    'SET t.sort_order = seq.new_sort_order',
+                    'SELECT id FROM ' . rex::getTable('issue_tracker_issues') . 
+                    ' WHERE project_id = ? AND status = ? AND id <> ? ' .
+                    'ORDER BY sort_order ASC, id ASC',
                     [$projectId, $oldStatus, $issueId]
                 );
+                
+                $position = 0;
+                $updateSql = rex_sql::factory();
+                foreach ($reorderSql as $row) {
+                    $updateSql->setTable(rex::getTable('issue_tracker_issues'));
+                    $updateSql->setWhere(['id' => $row->getValue('id')]);
+                    $updateSql->setValue('sort_order', $position);
+                    $updateSql->update();
+                    $position++;
+                }
                 
                 // History-Eintrag für Statusänderung
                 HistoryService::add(
