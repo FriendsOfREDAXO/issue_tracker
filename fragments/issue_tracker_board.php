@@ -79,7 +79,7 @@ $priorityClasses = [
 $currentUser = rex::getUser();
 ?>
 
-<div class="kanban-board" id="kanban-board" data-project-id="<?= $project->getId() ?>">
+<div class="kanban-board" id="kanban-board" data-project-id="<?= $project->getId() ?>" data-can-write="<?= $canWrite ? '1' : '0' ?>">
     <?php foreach ($allStatuses as $status): 
         $statusLabel = $statuses[$status] ?? $package->i18n('issue_tracker_status_' . $status);
         $statusClass = $statusClasses[$status] ?? 'default';
@@ -160,74 +160,5 @@ $currentUser = rex::getUser();
 </div>
 
 <?php if ($canWrite): ?>
-<script>
-// SortableJS will be loaded separately
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof Sortable === 'undefined') {
-        console.error('SortableJS not loaded');
-        return;
-    }
-    
-    var projectId = document.getElementById('kanban-board').dataset.projectId;
-    var columns = document.querySelectorAll('.kanban-column-body');
-    
-    columns.forEach(function(column) {
-        Sortable.create(column, {
-            group: 'kanban',
-            animation: 150,
-            ghostClass: 'sortable-ghost',
-            dragClass: 'sortable-drag',
-            onEnd: function(evt) {
-                var issueId = evt.item.dataset.issueId;
-                var newStatus = evt.to.dataset.status;
-                var newPosition = evt.newIndex;
-                
-                // Send AJAX request to update
-                fetch('<?= rex::getServer() ?>index.php?rex-api-call=issue_tracker_board', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: 'issue_id=' + issueId + 
-                          '&status=' + newStatus + 
-                          '&position=' + newPosition + 
-                          '&project_id=' + projectId
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.success) {
-                        console.error('Error updating issue:', data.message);
-                        // Reload page on error
-                        location.reload();
-                    } else {
-                        // Update card data
-                        evt.item.dataset.status = newStatus;
-                        evt.item.dataset.sortOrder = newPosition;
-                        
-                        // Update empty state
-                        updateEmptyStates();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    location.reload();
-                });
-            }
-        });
-    });
-    
-    function updateEmptyStates() {
-        columns.forEach(function(column) {
-            var cards = column.querySelectorAll('.kanban-card');
-            var empty = column.querySelector('.kanban-empty');
-            
-            if (cards.length === 0 && !empty) {
-                column.innerHTML = '<div class="kanban-empty"><?= $package->i18n('issue_tracker_no_issues') ?></div>';
-            } else if (cards.length > 0 && empty) {
-                empty.remove();
-            }
-        });
-    }
-});
-</script>
+<!-- Drag & drop functionality is loaded via issue_tracker_board.js -->
 <?php endif; ?>
