@@ -14,6 +14,7 @@ $users = $this->getVar('users', []);
 $statuses = $this->getVar('statuses', []);
 $canEdit = $this->getVar('canEdit', false);
 $canWrite = $this->getVar('canWrite', false);
+$view = $this->getVar('view', 'list');
 
 $currentUser = rex::getUser();
 
@@ -162,6 +163,88 @@ $existingUserIds = array_column($users, 'user_id');
         </div>
     </div>
 
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" style="margin-bottom: 20px;">
+        <li class="<?= $view === 'list' ? 'active' : '' ?>">
+            <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId(), 'view' => 'list']) ?>">
+                <i class="rex-icon fa-list"></i> <?= $package->i18n('issue_tracker_view_list') ?>
+            </a>
+        </li>
+        <li class="<?= $view === 'board' ? 'active' : '' ?>">
+            <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId(), 'view' => 'board']) ?>">
+                <i class="rex-icon fa-trello"></i> <?= $package->i18n('issue_tracker_view_board') ?>
+            </a>
+        </li>
+    </ul>
+
+    <?php if ($view === 'board'): ?>
+        <!-- Kanban Board Ansicht -->
+        <?php 
+        $boardFragment = new rex_fragment();
+        $boardFragment->setVar('project', $project);
+        $boardFragment->setVar('issues', $issues);
+        $boardFragment->setVar('statuses', $statuses);
+        $boardFragment->setVar('canWrite', $canWrite);
+        echo $boardFragment->parse('issue_tracker_board.php');
+        ?>
+        
+        <!-- Team Mitglieder (volle Breite im Board-Modus) -->
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <i class="rex-icon fa-users"></i> <?= $package->i18n('issue_tracker_project_members') ?> (<?= count($users) ?>)
+                    </h4>
+                </div>
+                <ul class="list-group">
+                    <?php foreach ($users as $user): 
+                        $roleInfo = $roleLabels[$user['role']] ?? ['label' => $user['role'], 'class' => 'default'];
+                    ?>
+                    <li class="list-group-item">
+                        <span class="label label-<?= $roleInfo['class'] ?> pull-right"><?= $roleInfo['label'] ?></span>
+                        <i class="rex-icon fa-user"></i>
+                        <?= rex_escape($user['name']) ?>
+                        <?php if ($canEdit && $user['user_id'] !== $currentUser->getId()): ?>
+                        <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId(), 'func' => 'remove_user', 'user_id' => $user['user_id'], 'view' => 'board']) ?>" 
+                           class="text-danger pull-right" style="margin-right: 10px;"
+                           onclick="return confirm('<?= $package->i18n('issue_tracker_user_remove_confirm') ?>')">
+                            <i class="rex-icon fa-times"></i>
+                        </a>
+                        <?php endif; ?>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+                
+                <?php if ($canEdit): ?>
+                <div class="panel-footer">
+                    <form method="post" class="form-inline">
+                        <input type="hidden" name="add_user" value="1" />
+                        <div class="form-group" style="margin-right: 5px;">
+                            <select name="user_id" class="form-control selectpicker" data-live-search="true" data-width="200px" title="<?= $package->i18n('issue_tracker_please_select') ?>" required>
+                                <?php foreach ($allUsers as $userId => $userName): 
+                                    if (in_array($userId, $existingUserIds)) continue;
+                                ?>
+                                <option value="<?= $userId ?>"><?= rex_escape($userName) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-right: 5px;">
+                            <select name="role" class="form-control selectpicker" data-width="120px">
+                                <option value="member"><?= $package->i18n('issue_tracker_role_member') ?></option>
+                                <option value="viewer"><?= $package->i18n('issue_tracker_role_viewer') ?></option>
+                                <option value="owner"><?= $package->i18n('issue_tracker_role_owner') ?></option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="rex-icon fa-plus"></i>
+                        </button>
+                    </form>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    <?php else: ?>
+        <!-- Liste Ansicht -->
     <div class="row">
         <!-- Issues Liste -->
         <div class="col-md-8">
@@ -288,4 +371,5 @@ $existingUserIds = array_column($users, 'user_id');
             </div>
         </div>
     </div>
+    <?php endif; ?>
 </div>

@@ -535,3 +535,7 @@ issue_tracker_people = People
 issue_tracker_details = Details
 issue_tracker_actions = Actions
 issue_tracker_related_help_text = This issue will be linked to the selected issue and closed.
+
+# Kanban Board
+issue_tracker_view_list = List
+issue_tracker_view_board = Board

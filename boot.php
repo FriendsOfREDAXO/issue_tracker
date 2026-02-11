@@ -24,6 +24,11 @@ if (rex::isBackend() && rex::getUser()) {
     rex_view::addCssFile($this->getAssetsUrl('issue_tracker.css'));
     rex_view::addJsFile($this->getAssetsUrl('easymde.min.js'));
     rex_view::addJsFile($this->getAssetsUrl('issue_tracker.js'));
+    
+    // SortableJS für Kanban Board (nur wenn auf Projektseite)
+    if (rex_be_controller::getCurrentPage() === 'issue_tracker/projects/view') {
+        rex_view::addJsFile('https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js');
+    }
 }
 
 // Benutzerdefinierten Menü-Titel setzen
@@ -69,3 +74,4 @@ if (rex::isBackend() && rex::getUser()) {
 }
 // API-Funktionen registrieren
 rex_api_function::register('issue_tracker_export', 'FriendsOfREDAXO\IssueTracker\rex_api_issue_tracker_export');
+rex_api_function::register('issue_tracker_board', 'FriendsOfREDAXO\IssueTracker\rex_api_issue_tracker_board');
