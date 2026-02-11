@@ -173,3 +173,43 @@ foreach ($allUsersSql as $row) {
         $insertSql->insert();
     }
 }
+
+// Initialize sort_order for existing issues (data migration for Kanban board)
+// This ensures all existing issues have a deterministic sort_order per (project_id, status)
+$checkSortOrder = rex_sql::factory();
+$checkSortOrder->setQuery(
+    'SELECT COUNT(*) as unordered FROM ' . rex::getTable('issue_tracker_issues') . ' WHERE sort_order = 0'
+);
+if ((int) $checkSortOrder->getValue('unordered') > 0) {
+    // Initialize sort_order based on created_at and id for deterministic ordering
+    $migrationSql = rex_sql::factory();
+    
+    // Get all unique (project_id, status) combinations
+    $migrationSql->setQuery(
+        'SELECT DISTINCT project_id, status FROM ' . rex::getTable('issue_tracker_issues') . 
+        ' WHERE sort_order = 0 ORDER BY project_id, status'
+    );
+    
+    foreach ($migrationSql as $row) {
+        $projectId = $row->getValue('project_id');
+        $status = $row->getValue('status');
+        
+        // Initialize counter
+        $updateSql = rex_sql::factory();
+        $updateSql->setQuery('SET @pos := -1');
+        
+        // Update sort_order for this project_id and status combination
+        $table = rex::getTable('issue_tracker_issues');
+        $updateSql->setQuery(
+            'UPDATE ' . $table . ' AS t ' .
+            'JOIN ( ' .
+            '    SELECT id, (@pos := @pos + 1) AS new_sort_order ' .
+            '    FROM ' . $table . ' ' .
+            '    WHERE ' . ($projectId ? 'project_id = ?' : 'project_id IS NULL') . ' AND status = ? AND sort_order = 0 ' .
+            '    ORDER BY created_at ASC, id ASC ' .
+            ') AS seq ON seq.id = t.id ' .
+            'SET t.sort_order = seq.new_sort_order',
+            $projectId ? [$projectId, $status] : [$status]
+        );
+    }
+}

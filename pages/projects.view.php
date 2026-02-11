@@ -14,6 +14,7 @@ $currentUser = rex::getUser();
 
 $projectId = rex_request('project_id', 'int', 0);
 $view = rex_request('view', 'string', 'list'); // list oder board
+$view = in_array($view, ['list', 'board'], true) ? $view : 'list';
 
 if ($projectId === 0) {
     echo rex_view::error($package->i18n('issue_tracker_project_not_found'));
