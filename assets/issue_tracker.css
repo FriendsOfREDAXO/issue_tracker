@@ -599,6 +599,30 @@
     align-items: center;
 }
 
+.kanban-column-header-danger {
+    background-color: rgba(217, 83, 79, 0.1);
+}
+
+.kanban-column-header-warning {
+    background-color: rgba(240, 173, 78, 0.1);
+}
+
+.kanban-column-header-info {
+    background-color: rgba(91, 192, 222, 0.1);
+}
+
+.kanban-column-header-primary {
+    background-color: rgba(51, 122, 183, 0.1);
+}
+
+.kanban-column-header-success {
+    background-color: rgba(92, 184, 92, 0.1);
+}
+
+.kanban-column-header-default {
+    background-color: rgba(200, 200, 200, 0.1);
+}
+
 .kanban-column-body {
     padding: 10px;
     flex: 1;
