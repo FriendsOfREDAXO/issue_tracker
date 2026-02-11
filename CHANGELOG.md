@@ -2,7 +2,7 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
-## [1.4.0] – 2026-02-XX
+## [1.4.0] – 2026-02-11
 
 ### Neue Funktionen
 - **Erinnerungs-Funktion**: Zugewiesene Benutzer können per Klick an offene Issues erinnert werden
