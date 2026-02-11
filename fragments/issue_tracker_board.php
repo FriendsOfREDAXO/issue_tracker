@@ -46,13 +46,13 @@ if (!empty($issueIds)) {
         'WHERE it.issue_id IN (' . implode(',', array_map('intval', $issueIds)) . ')'
     );
     foreach ($tagSql as $row) {
-        $issueId = (int) $tagSql->getValue('issue_id');
+        $issueId = (int) $row->getValue('issue_id');
         if (!isset($tagsByIssue[$issueId])) {
             $tagsByIssue[$issueId] = [];
         }
         $tagsByIssue[$issueId][] = [
-            'name' => $tagSql->getValue('name'),
-            'color' => $tagSql->getValue('color'),
+            'name' => $row->getValue('name'),
+            'color' => $row->getValue('color'),
         ];
     }
 }
