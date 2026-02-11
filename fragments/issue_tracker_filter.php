@@ -15,6 +15,7 @@ $filterStatus = $this->getVar('filterStatus', '');
 $filterCategory = $this->getVar('filterCategory', '');
 $filterTag = $this->getVar('filterTag', 0);
 $filterCreatedBy = $this->getVar('filterCreatedBy', 0);
+$filterWatched = $this->getVar('filterWatched', 0);
 $searchTerm = $this->getVar('searchTerm', '');
 ?>
 
@@ -124,6 +125,14 @@ $searchTerm = $this->getVar('searchTerm', '');
                         <?= rex_escape($userName) ?>
                     </option>
                     <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="filter_watched"><i class="rex-icon fa-eye"></i> <?= $package->i18n('issue_tracker_filter_watched') ?></label>
+                <select name="filter_watched" id="filter_watched" class="form-control selectpicker">
+                    <option value="0"><?= $package->i18n('issue_tracker_all') ?></option>
+                    <option value="1" <?= $filterWatched === 1 ? 'selected' : '' ?>><?= $package->i18n('issue_tracker_filter_watched_only') ?></option>
                 </select>
             </div>
 

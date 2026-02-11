@@ -10,6 +10,7 @@ $package = rex_addon::get('issue_tracker');
 $issues = $this->getVar('issues', []);
 $sortColumn = $this->getVar('sortColumn', 'created_at');
 $sortOrder = $this->getVar('sortOrder', 'desc');
+$watchedIds = $this->getVar('watchedIds', []);
 
 // Funktion für Sortier-Link
 function getSortUrl($column, $currentColumn, $currentOrder) {
@@ -141,7 +142,12 @@ function getSortIcon($column, $currentColumn, $currentOrder) {
                     $comments = $issue->getComments();
                     ?>
                     <tr>
-                        <td><?= $issue->getId() ?></td>
+                        <td>
+                            <?= $issue->getId() ?>
+                            <?php if (in_array($issue->getId(), $watchedIds, true)): ?>
+                                <i class="rex-icon fa-eye" style="color: #337ab7; font-size: 10px;" title="<?= $package->i18n('issue_tracker_watching') ?>"></i>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]) ?>">
                                 <?= rex_escape($issue->getTitle()) ?>

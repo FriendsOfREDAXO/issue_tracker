@@ -85,6 +85,7 @@ $hasFilterParams = rex_request('filter_status', 'string', null) !== null
                 || rex_request('filter_category', 'string', null) !== null
                 || rex_request('filter_tag', 'int', null) !== null
                 || rex_request('filter_created_by', 'int', null) !== null
+                || rex_request('filter_watched', 'int', null) !== null
                 || rex_request('search', 'string', null) !== null;
 
 if ($hasFilterParams) {
@@ -93,6 +94,7 @@ if ($hasFilterParams) {
     $filterCategory = rex_request('filter_category', 'string', '');
     $filterTag = rex_request('filter_tag', 'int', 0);
     $filterCreatedBy = rex_request('filter_created_by', 'int', 0);
+    $filterWatched = rex_request('filter_watched', 'int', 0);
     $searchTerm = rex_request('search', 'string', '');
     
     rex_set_session($sessionKey, [
@@ -100,6 +102,7 @@ if ($hasFilterParams) {
         'filter_category' => $filterCategory,
         'filter_tag' => $filterTag,
         'filter_created_by' => $filterCreatedBy,
+        'filter_watched' => $filterWatched,
         'search' => $searchTerm,
     ]);
 } else {
@@ -109,6 +112,7 @@ if ($hasFilterParams) {
     $filterCategory = $sessionFilter['filter_category'] ?? '';
     $filterTag = $sessionFilter['filter_tag'] ?? 0;
     $filterCreatedBy = $sessionFilter['filter_created_by'] ?? 0;
+    $filterWatched = $sessionFilter['filter_watched'] ?? 0;
     $searchTerm = $sessionFilter['search'] ?? '';
 }
 
@@ -183,6 +187,10 @@ if ($filterCreatedBy > 0) {
     $where[] = 'i.created_by = ' . (int) $filterCreatedBy;
 }
 
+if ($filterWatched === 1) {
+    $joins .= ' INNER JOIN ' . rex::getTable('issue_tracker_watchers') . ' w ON i.id = w.issue_id AND w.user_id = ' . (int) rex::getUser()->getId();
+}
+
 if ($searchTerm !== '') {
     $escapedTerm = $escapeSql->escape($searchTerm);
     // escape() fügt Anführungszeichen hinzu, für LIKE müssen wir sie entfernen
@@ -217,6 +225,7 @@ $fragment->setVar('filterStatus', $filterStatus);
 $fragment->setVar('filterCategory', $filterCategory);
 $fragment->setVar('filterTag', $filterTag);
 $fragment->setVar('filterCreatedBy', $filterCreatedBy);
+$fragment->setVar('filterWatched', $filterWatched);
 $fragment->setVar('searchTerm', $searchTerm);
 echo $fragment->parse('issue_tracker_filter.php');
 
@@ -225,4 +234,17 @@ $fragment = new rex_fragment();
 $fragment->setVar('issues', $issues);
 $fragment->setVar('sortColumn', $sortColumn);
 $fragment->setVar('sortOrder', $sortOrder);
+
+// Beobachtete Issue-IDs des aktuellen Users laden
+$watchedIds = [];
+$watchSql = rex_sql::factory();
+$watchSql->setQuery(
+    'SELECT issue_id FROM ' . rex::getTable('issue_tracker_watchers') . ' WHERE user_id = ?',
+    [rex::getUser()->getId()]
+);
+foreach ($watchSql as $row) {
+    $watchedIds[] = (int) $row->getValue('issue_id');
+}
+$fragment->setVar('watchedIds', $watchedIds);
+
 echo $fragment->parse('issue_tracker_list.php');
