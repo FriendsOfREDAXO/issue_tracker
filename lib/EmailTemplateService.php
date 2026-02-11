@@ -14,6 +14,77 @@ use rex_sql;
 
 class EmailTemplateService
 {
+    /** @var list<string> Felder mit User-Content, die Markdown-Parsing erhalten */
+    private const RICH_TEXT_FIELDS = ['issue_description', 'comment_text'];
+
+    /**
+     * Konvertiert einfaches Markdown in sicheres HTML für E-Mails.
+     *
+     * Erlaubt: **fett**, *kursiv*, [Link](url), URLs, E-Mail-Adressen, Zeilenumbrüche.
+     * Alles andere wird escaped (XSS-sicher).
+     */
+    public static function formatContentForEmail(string $text): string
+    {
+        // 1. HTML-Tags strippen (Sicherheit)
+        $text = strip_tags($text);
+
+        // 2. HTML-Entities escapen
+        $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+
+        // 3. Markdown-Links: [text](url) — nur http(s) und mailto erlaubt
+        $text = preg_replace(
+            '/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/',
+            '<a href="$2" style="color: #4b9ad9;">$1</a>',
+            $text,
+        );
+        $text = preg_replace(
+            '/\[([^\]]+)\]\((mailto:[^\s\)]+)\)/',
+            '<a href="$2" style="color: #4b9ad9;">$1</a>',
+            $text,
+        );
+
+        // 4. Fett: **text**
+        $text = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $text);
+
+        // 5. Kursiv: *text* (aber nicht innerhalb von **)
+        $text = preg_replace('/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/', '<em>$1</em>', $text);
+
+        // 6. Auto-Link: E-Mail-Adressen (die nicht schon in einem href sind)
+        $text = preg_replace(
+            '/(?<!href="|mailto:)([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/',
+            '<a href="mailto:$1" style="color: #4b9ad9;">$1</a>',
+            $text,
+        );
+
+        // 7. Auto-Link: URLs (die nicht schon in einem href/src sind)
+        $text = preg_replace(
+            '/(?<!href="|src=")(https?:\/\/[^\s<\)]+)/',
+            '<a href="$1" style="color: #4b9ad9;">$1</a>',
+            $text,
+        );
+
+        // 8. Zeilenumbrüche → <br>
+        $text = nl2br($text);
+
+        return $text;
+    }
+
+    /**
+     * Wendet formatContentForEmail() auf bekannte Rich-Text-Felder an.
+     *
+     * @param array<string, string|int> $data Platzhalter-Daten
+     * @return array<string, string|int> Daten mit formatierten Rich-Text-Feldern
+     */
+    public static function formatRichTextFields(array $data): array
+    {
+        foreach (self::RICH_TEXT_FIELDS as $field) {
+            if (isset($data[$field]) && is_string($data[$field])) {
+                $data[$field] = self::formatContentForEmail($data[$field]);
+            }
+        }
+        return $data;
+    }
+
     /**
      * Gibt das HTML-Basis-Template zurück.
      *
@@ -120,8 +191,6 @@ class EmailTemplateService
                         padding: 15px;
                         border-radius: 4px;
                         margin: 15px 0;
-                        white-space: pre-wrap;
-                        font-family: 'Courier New', monospace;
                         font-size: 13px;
                     }
                     .meta-info {
@@ -339,6 +408,56 @@ class EmailTemplateService
                 <div class="description">{{issue_description}}</div>
 
                 <a href="{{issue_url}}" class="button">View Issue →</a>
+
+                <p style="font-size: 12px; color: #6c757d; margin-top: 20px;">
+                    <em>Note: This link is valid for one-time use and 30 days.</em>
+                </p>
+                HTML,
+
+            // Erinnerung - Deutsch
+            'email_template_reminder_de' => <<<'HTML'
+                <h2 style="color: #dc3545;">⏰ Erinnerung</h2>
+                <p>Hallo {{recipient_name}},</p>
+                <p>Sie werden an folgendes Issue erinnert, das Ihnen zugewiesen ist:</p>
+                <p style="font-size: 13px; color: #666;">Gesendet von <strong>{{sent_by_name}}</strong></p>
+
+                <div class="info-box" style="border-left-color: #dc3545;">
+                    <strong>Issue:</strong> #{{issue_id}} - {{issue_title}}<br>
+                    <strong>Status:</strong> <span class="badge badge-danger">{{issue_status}}</span><br>
+                    <strong>Kategorie:</strong> <span class="badge badge-info">{{issue_category}}</span><br>
+                    <strong>Priorität:</strong> <span class="badge badge-warning">{{issue_priority}}</span>
+                    {{due_date}}
+                </div>
+
+                <h3>Beschreibung:</h3>
+                <div class="description">{{issue_description}}</div>
+
+                <a href="{{issue_url}}" class="button" style="background: #dc3545; background-color: #dc3545;">Issue ansehen →</a>
+
+                <p style="font-size: 12px; color: #6c757d; margin-top: 20px;">
+                    <em>Hinweis: Dieser Link ist nur einmal verwendbar und 30 Tage gültig.</em>
+                </p>
+                HTML,
+
+            // Erinnerung - Englisch
+            'email_template_reminder_en' => <<<'HTML'
+                <h2 style="color: #dc3545;">⏰ Reminder</h2>
+                <p>Hello {{recipient_name}},</p>
+                <p>You are being reminded about an issue assigned to you:</p>
+                <p style="font-size: 13px; color: #666;">Sent by <strong>{{sent_by_name}}</strong></p>
+
+                <div class="info-box" style="border-left-color: #dc3545;">
+                    <strong>Issue:</strong> #{{issue_id}} - {{issue_title}}<br>
+                    <strong>Status:</strong> <span class="badge badge-danger">{{issue_status}}</span><br>
+                    <strong>Category:</strong> <span class="badge badge-info">{{issue_category}}</span><br>
+                    <strong>Priority:</strong> <span class="badge badge-warning">{{issue_priority}}</span>
+                    {{due_date}}
+                </div>
+
+                <h3>Description:</h3>
+                <div class="description">{{issue_description}}</div>
+
+                <a href="{{issue_url}}" class="button" style="background: #dc3545; background-color: #dc3545;">View Issue →</a>
 
                 <p style="font-size: 12px; color: #6c757d; margin-top: 20px;">
                     <em>Note: This link is valid for one-time use and 30 days.</em>

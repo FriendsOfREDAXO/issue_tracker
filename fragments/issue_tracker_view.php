@@ -339,6 +339,29 @@ $priorityClass = [
                         </form>
                     </div>
 
+                    <!-- Reminder Button -->
+                    <?php 
+                    $canSendReminder = $this->getVar('canSendReminder', false);
+                    $lastReminderAt = $this->getVar('lastReminderAt', null);
+                    $assignedUser = $issue->getAssignedUser();
+                    if ($assignedUser && !in_array($issue->getStatus(), ['closed', 'rejected'], true)): 
+                    ?>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                        <form method="post" onsubmit="return confirm('<?= $package->i18n('issue_tracker_reminder_confirm') ?>')">
+                            <input type="hidden" name="send_reminder" value="1" />
+                            <button type="submit" class="btn btn-sm btn-block <?= $canSendReminder ? 'btn-danger' : 'btn-default' ?>" <?= $canSendReminder ? '' : 'disabled' ?>>
+                                <i class="rex-icon fa-bell"></i> <?= $package->i18n('issue_tracker_reminder_send') ?>
+                            </button>
+                            <?php if ($lastReminderAt): ?>
+                            <p class="text-muted text-center" style="font-size: 11px; margin-top: 5px; margin-bottom: 0;">
+                                <i class="rex-icon fa-clock-o"></i> 
+                                <?= $package->i18n('issue_tracker_reminder_last_sent', (new DateTime($lastReminderAt))->format('d.m.Y H:i')) ?>
+                            </p>
+                            <?php endif; ?>
+                        </form>
+                    </div>
+                    <?php endif; ?>
+
                     <!-- Verwandtes Issue markieren - ENTFERNT (wird als separates Panel unter Header angezeigt) -->
                     </div>
                     <?php endif; ?>

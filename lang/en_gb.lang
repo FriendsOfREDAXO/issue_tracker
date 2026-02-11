@@ -149,6 +149,7 @@ issue_tracker_template_new_issue = New Issue
 issue_tracker_template_new_comment = New Comment
 issue_tracker_template_status_change = Status Change
 issue_tracker_template_assignment = Assignment
+issue_tracker_template_reminder = Reminder
 
 # Tags
 issue_tracker_tags = Tags
@@ -495,6 +496,18 @@ issue_tracker_test_email_failed = Test email could not be sent
 issue_tracker_test_email_no_address = No email address is configured in your profile. Please add an email address.
 issue_tracker_test_email_confirm = Do you want to send a test email to your email address?
 issue_tracker_template_not_found = Template was not found.
+
+# Reminder
+issue_tracker_reminder_send = Send Reminder
+issue_tracker_reminder_sent = Reminder was sent successfully.
+issue_tracker_reminder_cooldown = A reminder was already sent on {0}. Please wait until the cooldown has expired.
+issue_tracker_reminder_failed = Reminder could not be sent.
+issue_tracker_reminder_last_sent = Last reminder: {0}
+issue_tracker_reminder_cooldown_hours = Reminder Cooldown (hours)
+issue_tracker_reminder_cooldown_help = Minimum time between two reminders for the same issue.
+issue_tracker_reminder_no_assignee = No user is assigned to send a reminder to.
+issue_tracker_reminder_confirm = Do you want to send a reminder to the assigned user?
+issue_tracker_reminder_subject = Reminder: Issue #{0} - {1}
 
 # Actions & Buttons
 issue_tracker_link_action = Link

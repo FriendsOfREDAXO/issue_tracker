@@ -49,8 +49,11 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - ✅ Benachrichtigungen bei Status-Änderungen
 - ✅ Benachrichtigungen bei Zuweisungen
 - ✅ Benachrichtigungen bei privaten Nachrichten (optional)
-- ✅ **HTML E-Mail Templates** mit professionellem Design
+- ✅ **Erinnerungs-Funktion**: Zugewiesene Benutzer per Klick an offene Issues erinnern (mit konfigurierbarem Cooldown)
+- ✅ **HTML E-Mail Templates** mit professionellem Design – anpassbar über die Einstellungen
+- ✅ **Markdown in E-Mails**: Beschreibungen und Kommentare unterstützen `**fett**`, `*kursiv*`, Links und automatische URL-Erkennung
 - ✅ **Deep Links** mit One-Time-Token für Issues und Nachrichten (30 Tage gültig, einmalige Verwendung)
+- ✅ **Konfigurierbare Absender-Adresse**: Eigene Adresse oder Fallback auf PHPMailer-Konfiguration
 - ✅ Mehrsprachige Templates (Deutsch/Englisch)
 - ✅ Broadcast-Nachrichten an alle Benutzer (nur Admins)
 - ✅ Individuelle Benachrichtigungseinstellungen pro Benutzer
@@ -119,8 +122,10 @@ Weitere Details siehe [MEDIA_MANAGER.md](MEDIA_MANAGER.md)
 
 1. Gehe zu "Issue Tracker" → "Einstellungen"
 2. Aktiviere oder deaktiviere E-Mail-Benachrichtigungen
-3. Passe den Absender-Namen an
-4. Stelle sicher, dass PHPMailer korrekt konfiguriert ist
+3. Passe den Absender-Namen und optional die Absender-Adresse an (Fallback: PHPMailer-Konfiguration)
+4. Stelle den Erinnerungs-Cooldown ein (Standard: 24 Stunden)
+5. Stelle sicher, dass PHPMailer korrekt konfiguriert ist
+6. Unter "E-Mail-Templates" können alle Vorlagen (Neues Issue, Kommentar, Status, Zuweisung, Erinnerung) individuell angepasst werden
 
 ## Verwendung
 
@@ -265,6 +270,7 @@ Jeder Benutzer kann seine Benachrichtigungen unter "Issue Tracker" → "Benachri
 - `rex_issue_tracker_project_users`: Projekt-Mitgliedschaften
 - `rex_issue_tracker_messages`: Private Nachrichten
 - `rex_issue_tracker_email_tokens`: One-Time-Token für E-Mail-Deep-Links
+- `rex_issue_tracker_reminders`: Erinnerungs-Tracking (Cooldown-Verwaltung)
 
 ### PHP-Klassen
 
@@ -274,7 +280,8 @@ Jeder Benutzer kann seine Benachrichtigungen unter "Issue Tracker" → "Benachri
 - `FriendsOfREDAXO\IssueTracker\Project`: Projekt-Model
 - `FriendsOfREDAXO\IssueTracker\Message`: Nachrichten-Model
 - `FriendsOfREDAXO\IssueTracker\Attachment`: Attachment-Model
-- `FriendsOfREDAXO\IssueTracker\NotificationService`: E-Mail-Benachrichtigungen inkl. Token-Generierung
+- `FriendsOfREDAXO\IssueTracker\NotificationService`: E-Mail-Benachrichtigungen inkl. Token-Generierung und Reminder
+- `FriendsOfREDAXO\IssueTracker\EmailTemplateService`: Verwaltung und Rendering der E-Mail-Templates mit Markdown-Formatierung
 - `FriendsOfREDAXO\IssueTracker\HistoryService`: Aktivitätsverlauf
 - `FriendsOfREDAXO\IssueTracker\SavedFilterService`: Gespeicherte Filter
 - `FriendsOfREDAXO\IssueTracker\PermissionService`: Zentralisierte Berechtigungsprüfungen
@@ -297,11 +304,16 @@ Status sind aktuell fest im Code definiert. Für Erweiterungen die `install.php`
 
 ### Eigene E-Mail-Templates
 
-Templates befinden sich in `lib/NotificationService.php` in den Methoden:
-- `getNewIssueTemplate()`
-- `getNewCommentTemplate()`
-- `getStatusChangeTemplate()`
-- `getAssignmentTemplate()`
+E-Mail-Templates können direkt im Backend unter **Einstellungen → E-Mail-Templates** angepasst werden.
+
+Verfügbare Templates: Neues Issue, Neuer Kommentar, Status-Änderung, Zuweisung, Erinnerung – jeweils in Deutsch und Englisch.
+
+Verfügbare Platzhalter: `{{recipient_name}}`, `{{issue_id}}`, `{{issue_title}}`, `{{issue_category}}`, `{{issue_priority}}`, `{{issue_description}}`, `{{creator_name}}`, `{{comment_text}}`, `{{old_status}}`, `{{new_status}}`, `{{issue_url}}`, `{{sent_by_name}}`, `{{issue_status}}`, `{{due_date}}`
+
+In Beschreibungen und Kommentaren wird einfaches Markdown unterstützt:
+- `**fett**`, `*kursiv*`
+- `[Linktext](https://example.com)`
+- URLs und E-Mail-Adressen werden automatisch verlinkt
 
 ## Support
 
@@ -311,23 +323,7 @@ Bei Fragen oder Problemen:
 
 ## Changelog
 
-### Version 1.0.0-beta1 (2026-01-09)
-- Initial Release
-- Vollständige Issue-Verwaltung mit verschachtelten Kommentaren
-- Projektmanagement mit Mitglieder-Zuordnung
-- Privates Nachrichtensystem zwischen Benutzern
-- E-Mail-Benachrichtigungen mit Deep-Links und HTML-Templates
-- Personalisiertes Dashboard mit Statistiken und Widgets
-- Tag-System mit Farbcodierung und Duplikat-Erkennung
-- Kommentar-System mit Pin- und Lösungs-Markierung
-- Kommentar-Antworten (Thread-System)
-- Filter und Suche mit Session-Speicherung und speicherbaren Filtern
-- Broadcast-Funktion für Admin-Nachrichten
-- Vollständiger Aktivitätsverlauf
-- Dateianhang-Verwaltung
-- Backup/Export und Import-Funktion
-- Anpassbarer Menü-Titel
-- Dark Mode Unterstützung
+Siehe [CHANGELOG.md](CHANGELOG.md) für eine vollständige Liste aller Änderungen.
 
 
 ## Lizenz

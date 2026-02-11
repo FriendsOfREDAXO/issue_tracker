@@ -282,6 +282,31 @@ if (rex_post('change_status', 'int', 0) === 1) {
     }
 }
 
+// Reminder senden
+if (rex_post('send_reminder', 'int', 0) === 1) {
+    $canRemind = PermissionService::isAdmin()
+        || $issue->getCreatedBy() === PermissionService::getUserId()
+        || $issue->getAssignedUserId() === PermissionService::getUserId()
+        || PermissionService::isManager();
+
+    if ($canRemind && $issue->getAssignedUserId()) {
+        $result = NotificationService::sendReminder($issue, PermissionService::getUserId());
+        if ($result === true) {
+            echo rex_view::success($package->i18n('issue_tracker_reminder_sent'));
+        } elseif ($result === 'cooldown') {
+            $lastReminder = NotificationService::getLastReminder($issue->getId());
+            $lastTime = $lastReminder ? (new DateTime($lastReminder))->format('d.m.Y H:i') : '';
+            echo rex_view::warning($package->i18n('issue_tracker_reminder_cooldown', $lastTime));
+        } else {
+            echo rex_view::error($package->i18n('issue_tracker_reminder_failed'));
+        }
+        // Issue neu laden
+        $issue = Issue::get($issueId);
+    } else {
+        echo rex_view::warning($package->i18n('issue_tracker_no_permission'));
+    }
+}
+
 // Einstellungen laden
 $settingsSql = rex_sql::factory();
 $settingsSql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "statuses"');
@@ -296,6 +321,20 @@ $attachments = Attachment::getByIssue($issue->getId());
 // History laden
 $history = \FriendsOfREDAXO\IssueTracker\HistoryService::getByIssue($issue->getId());
 
+// Reminder-Daten laden
+$canSendReminder = false;
+$lastReminderAt = null;
+if ($issue->getAssignedUserId()) {
+    $canRemind = PermissionService::isAdmin()
+        || $issue->getCreatedBy() === PermissionService::getUserId()
+        || $issue->getAssignedUserId() === PermissionService::getUserId()
+        || PermissionService::isManager();
+    if ($canRemind && !in_array($issue->getStatus(), ['closed', 'rejected'], true)) {
+        $canSendReminder = NotificationService::canSendReminder($issue->getId());
+        $lastReminderAt = NotificationService::getLastReminder($issue->getId());
+    }
+}
+
 // Fragment ausgeben
 $fragment = new rex_fragment();
 $fragment->setVar('issue', $issue);
@@ -303,4 +342,6 @@ $fragment->setVar('comments', $comments);
 $fragment->setVar('attachments', $attachments);
 $fragment->setVar('statuses', $statuses);
 $fragment->setVar('history', $history);
+$fragment->setVar('canSendReminder', $canSendReminder);
+$fragment->setVar('lastReminderAt', $lastReminderAt);
 echo $fragment->parse('issue_tracker_view.php');

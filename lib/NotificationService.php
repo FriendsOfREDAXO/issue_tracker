@@ -532,9 +532,11 @@ class NotificationService
 
     /**
      * Ersetzt Platzhalter im Template.
+     * Rich-Text-Felder (Beschreibung, Kommentare) werden automatisch mit einfachem Markdown formatiert.
      */
     private static function replaceTemplatePlaceholders(string $template, array $data): string
     {
+        $data = EmailTemplateService::formatRichTextFields($data);
         foreach ($data as $key => $value) {
             $template = str_replace('{{' . $key . '}}', $value, $template);
         }
@@ -576,7 +578,7 @@ class NotificationService
         
         <div style="background: #f9f9f9; padding: 15px; border-radius: 3px; margin-bottom: 15px;">
             <strong style="display: block; margin-bottom: 5px;">Beschreibung:</strong>
-            <p style="margin: 0; white-space: pre-wrap;">{{issue_description}}</p>
+            <p style="margin: 0;">{{issue_description}}</p>
         </div>
         
         <a href="{{issue_url}}" style="display: inline-block; background: #0056b3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-weight: bold;">Issue anzeigen</a>
@@ -617,7 +619,7 @@ class NotificationService
         
         <div style="background: #f9f9f9; padding: 15px; border-radius: 3px; margin-bottom: 15px;">
             <strong style="display: block; margin-bottom: 5px;">Description:</strong>
-            <p style="margin: 0; white-space: pre-wrap;">{{issue_description}}</p>
+            <p style="margin: 0;">{{issue_description}}</p>
         </div>
         
         <a href="{{issue_url}}" style="display: inline-block; background: #0056b3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-weight: bold;">View Issue</a>
@@ -644,7 +646,7 @@ class NotificationService
         
         <div style="background: #f0f8ff; padding: 15px; border-left: 4px solid #0056b3; margin-bottom: 15px;">
             <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">Kommentar von {{creator_name}}:</p>
-            <p style="margin: 0; white-space: pre-wrap;">{{comment_text}}</p>
+            <p style="margin: 0;">{{comment_text}}</p>
         </div>
         
         <a href="{{issue_url}}" style="display: inline-block; background: #0056b3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-weight: bold;">Issue anzeigen</a>
@@ -670,7 +672,7 @@ class NotificationService
         
         <div style="background: #f0f8ff; padding: 15px; border-left: 4px solid #0056b3; margin-bottom: 15px;">
             <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">Comment by {{creator_name}}:</p>
-            <p style="margin: 0; white-space: pre-wrap;">{{comment_text}}</p>
+            <p style="margin: 0;">{{comment_text}}</p>
         </div>
         
         <a href="{{issue_url}}" style="display: inline-block; background: #0056b3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-weight: bold;">View Issue</a>
@@ -763,7 +765,7 @@ class NotificationService
         
         <div style="background: #f9f9f9; padding: 15px; border-radius: 3px; margin-bottom: 15px;">
             <strong style="display: block; margin-bottom: 5px;">Beschreibung:</strong>
-            <p style="margin: 0; white-space: pre-wrap;">{{issue_description}}</p>
+            <p style="margin: 0;">{{issue_description}}</p>
         </div>
         
         <a href="{{issue_url}}" style="display: inline-block; background: #0056b3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-weight: bold;">Issue anzeigen</a>
@@ -801,7 +803,7 @@ class NotificationService
         
         <div style="background: #f9f9f9; padding: 15px; border-radius: 3px; margin-bottom: 15px;">
             <strong style="display: block; margin-bottom: 5px;">Description:</strong>
-            <p style="margin: 0; white-space: pre-wrap;">{{issue_description}}</p>
+            <p style="margin: 0;">{{issue_description}}</p>
         </div>
         
         <a href="{{issue_url}}" style="display: inline-block; background: #0056b3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-weight: bold;">View Issue</a>
@@ -813,9 +815,220 @@ class NotificationService
     </div>
 </body>
 </html>',
+            'reminder_de' => '<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: #dc3545; padding: 20px; border-radius: 5px 5px 0 0; text-align: center;">
+        <h2 style="margin: 0 0 5px 0; color: #fff;">⏰ Erinnerung</h2>
+        <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 13px;">Gesendet von {{sent_by_name}}</p>
+    </div>
+    <div style="background: white; padding: 20px; border: 2px solid #dc3545; border-top: none; border-radius: 0 0 5px 5px; margin-bottom: 20px;">
+        <p style="margin: 0 0 15px 0; color: #666;">Hallo {{recipient_name}},</p>
+        <p style="margin: 0 0 15px 0;">Sie werden an folgendes Issue erinnert:</p>
+        <h3 style="margin: 0 0 15px 0; color: #333;">Issue #{{issue_id}}: {{issue_title}}</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+            <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee; font-weight: bold; width: 120px;">Status:</td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">{{issue_status}}</td></tr>
+            <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee; font-weight: bold;">Kategorie:</td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">{{issue_category}}</td></tr>
+            <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee; font-weight: bold;">Priorität:</td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">{{issue_priority}}</td></tr>
+        </table>
+        <div style="background: #fff5f5; padding: 15px; border-radius: 3px; margin-bottom: 15px; border-left: 4px solid #dc3545;">
+            <strong>Beschreibung:</strong><p style="margin: 5px 0 0 0;">{{issue_description}}</p>
+        </div>
+        <a href="{{issue_url}}" style="display: inline-block; background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-weight: bold;">Issue anzeigen</a>
+        <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">(Dieser Link ist nur einmal verwendbar und 30 Tage gültig)</p>
+    </div>
+    <div style="text-align: center; padding: 15px; color: #999; font-size: 12px; border-top: 1px solid #ddd;">
+        Diese E-Mail wurde automatisch vom REDAXO Issue Tracker generiert.
+    </div>
+</body>
+</html>',
+            'reminder_en' => '<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: #dc3545; padding: 20px; border-radius: 5px 5px 0 0; text-align: center;">
+        <h2 style="margin: 0 0 5px 0; color: #fff;">⏰ Reminder</h2>
+        <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 13px;">Sent by {{sent_by_name}}</p>
+    </div>
+    <div style="background: white; padding: 20px; border: 2px solid #dc3545; border-top: none; border-radius: 0 0 5px 5px; margin-bottom: 20px;">
+        <p style="margin: 0 0 15px 0; color: #666;">Hello {{recipient_name}},</p>
+        <p style="margin: 0 0 15px 0;">You are being reminded about an issue assigned to you:</p>
+        <h3 style="margin: 0 0 15px 0; color: #333;">Issue #{{issue_id}}: {{issue_title}}</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+            <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee; font-weight: bold; width: 120px;">Status:</td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">{{issue_status}}</td></tr>
+            <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee; font-weight: bold;">Category:</td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">{{issue_category}}</td></tr>
+            <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee; font-weight: bold;">Priority:</td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">{{issue_priority}}</td></tr>
+        </table>
+        <div style="background: #fff5f5; padding: 15px; border-radius: 3px; margin-bottom: 15px; border-left: 4px solid #dc3545;">
+            <strong>Description:</strong><p style="margin: 5px 0 0 0;">{{issue_description}}</p>
+        </div>
+        <a href="{{issue_url}}" style="display: inline-block; background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 3px; font-weight: bold;">View Issue</a>
+        <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">(This link is valid for one-time use and 30 days)</p>
+    </div>
+    <div style="text-align: center; padding: 15px; color: #999; font-size: 12px; border-top: 1px solid #ddd;">
+        This email was automatically generated by REDAXO Issue Tracker.
+    </div>
+</body>
+</html>',
         ];
 
         $key = $templateName . '_' . $lang;
         return $defaults[$key] ?? $defaults[$templateName . '_de'] ?? '';
     }
+
+    /**
+     * Sendet eine Erinnerung an den zugewiesenen Benutzer eines Issues.
+     *
+     * @return bool|string true bei Erfolg, 'cooldown' wenn Cooldown aktiv, false bei Fehler
+     */
+    public static function sendReminder(Issue $issue, int $sentByUserId): bool|string
+    {
+        if (!self::isEmailEnabled()) {
+            return false;
+        }
+
+        $assignedUserId = $issue->getAssignedUserId();
+        if ($assignedUserId === null) {
+            return false;
+        }
+
+        // Cooldown prüfen
+        if (!self::canSendReminder($issue->getId())) {
+            return 'cooldown';
+        }
+
+        $assignedUser = rex_user::get($assignedUserId);
+        if (!$assignedUser || !$assignedUser->getValue('email')) {
+            return false;
+        }
+
+        $sentByUser = rex_user::get($sentByUserId);
+        $sentByName = $sentByUser ? $sentByUser->getValue('name') : 'Unbekannt';
+
+        $subject = sprintf('Erinnerung: Issue #%d - %s', $issue->getId(), $issue->getTitle());
+
+        $token = self::createEmailToken($issue->getId());
+        $url = rex::getServer() . 'index.php?rex-api-call=issue_tracker_link&token=' . $token;
+
+        // Fälligkeitsdatum aufbereiten
+        $dueDateHtml = '';
+        if ($issue->getDueDate()) {
+            $dueDateFormatted = $issue->getDueDate()->format('d.m.Y');
+            $dueDateHtml = '<br><strong>' . rex_i18n::msg('issue_tracker_due_date') . ':</strong> ';
+            if ($issue->isOverdue()) {
+                $dueDateHtml .= '<span class="badge badge-danger">⚠ ' . $dueDateFormatted . '</span>';
+            } else {
+                $dueDateHtml .= $dueDateFormatted;
+            }
+        }
+
+        // Status-Label
+        $statusLabels = [
+            'open' => 'Offen',
+            'in_progress' => 'In Bearbeitung',
+            'planned' => 'Geplant',
+        ];
+        $statusLabel = $statusLabels[$issue->getStatus()] ?? $issue->getStatus();
+
+        $template = self::getTemplate('reminder', $assignedUser);
+        $body = self::replaceTemplatePlaceholders($template, [
+            'recipient_name' => $assignedUser->getValue('name'),
+            'issue_id' => $issue->getId(),
+            'issue_title' => $issue->getTitle(),
+            'issue_category' => $issue->getCategory(),
+            'issue_priority' => $issue->getPriority(),
+            'issue_status' => $statusLabel,
+            'issue_description' => mb_substr($issue->getDescription(), 0, 500) . (mb_strlen($issue->getDescription()) > 500 ? '...' : ''),
+            'sent_by_name' => $sentByName,
+            'due_date' => $dueDateHtml,
+            'issue_url' => $url,
+        ]);
+
+        $result = self::sendMail($assignedUser->getValue('email'), $subject, $body);
+
+        if ($result) {
+            // Reminder in DB loggen
+            $sql = rex_sql::factory();
+            $sql->setTable(rex::getTable('issue_tracker_reminders'));
+            $sql->setValue('issue_id', $issue->getId());
+            $sql->setValue('sent_by', $sentByUserId);
+            $sql->setValue('sent_to', $assignedUserId);
+            $sql->setValue('sent_at', date('Y-m-d H:i:s'));
+            $sql->insert();
+
+            // History-Eintrag
+            HistoryService::add(
+                $issue->getId(),
+                $sentByUserId,
+                'reminder_sent',
+                'reminder',
+                null,
+                $assignedUser->getValue('name'),
+            );
+        }
+
+        return $result;
+    }
+
+    /**
+     * Prüft ob eine Erinnerung gesendet werden darf (Cooldown).
+     */
+    public static function canSendReminder(int $issueId): bool
+    {
+        $cooldownHours = self::getReminderCooldownHours();
+
+        $sql = rex_sql::factory();
+        $sql->setQuery('
+            SELECT sent_at FROM ' . rex::getTable('issue_tracker_reminders') . '
+            WHERE issue_id = ?
+            ORDER BY sent_at DESC
+            LIMIT 1
+        ', [$issueId]);
+
+        if ($sql->getRows() === 0) {
+            return true;
+        }
+
+        $lastSent = strtotime($sql->getValue('sent_at'));
+        $cooldownEnd = $lastSent + ($cooldownHours * 3600);
+
+        return time() >= $cooldownEnd;
+    }
+
+    /**
+     * Gibt den Zeitpunkt der letzten Erinnerung zurück.
+     */
+    public static function getLastReminder(int $issueId): ?string
+    {
+        $sql = rex_sql::factory();
+        $sql->setQuery('
+            SELECT sent_at FROM ' . rex::getTable('issue_tracker_reminders') . '
+            WHERE issue_id = ?
+            ORDER BY sent_at DESC
+            LIMIT 1
+        ', [$issueId]);
+
+        if ($sql->getRows() === 0) {
+            return null;
+        }
+
+        return $sql->getValue('sent_at');
+    }
+
+    /**
+     * Gibt den konfigurierten Reminder-Cooldown in Stunden zurück.
+     */
+    private static function getReminderCooldownHours(): int
+    {
+        $sql = rex_sql::factory();
+        $sql->setQuery('
+            SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . '
+            WHERE setting_key = "reminder_cooldown_hours"
+        ');
+
+        return $sql->getRows() > 0 ? (int) $sql->getValue('setting_value') : 24;
+    }
+
+
 }

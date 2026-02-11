@@ -149,6 +149,7 @@ issue_tracker_template_new_issue = Neues Thema
 issue_tracker_template_new_comment = Neuer Kommentar
 issue_tracker_template_status_change = Status-Änderung
 issue_tracker_template_assignment = Zuweisung
+issue_tracker_template_reminder = Erinnerung
 
 # Tags
 issue_tracker_tags = Tags
@@ -497,6 +498,18 @@ issue_tracker_test_email_failed = Test-E-Mail konnte nicht gesendet werden
 issue_tracker_test_email_no_address = In Ihrem Profil ist keine E-Mail-Adresse hinterlegt. Bitte fügen Sie eine E-Mail-Adresse hinzu.
 issue_tracker_test_email_confirm = Möchten Sie eine Test-E-Mail an Ihre E-Mail-Adresse senden?
 issue_tracker_template_not_found = Template wurde nicht gefunden.
+
+# Reminder
+issue_tracker_reminder_send = Erinnerung senden
+issue_tracker_reminder_sent = Erinnerung wurde erfolgreich gesendet.
+issue_tracker_reminder_cooldown = Eine Erinnerung wurde bereits am {0} gesendet. Bitte warten Sie bis der Cooldown abgelaufen ist.
+issue_tracker_reminder_failed = Erinnerung konnte nicht gesendet werden.
+issue_tracker_reminder_last_sent = Letzte Erinnerung: {0}
+issue_tracker_reminder_cooldown_hours = Erinnerungs-Cooldown (Stunden)
+issue_tracker_reminder_cooldown_help = Minimaler Zeitraum zwischen zwei Erinnerungen für dasselbe Issue.
+issue_tracker_reminder_no_assignee = Es ist kein Benutzer zugewiesen, an den eine Erinnerung gesendet werden könnte.
+issue_tracker_reminder_confirm = Möchten Sie eine Erinnerung an den zugewiesenen Benutzer senden?
+issue_tracker_reminder_subject = Erinnerung: Issue #{0} - {1}
 
 # Aktionen & Buttons
 issue_tracker_link_action = Verknüpfen

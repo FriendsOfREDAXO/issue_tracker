@@ -44,8 +44,11 @@ if (rex_post('test_template', 'string', '') !== '') {
                 'issue_title' => 'Test Issue: Login-Problem beheben',
                 'issue_category' => 'Bug',
                 'issue_priority' => 'high',
+                'issue_status' => 'Offen',
                 'issue_description' => "Dies ist eine Test-Beschreibung.\n\nMit mehreren Zeilen und **Markdown** Formatierung.",
                 'creator_name' => 'Max Mustermann',
+                'sent_by_name' => 'Max Mustermann',
+                'due_date' => '<br><strong>Fällig am:</strong> <span class="badge badge-danger">⚠ 01.02.2026</span>',
                 'comment_text' => 'Das ist ein Test-Kommentar mit wichtigen Informationen.',
                 'old_status' => 'open',
                 'new_status' => 'in_progress',
@@ -95,7 +98,7 @@ if (1 === rex_post('reset_templates', 'int', 0)) {
 // Templates speichern
 if (1 === rex_post('save_templates', 'int', 0)) {
     $languages = ['de', 'en'];
-    $templates = ['new_issue', 'new_comment', 'status_change', 'assignment'];
+    $templates = ['new_issue', 'new_comment', 'status_change', 'assignment', 'reminder'];
 
     foreach ($languages as $lang) {
         foreach ($templates as $template) {
@@ -141,7 +144,8 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                 <code>{{recipient_name}}</code>, <code>{{issue_id}}</code>, <code>{{issue_title}}</code>,
                 <code>{{issue_category}}</code>, <code>{{issue_priority}}</code>, <code>{{issue_description}}</code>,
                 <code>{{creator_name}}</code>, <code>{{comment_text}}</code>, <code>{{old_status}}</code>,
-                <code>{{new_status}}</code>, <code>{{issue_url}}</code>
+                <code>{{new_status}}</code>, <code>{{issue_url}}</code>, <code>{{sent_by_name}}</code>,
+                <code>{{issue_status}}</code>, <code>{{due_date}}</code>
             </p>
             
             <ul class="nav nav-tabs" role="tablist">
@@ -183,6 +187,14 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                             <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_send_test_email') ?>
                         </button>
                     </div>
+                    
+                    <h4><?= $package->i18n('issue_tracker_template_reminder') ?></h4>
+                    <div class="form-group">
+                        <textarea name="email_template_reminder_de" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_reminder_de']) ?></textarea>
+                        <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_reminder_de')">
+                            <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_send_test_email') ?>
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Englische Templates -->
@@ -215,6 +227,14 @@ foreach ($defaultTemplates as $key => $defaultValue) {
                     <div class="form-group">
                         <textarea name="email_template_assignment_en" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_assignment_en']) ?></textarea>
                         <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_assignment_en')">
+                            <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_send_test_email') ?>
+                        </button>
+                    </div>
+                    
+                    <h4><?= $package->i18n('issue_tracker_template_reminder') ?></h4>
+                    <div class="form-group">
+                        <textarea name="email_template_reminder_en" class="form-control" rows="10"><?= htmlspecialchars($templates['email_template_reminder_en']) ?></textarea>
+                        <button type="button" class="btn btn-xs btn-info" style="margin-top: 5px;" onclick="testTemplate('email_template_reminder_en')">
                             <i class="rex-icon fa-envelope"></i> <?= $package->i18n('issue_tracker_send_test_email') ?>
                         </button>
                     </div>

@@ -12,6 +12,7 @@ $categories = $this->getVar('categories', []);
 $emailEnabled = $this->getVar('emailEnabled', 1);
 $emailFromAddress = $this->getVar('emailFromAddress', '');
 $emailFromName = $this->getVar('emailFromName', 'REDAXO Issue Tracker');
+$reminderCooldownHours = $this->getVar('reminderCooldownHours', 24);
 $installationName = $this->getVar('installationName', '');
 $apiToken = $this->getVar('apiToken', '');
 $allTags = $this->getVar('allTags', []);
@@ -94,6 +95,13 @@ $editTag = $this->getVar('editTag', null);
                     <label for="email-from-name"><?= $package->i18n('issue_tracker_email_from_name') ?></label>
                     <input type="text" class="form-control" id="email-from-name" name="email_from_name" 
                            value="<?= rex_escape($emailFromName) ?>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reminder-cooldown"><?= $package->i18n('issue_tracker_reminder_cooldown_hours') ?></label>
+                    <input type="number" class="form-control" id="reminder-cooldown" name="reminder_cooldown_hours" 
+                           value="<?= rex_escape($reminderCooldownHours) ?>" min="1" max="720" required>
+                    <p class="help-block"><?= $package->i18n('issue_tracker_reminder_cooldown_help') ?></p>
                 </div>
             </div>
         </div>

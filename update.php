@@ -7,17 +7,41 @@
  * @package issue_tracker
  */
 
+use FriendsOfREDAXO\IssueTracker\EmailTemplateService;
+
 // Upload-Verzeichnis erstellen falls nicht vorhanden
 $uploadDir = rex_path::addonData('issue_tracker', 'attachments');
 if (!is_dir($uploadDir)) {
     rex_dir::create($uploadDir);
 }
 
-// Datenbank-Schema aktualisieren - duplicate_of Spalte hinzufügen
-rex_sql_table::get(rex::getTable('issue_tracker_issues'))
-    ->ensureColumn(new rex_sql_column('duplicate_of', 'int(10) unsigned', true))
-    ->ensureIndex(new rex_sql_index('duplicate_of', ['duplicate_of']))
-    ->ensure();
+// Datenbank-Tabellen erstellen/aktualisieren (gleiche Definitionen wie in install.php)
+include __DIR__ . '/table_setup.php';
+
+// Reminder Cooldown Standard-Setting (falls noch nicht vorhanden)
+$sql = rex_sql::factory();
+$sql->setQuery('SELECT id FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "reminder_cooldown_hours"');
+if ($sql->getRows() === 0) {
+    rex_sql::factory()
+        ->setTable(rex::getTable('issue_tracker_settings'))
+        ->setValue('setting_key', 'reminder_cooldown_hours')
+        ->setValue('setting_value', '24')
+        ->insert();
+}
+
+// Fehlende E-Mail-Templates nachrüsten (ohne bestehende zu überschreiben)
+$defaultTemplates = EmailTemplateService::getDefaultHtmlTemplates();
+foreach ($defaultTemplates as $key => $value) {
+    $sql = rex_sql::factory();
+    $sql->setQuery('SELECT id FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = ?', [$key]);
+    if ($sql->getRows() === 0) {
+        rex_sql::factory()
+            ->setTable(rex::getTable('issue_tracker_settings'))
+            ->setValue('setting_key', $key)
+            ->setValue('setting_value', $value)
+            ->insert();
+    }
+}
 
 // Media Manager Typen prüfen und ggf. installieren (falls Media Manager verfügbar)
 if (rex_addon::get('media_manager')->isAvailable()) {
