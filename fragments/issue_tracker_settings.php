@@ -10,6 +10,7 @@ $package = rex_addon::get('issue_tracker');
 $menuTitle = $this->getVar('menuTitle', '');
 $categories = $this->getVar('categories', []);
 $emailEnabled = $this->getVar('emailEnabled', 1);
+$emailFromAddress = $this->getVar('emailFromAddress', '');
 $emailFromName = $this->getVar('emailFromName', 'REDAXO Issue Tracker');
 $installationName = $this->getVar('installationName', '');
 $apiToken = $this->getVar('apiToken', '');
@@ -76,6 +77,17 @@ $editTag = $this->getVar('editTag', null);
                         <input type="checkbox" name="email_enabled" value="1" <?= $emailEnabled ? 'checked' : '' ?>>
                         <?= $package->i18n('issue_tracker_email_enabled') ?>
                     </label>
+                </div>
+
+                <div class="form-group">
+                    <label for="email-from-address"><?= $package->i18n('issue_tracker_email_from_address') ?></label>
+                    <?php
+                    $phpmailerFrom = (new rex_mailer())->From;
+                    ?>
+                    <input type="email" class="form-control" id="email-from-address" name="email_from_address" 
+                           value="<?= rex_escape($emailFromAddress) ?>"
+                           placeholder="<?= rex_escape($phpmailerFrom) ?>">
+                    <p class="help-block"><?= $package->i18n('issue_tracker_email_from_address_help') ?></p>
                 </div>
 
                 <div class="form-group">

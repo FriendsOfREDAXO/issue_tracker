@@ -370,9 +370,16 @@ class NotificationService
                 WHERE setting_key = "email_from_name"
             ');
 
-            $fromName = $sql->getRows() > 0 ? $sql->getValue('setting_value') : 'REDAXO Issue Tracker';
+            $fromName = $sql->getRows() > 0 && $sql->getValue('setting_value') !== '' ? $sql->getValue('setting_value') : $mail->FromName;
 
-            $mail->setFrom(rex::getProperty('server'), $fromName);
+            // Absender-E-Mail aus Addon-Einstellungen laden, Fallback auf PHPMailer-Config
+            $sql->setQuery('
+                SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . '
+                WHERE setting_key = "email_from_address"
+            ');
+            $fromAddress = $sql->getRows() > 0 && $sql->getValue('setting_value') !== '' ? $sql->getValue('setting_value') : $mail->From;
+
+            $mail->setFrom($fromAddress, $fromName);
             $mail->addAddress($to);
             $mail->Subject = $subject;
             $mail->isHTML(true);

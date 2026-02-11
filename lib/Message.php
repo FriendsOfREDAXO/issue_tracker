@@ -545,6 +545,12 @@ class Message
 
         $body .= '</body></html>';
 
+        // Absender-E-Mail aus Addon-Einstellungen laden, Fallback auf PHPMailer-Config
+        $settingsSql->setQuery(
+            'SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = ?',
+            ['email_from_address']
+        );
+
         // E-Mail senden
         try {
             $mail = new rex_mailer();
@@ -553,7 +559,10 @@ class Message
             $mail->Subject = $emailSubject;
             $mail->Body = $body;
             $mail->AltBody = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $body));
-            $mail->setFrom($mail->From, $fromName);
+
+            $fromAddress = $settingsSql->getRows() > 0 && $settingsSql->getValue('setting_value') !== '' ? $settingsSql->getValue('setting_value') : $mail->From;
+            $fromName = $fromName !== '' ? $fromName : $mail->FromName;
+            $mail->setFrom($fromAddress, $fromName);
             $mail->addAddress($recipient->getValue('email'), $recipient->getName() ?: $recipient->getLogin());
             $mail->send();
         } catch (\Exception $e) {

@@ -90,6 +90,13 @@ if (rex_post('save_settings', 'int', 0) === 1) {
         ->setValue('setting_value', rex_post('email_from_name', 'string', 'REDAXO Issue Tracker'))
         ->insertOrUpdate();
     
+    // E-Mail Absender-Adresse
+    rex_sql::factory()
+        ->setTable(rex::getTable('issue_tracker_settings'))
+        ->setValue('setting_key', 'email_from_address')
+        ->setValue('setting_value', rex_post('email_from_address', 'string', ''))
+        ->insertOrUpdate();
+    
     // Installations-Name (für API)
     rex_sql::factory()
         ->setTable(rex::getTable('issue_tracker_settings'))
@@ -115,6 +122,9 @@ $emailEnabled = $sql->getRows() > 0 ? (int) $sql->getValue('setting_value') : 1;
 $sql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "email_from_name"');
 $emailFromName = $sql->getRows() > 0 ? $sql->getValue('setting_value') : 'REDAXO Issue Tracker';
 
+$sql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "email_from_address"');
+$emailFromAddress = $sql->getRows() > 0 ? $sql->getValue('setting_value') : '';
+
 $sql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "installation_name"');
 $installationName = $sql->getRows() > 0 ? $sql->getValue('setting_value') : '';
 
@@ -136,6 +146,7 @@ $fragment = new rex_fragment();
 $fragment->setVar('menuTitle', $menuTitle);
 $fragment->setVar('categories', $categories);
 $fragment->setVar('emailEnabled', $emailEnabled);
+$fragment->setVar('emailFromAddress', $emailFromAddress);
 $fragment->setVar('emailFromName', $emailFromName);
 $fragment->setVar('installationName', $installationName);
 $fragment->setVar('apiToken', $apiToken);

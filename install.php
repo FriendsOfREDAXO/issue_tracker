@@ -263,6 +263,12 @@ rex_sql::factory()
     ->setValue('setting_value', 'REDAXO Issue Tracker')
     ->insertOrUpdate();
 
+rex_sql::factory()
+    ->setTable(rex::getTable('issue_tracker_settings'))
+    ->setValue('setting_key', 'email_from_address')
+    ->setValue('setting_value', '')
+    ->insertOrUpdate();
+
 // Standard E-Mail-Templates einfügen - HTML-Version
 $defaultTemplates = EmailTemplateService::getDefaultHtmlTemplates();
 
