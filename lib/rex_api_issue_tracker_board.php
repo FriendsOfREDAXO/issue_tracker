@@ -23,11 +23,13 @@ class rex_api_issue_tracker_board extends rex_api_function
     {
         rex_response::cleanOutputBuffers();
         
+        $package = \rex_addon::get('issue_tracker');
+        
         // Nur eingeloggte User
         if (!rex::getUser()) {
             rex_response::sendJson([
                 'success' => false,
-                'message' => 'Nicht eingeloggt',
+                'message' => $package->i18n('issue_tracker_board_not_logged_in'),
             ]);
             exit;
         }
@@ -40,7 +42,7 @@ class rex_api_issue_tracker_board extends rex_api_function
         if ($issueId === 0 || $newStatus === '' || $projectId === 0) {
             rex_response::sendJson([
                 'success' => false,
-                'message' => 'Ungültige Parameter',
+                'message' => $package->i18n('issue_tracker_board_invalid_params'),
             ]);
             exit;
         }
@@ -49,7 +51,7 @@ class rex_api_issue_tracker_board extends rex_api_function
         if (!$issue) {
             rex_response::sendJson([
                 'success' => false,
-                'message' => 'Issue nicht gefunden',
+                'message' => $package->i18n('issue_tracker_board_issue_not_found'),
             ]);
             exit;
         }
@@ -58,7 +60,7 @@ class rex_api_issue_tracker_board extends rex_api_function
         if ($issue->getProjectId() !== $projectId) {
             rex_response::sendJson([
                 'success' => false,
-                'message' => 'Issue gehört nicht zu diesem Projekt',
+                'message' => $package->i18n('issue_tracker_board_issue_wrong_project'),
             ]);
             exit;
         }
@@ -67,7 +69,7 @@ class rex_api_issue_tracker_board extends rex_api_function
         if (!$project || !$project->canWrite(rex::getUser()->getId())) {
             rex_response::sendJson([
                 'success' => false,
-                'message' => 'Keine Berechtigung',
+                'message' => $package->i18n('issue_tracker_board_no_permission'),
             ]);
             exit;
         }
@@ -77,9 +79,10 @@ class rex_api_issue_tracker_board extends rex_api_function
         // Status aktualisieren
         $issue->setStatus($newStatus);
         
-        // Transaktionen für Atomizität verwenden mit READ COMMITTED Isolation Level
+        // Transaktionen für Atomizität verwenden
+        // Note: Transaction isolation level should be configured at database connection level
+        // Default READ COMMITTED is suitable for this use case
         $sql = rex_sql::factory();
-        $sql->setQuery('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
         $sql->setQuery('START TRANSACTION');
         
         try {
@@ -153,7 +156,7 @@ class rex_api_issue_tracker_board extends rex_api_function
                 
                 rex_response::sendJson([
                     'success' => true,
-                    'message' => 'Position gespeichert',
+                    'message' => $package->i18n('issue_tracker_board_position_saved'),
                     'issue_id' => $issueId,
                     'status' => $newStatus,
                     'position' => $newPosition,
@@ -169,14 +172,14 @@ class rex_api_issue_tracker_board extends rex_api_function
             
             rex_response::sendJson([
                 'success' => false,
-                'message' => 'Fehler beim Speichern: ' . $e->getMessage(),
+                'message' => $package->i18n('issue_tracker_board_save_error') . ': ' . $e->getMessage(),
             ]);
             exit;
         }
 
         rex_response::sendJson([
             'success' => false,
-            'message' => 'Fehler beim Speichern',
+            'message' => $package->i18n('issue_tracker_board_save_error'),
         ]);
         exit;
     }
