@@ -34,37 +34,36 @@ function getSortIcon($column, $currentColumn, $currentOrder) {
 
 <!-- Issues Tabelle -->
 <div class="panel panel-default">
-    <div class="panel-heading">
-        <div class="panel-title">
+    <div class="panel-heading" style="padding: 8px 15px;">
+        <span class="pull-left" style="font-weight: bold; font-size: 13px; line-height: 30px;">
             <?= $package->i18n('issue_tracker_issues') ?>
-            <div class="btn-group pull-right" role="group">
-                <a href="<?= rex_url::backendPage('issue_tracker/issues/create') ?>" class="btn btn-primary btn-xs" style="color: #fff !important;">
-                    <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_create_new') ?>
-                </a>
-                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="rex-icon fa-download"></i> <?= $package->i18n('issue_tracker_export') ?> <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-right">
-                    <li><a href="<?php 
-                        $exportParams = $_GET;
-                        $exportParams['rex-api-call'] = 'issue_tracker_export';
-                        $exportParams['format'] = 'csv';
-                        echo rex_url::backendPage('', $exportParams);
-                    ?>">
-                        <i class="rex-icon fa-file-csv"></i> <?= $package->i18n('issue_tracker_export_csv') ?>
-                    </a></li>
-                    <?php if (\rex_addon::exists('pdfout') && \rex_addon::get('pdfout')->isAvailable()): ?>
-                    <li><a href="<?php 
-                        $pdfParams = $_GET;
-                        $pdfParams['export_pdf'] = 1;
-                        echo rex_url::backendPage('issue_tracker/issues/list', $pdfParams);
-                    ?>" target="_blank">
-                        <i class="rex-icon fa-file-pdf"></i> <?= $package->i18n('issue_tracker_export_pdf') ?>
-                    </a></li>
-                    <?php endif; ?>
-                </ul>
-            </div>
+            <span class="badge" style="background: #999; font-size: 10px;"><?= count($issues) ?></span>
+        </span>
+        <div class="btn-group pull-right" style="margin-top: 3px;" role="group">
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="rex-icon fa-download"></i> <?= $package->i18n('issue_tracker_export') ?> <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right">
+                <li><a href="<?php 
+                    $exportParams = $_GET;
+                    $exportParams['rex-api-call'] = 'issue_tracker_export';
+                    $exportParams['format'] = 'csv';
+                    echo rex_url::backendPage('', $exportParams);
+                ?>">
+                    <i class="rex-icon fa-file-csv"></i> <?= $package->i18n('issue_tracker_export_csv') ?>
+                </a></li>
+                <?php if (\rex_addon::exists('pdfout') && \rex_addon::get('pdfout')->isAvailable()): ?>
+                <li><a href="<?php 
+                    $pdfParams = $_GET;
+                    $pdfParams['export_pdf'] = 1;
+                    echo rex_url::backendPage('issue_tracker/issues/list', $pdfParams);
+                ?>" target="_blank">
+                    <i class="rex-icon fa-file-pdf"></i> <?= $package->i18n('issue_tracker_export_pdf') ?>
+                </a></li>
+                <?php endif; ?>
+            </ul>
         </div>
+        <div class="clearfix"></div>
     </div>
     <table class="table table-striped table-hover">
         <thead>
