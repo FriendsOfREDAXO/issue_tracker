@@ -257,15 +257,6 @@
             }, 50);
         });
 
-        // Bestätigungsdialog für gefährliche Aktionen
-        $('a[data-confirm]').on('click', function(e) {
-            var message = $(this).data('confirm');
-            if (!confirm(message)) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
         // Auto-save Draft (optional - für zukünftige Erweiterung)
         var draftTimeout;
         $('.issue-tracker-form textarea, .issue-tracker-form input[type="text"]').on('input', function() {
