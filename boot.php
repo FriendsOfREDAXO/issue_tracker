@@ -24,6 +24,7 @@ if (rex::isBackend() && rex::getUser()) {
     rex_view::addCssFile($this->getAssetsUrl('issue_tracker.css'));
     rex_view::addJsFile($this->getAssetsUrl('easymde.min.js'));
     rex_view::addJsFile($this->getAssetsUrl('issue_tracker.js'));
+    
 }
 
 // Benutzerdefinierten Menü-Titel setzen

@@ -122,17 +122,19 @@ function getSortIcon($column, $currentColumn, $currentOrder) {
                 <?php foreach ($issues as $issue): ?>
                     <?php
                     $statusClasses = [
-                        'open' => 'label-warning',
-                        'in_progress' => 'label-info',
+                        'open' => 'label-danger',
+                        'in_progress' => 'label-warning',
+                        'planned' => 'label-info',
                         'closed' => 'label-success',
-                        'rejected' => 'label-danger',
+                        'rejected' => 'label-default',
                         'info' => 'label-primary',
                     ];
                     
                     $priorityClasses = [
                         'low' => 'label-default',
-                        'medium' => 'label-info',
+                        'normal' => 'label-info',
                         'high' => 'label-warning',
+                        'urgent' => 'label-danger',
                         'critical' => 'label-danger',
                     ];
                     
@@ -191,6 +193,19 @@ function getSortIcon($column, $currentColumn, $currentOrder) {
                                         <?= rex_escape($tag->getName()) ?>
                                     </span>
                                 <?php endforeach; ?>
+                            <?php endif; ?>
+                            <?php
+                            $clProgress = \FriendsOfREDAXO\IssueTracker\ContentRenderer::getChecklistProgress($issue->getDescription());
+                            if ($clProgress['total'] > 0):
+                                $clPct = (int) round($clProgress['checked'] / $clProgress['total'] * 100);
+                            ?>
+                                <br>
+                                <small class="text-muted" style="font-size: 11px;">
+                                    <i class="rex-icon fa-check-square-o"></i> <?= $clProgress['checked'] ?>/<?= $clProgress['total'] ?>
+                                </small>
+                                <div class="progress" style="height: 4px; margin: 2px 0 0; border-radius: 2px; max-width: 120px;">
+                                    <div class="progress-bar progress-bar-success" style="width: <?= $clPct ?>%"></div>
+                                </div>
                             <?php endif; ?>
                         </td>
                         <td><?= rex_escape($issue->getCategory()) ?></td>

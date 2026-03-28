@@ -18,6 +18,13 @@ if (!is_dir($uploadDir)) {
 // Datenbank-Tabellen erstellen/aktualisieren (gleiche Definitionen wie in install.php)
 include __DIR__ . '/table_setup.php';
 
+// read_at Spalte zu mentions hinzufügen falls nicht vorhanden (Migration für < 1.6.1)
+$mentionsCols = rex_sql::factory();
+$mentionsCols->setQuery('SHOW COLUMNS FROM ' . rex::getTable('issue_tracker_mentions') . ' LIKE "read_at"');
+if ($mentionsCols->getRows() === 0) {
+    rex_sql::factory()->setQuery('ALTER TABLE ' . rex::getTable('issue_tracker_mentions') . ' ADD COLUMN read_at datetime NULL DEFAULT NULL');
+}
+
 // Reminder Cooldown Standard-Setting (falls noch nicht vorhanden)
 $sql = rex_sql::factory();
 $sql->setQuery('SELECT id FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "reminder_cooldown_hours"');
@@ -39,6 +46,26 @@ foreach ($defaultTemplates as $key => $value) {
             ->setTable(rex::getTable('issue_tracker_settings'))
             ->setValue('setting_key', $key)
             ->setValue('setting_value', $value)
+            ->insert();
+    }
+}
+
+// Standard-Tags nachrüsten (Bug, Feature, Docs, Good Idea) – nur falls noch nicht vorhanden
+$defaultTagsList = [
+    ['name' => 'Bug',       'color' => '#dc3545'],
+    ['name' => 'Feature',   'color' => '#28a745'],
+    ['name' => 'Docs',      'color' => '#17a2b8'],
+    ['name' => 'Good Idea', 'color' => '#fd7e14'],
+];
+foreach ($defaultTagsList as $tagData) {
+    $tagCheck = rex_sql::factory();
+    $tagCheck->setQuery('SELECT id FROM ' . rex::getTable('issue_tracker_tags') . ' WHERE name = ?', [$tagData['name']]);
+    if ($tagCheck->getRows() === 0) {
+        rex_sql::factory()
+            ->setTable(rex::getTable('issue_tracker_tags'))
+            ->setValue('name', $tagData['name'])
+            ->setValue('color', $tagData['color'])
+            ->setValue('created_at', date('Y-m-d H:i:s'))
             ->insert();
     }
 }
@@ -173,3 +200,5 @@ foreach ($allUsersSql as $row) {
         $insertSql->insert();
     }
 }
+
+

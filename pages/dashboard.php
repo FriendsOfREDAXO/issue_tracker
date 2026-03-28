@@ -124,6 +124,52 @@ foreach ($watchedIds as $wIssue) {
     $watchedIssues[] = $wIssue;
 }
 
+// Erwähnung als gelesen markieren (nur via POST, PRG-Pattern)
+if (rex_post('mark_mention_read', 'int', 0) > 0) {
+    $mentionId = rex_post('mark_mention_read', 'int', 0);
+    $markSql = rex_sql::factory();
+    $markSql->setQuery(
+        'UPDATE ' . rex::getTable('issue_tracker_mentions') . ' SET read_at = ? WHERE id = ? AND mentioned_user_id = ? AND read_at IS NULL',
+        [date('Y-m-d H:i:s'), $mentionId, $userId]
+    );
+    rex_response::sendRedirect(rex_url::currentBackendPage());
+}
+
+// Alle Erwähnungen als gelesen markieren (nur via POST, PRG-Pattern)
+if (rex_post('mark_all_mentions_read', 'int', 0) === 1) {
+    $markSql = rex_sql::factory();
+    $markSql->setQuery(
+        'UPDATE ' . rex::getTable('issue_tracker_mentions') . ' SET read_at = ? WHERE mentioned_user_id = ? AND read_at IS NULL',
+        [date('Y-m-d H:i:s'), $userId]
+    );
+    rex_response::sendRedirect(rex_url::currentBackendPage());
+}
+
+// Letzte Erwähnungen laden (max. 10, ungelesene zuerst)
+$mentionSql = rex_sql::factory();
+$mentionSql->setQuery('
+    SELECT m.id, m.issue_id, m.comment_id, m.created_at, m.read_at,
+           u.name AS mentioner_name,
+           u.login AS mentioner_login,
+           i.title AS issue_title
+    FROM ' . rex::getTable('issue_tracker_mentions') . ' m
+    INNER JOIN ' . rex::getTable('user') . ' u ON u.id = m.created_by
+    INNER JOIN ' . rex::getTable('issue_tracker_issues') . ' i ON i.id = m.issue_id
+    WHERE m.mentioned_user_id = ' . $userId . '
+    AND m.read_at IS NULL
+    ORDER BY m.created_at DESC
+    LIMIT 10
+');
+$recentMentions = $mentionSql->getArray();
+
+// Exakte Anzahl ungelesener Erwähnungen per eigener Abfrage (unabhängig vom LIMIT)
+$countSql = rex_sql::factory();
+$countSql->setQuery(
+    'SELECT COUNT(*) AS cnt FROM ' . rex::getTable('issue_tracker_mentions') . ' WHERE mentioned_user_id = ? AND read_at IS NULL',
+    [$userId]
+);
+$unreadMentionsCount = (int) $countSql->getValue('cnt');
+
 // Dashboard ausgeben
 $fragment = new rex_fragment();
 $fragment->setVar('openIssues', $openIssues);
@@ -137,6 +183,8 @@ $fragment->setVar('unreadMessages', $unreadMessages);
 $fragment->setVar('recentMessages', $recentMessages);
 $fragment->setVar('userProjects', $userProjects);
 $fragment->setVar('watchedIssues', $watchedIssues);
+$fragment->setVar('recentMentions', $recentMentions);
+$fragment->setVar('unreadMentionsCount', $unreadMentionsCount);
 $fragment->setVar('isManager', $isManager);
 $fragment->setVar('currentViewType', $viewType);
 echo $fragment->parse('issue_tracker_dashboard.php');

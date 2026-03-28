@@ -165,6 +165,17 @@ if (rex_post('save', 'int', 0) === 1) {
             
             for ($i = 0; $i < $fileCount; $i++) {
                 if ($_FILES['attachments']['error'][$i] === UPLOAD_ERR_OK) {
+                    $extension = strtolower(pathinfo($_FILES['attachments']['name'][$i], PATHINFO_EXTENSION));
+                    $allowedExtensions = ['jpg','jpeg','png','gif','webp','svg','bmp','tiff','ico',
+                        'mp4','mov','avi','mkv','webm','ogg',
+                        'pdf','doc','docx','odt','rtf',
+                        'xls','xlsx','ods','csv',
+                        'ppt','pptx','odp',
+                        'txt','md','json','xml','html','htm','log',
+                        'zip','rar','7z','tar','gz'];
+                    if (!in_array($extension, $allowedExtensions, true)) {
+                        continue;
+                    }
                     // Eindeutigen Dateinamen generieren
                     $extension = strtolower(pathinfo($_FILES['attachments']['name'][$i], PATHINFO_EXTENSION));
                     $uniqueFilename = uniqid('issue_', true) . '.' . $extension;
@@ -240,14 +251,16 @@ $allTags = Tag::getAll();
 // Verfügbare User (alle aktiven Benutzer)
 $userSql = rex_sql::factory();
 $userSql->setQuery('
-    SELECT id, name 
+    SELECT id, name, login
     FROM ' . rex::getTable('user') . ' 
     WHERE status = 1
     ORDER BY name
 ');
 $users = [];
+$mentionUsers = [];
 foreach ($userSql as $row) {
     $users[(int) $row->getValue('id')] = $row->getValue('name');
+    $mentionUsers[] = ['login' => (string) $row->getValue('login'), 'name' => (string) $row->getValue('name')];
 }
 
 // Verfügbare Add
@@ -280,6 +293,7 @@ $fragment->setVar('statuses', $statuses);
 $fragment->setVar('priorities', $priorities);
 $fragment->setVar('allTags', $allTags);
 $fragment->setVar('users', $users);
+$fragment->setVar('mentionUsers', $mentionUsers);
 $fragment->setVar('addons', $addons);
 $fragment->setVar('projects', $projects);
 echo $fragment->parse('issue_tracker_form.php');

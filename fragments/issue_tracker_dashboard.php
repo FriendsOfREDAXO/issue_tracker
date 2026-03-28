@@ -18,6 +18,8 @@ $unreadMessages = $this->getVar('unreadMessages', 0);
 $recentMessages = $this->getVar('recentMessages', []);
 $userProjects = $this->getVar('userProjects', []);
 $watchedIssues = $this->getVar('watchedIssues', []);
+$recentMentions = $this->getVar('recentMentions', []);
+$unreadMentionsCount = $this->getVar('unreadMentionsCount', 0);
 $isManager = $this->getVar('isManager', false);
 $currentViewType = $this->getVar('currentViewType', 'own');
 
@@ -25,10 +27,13 @@ $currentViewType = $this->getVar('currentViewType', 'own');
 $statusClasses = [
     'open' => 'danger',
     'in_progress' => 'warning',
+    'planned' => 'info',
     'rejected' => 'default',
     'closed' => 'success',
+    'info' => 'primary',
 ];
 $priorityClasses = [
+    'urgent' => 'danger',
     'critical' => 'danger',
     'high' => 'warning',
     'normal' => 'info',
@@ -199,7 +204,54 @@ $priorityClasses = [
 
         <!-- ========== RECHTE SPALTE ========== -->
         <div class="col-md-4">
-            
+
+            <?php if (!empty($recentMentions)): ?>
+            <!-- Erwähnungen -->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <i class="rex-icon fa-at"></i> <?= $package->i18n('issue_tracker_my_mentions') ?>
+                        <?php if ($unreadMentionsCount > 0): ?>
+                        <span class="badge"><?= $unreadMentionsCount ?></span>
+                        <?php endif; ?>
+                        <?php if ($unreadMentionsCount > 0): ?>
+                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/dashboard', [], false) ?>" style="display:inline; float:right; margin-left:5px;">
+                            <input type="hidden" name="mark_all_mentions_read" value="1">
+                            <button type="submit" class="btn btn-xs btn-default"><?= $package->i18n('issue_tracker_mark_all_read') ?></button>
+                        </form>
+                        <?php endif; ?>
+                    </h3>
+                </div>
+                <div class="panel-body" style="padding: 0;">
+                    <?php foreach ($recentMentions as $mention): 
+                        $isUnread = $mention['read_at'] === null;
+                    ?>
+                    <div style="padding: 8px 12px; border-bottom: 1px solid rgba(128,128,128,0.12); display: flex; align-items: center; gap: 8px; <?= $isUnread ? 'background: rgba(0,0,0,0.02);' : 'opacity:0.65;' ?>">
+                        <i class="rex-icon fa-at" style="color: <?= $isUnread ? '#337ab7' : '#999' ?>; flex-shrink: 0;"></i>
+                        <div style="flex: 1; min-width: 0;">
+                            <div>
+                                <strong><?= rex_escape($mention['mentioner_name'] ?: $mention['mentioner_login']) ?></strong>
+                                <?= $package->i18n('issue_tracker_mentioned_you_in') ?>
+                                <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => (int) $mention['issue_id']]) . ($mention['comment_id'] ? '#comment-' . (int) $mention['comment_id'] : '') ?>">
+                                    #<?= (int) $mention['issue_id'] ?> <?= rex_escape(mb_substr($mention['issue_title'], 0, 28)) ?><?= mb_strlen($mention['issue_title']) > 28 ? '...' : '' ?>
+                                </a>
+                            </div>
+                            <small class="text-muted"><?= rex_escape(date('d.m.Y H:i', strtotime($mention['created_at']))) ?></small>
+                        </div>
+                        <?php if ($isUnread): ?>
+                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/dashboard', [], false) ?>" style="display:inline; flex-shrink:0;">
+                            <input type="hidden" name="mark_mention_read" value="<?= (int) $mention['id'] ?>">
+                            <button type="submit" class="btn btn-xs btn-default" title="<?= $package->i18n('issue_tracker_mark_read') ?>">
+                                <i class="rex-icon fa-check"></i>
+                            </button>
+                        </form>
+                        <?php endif; ?>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <!-- Nachrichten-Panel -->
             <div class="panel panel-<?= $unreadMessages > 0 ? 'primary' : 'default' ?>">
                 <div class="panel-heading">

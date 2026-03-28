@@ -2,6 +2,76 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [1.7.0] – 2026-03-29
+
+### Neue Funktionen
+- **Interaktive Checklisten**: Aufgabenlisten in Beschreibungen und Kommentaren können per Klick direkt abgehakt werden
+  - Markdown-Syntax: `- [ ] Offene Aufgabe` und `- [x] Erledigte Aufgabe`
+  - Fortschrittsbalken mit Zähler (`x/y Aufgaben erledigt`) in der Detailansicht
+  - Kompakter Fortschrittsbalken (4px) in der Issue-Liste wenn Checklisten vorhanden sind
+  - Klick auf Checkbox speichert sofort via Server-Request, kein Seitenneulade
+- **Zeiterfassung**: Zeit kann über den `/spent`-Befehl in Kommentaren erfasst werden
+  - Unterstützte Formate: `2h`, `30m`, `1h 30m`, `90min`
+  - `/spent` wird im angezeigten Kommentar ausgeblendet
+  - Gesamtzeit aller Einträge im Details-Panel der Detailansicht sichtbar
+  - Zeiteinträge werden im Aktivitätsprotokoll festgehalten
+  - Neue Datenbank-Tabelle `rex_issue_tracker_time_entries` (id, issue_id, comment_id, user_id, minutes, note, created_at)
+- **#Issue-Referenzen**: Verweise auf andere Issues in Kommentaren werden automatisch verlinkt
+  - `#42` wird zu einem klickbaren Backend-Link auf Issue #42 – Syntax: Leerzeichen oder Satzzeichen vor/nach `#`, nicht direkt an Wortzeichen (`foo#42` wird nicht ersetzt)
+  - Das referenzierte Issue erhält einen Cross-Reference-Eintrag im Aktivitätsverlauf
+  - Referenzen innerhalb von Code-Blöcken werden nicht ersetzt
+
+### Bugfixes
+- **Doppeltes HTML-Encoding in Links**: `rex_url::backendPage()` liefert bereits HTML-kodierte URLs (`&amp;`) – wird jetzt mit `false` als drittem Parameter aufgerufen um eine rohe URL (`&`) zu erhalten, die dann korrekt einmalig durch `rex_escape()` im HTML-Attribut kodiert wird. Betrifft Checklisten-Formular-Action und `#Issue-Referenz`-Links.
+- **#Issue-Referenz-Regex zu weit**: Regex `/#(\d+)/` durch `/(?<!\w)#(\d+)(?!\w)/` ersetzt um Treffer wie `foo#42` oder `#42px` zu vermeiden.
+
+### Neue Klasse
+- `FriendsOfREDAXO\IssueTracker\ContentRenderer`: Zentrale Render-Klasse für Beschreibungen und Kommentare
+  - `render()`: Markdown-Rendering mit Checklisten, #Issue-Links und `/spent`-Filterung
+  - `getChecklistProgress()`: Zählt offene/erledigte Checklisten-Items im Rohtext
+  - `toggleChecklistItem()`: Togglet ein einzelnes Checklisten-Item per Index
+  - `extractSpentMinutes()` / `stripSpentCommand()`: Parst und entfernt `/spent`-Befehle
+  - `formatMinutes()`: Formatiert Minuten als lesbare Zeitangabe (`1h 30m`, `45m`)
+
+### Neue Sprachschlüssel
+- `issue_tracker_checklist_items` – „Aufgaben erledigt" / „tasks done"
+- `issue_tracker_time_spent` – „Aufgewendete Zeit" / „Time spent"
+- `issue_tracker_time_logged` – „Zeit erfasst" / „Time logged"
+- `issue_tracker_referenced_in` – „In Issue erwähnt" / „Referenced in issue"
+
+### Neue Datenbank-Tabelle
+- `rex_issue_tracker_time_entries`: Speichert Zeiteinträge mit `issue_id`, `comment_id` (nullable), `user_id`, `minutes`, `note`, `created_at`
+
+## [1.6.0] – 2026-03-28
+
+### Neue Funktionen
+- **@mention-System**: User können in Kommentaren per `@login` erwähnt werden
+  - Autocomplete-Dropdown direkt im CodeMirror/EasyMDE-Editor (erscheint nach `@`-Eingabe, Navigation mit Pfeiltasten)
+  - Erwähnungen werden in der neuen Tabelle `issue_tracker_mentions` gespeichert
+  - Erwähnte User erhalten eine E-Mail-Benachrichtigung (individual abschaltbar über Präferenzen)
+  - Neue Option in den Benachrichtigungs-Präferenzen: „Bei Erwähnungen"
+- **Issue per Kommentar schließen** (GitHub-Stil): Checkbox „Schließen & kommentieren" im Kommentarformular
+  - Schließt das Issue und speichert den Kommentar in einem Schritt
+  - Sendet eine kombinierte E-Mail statt zwei separater Benachrichtigungen
+  - Kommentar wird nur angezeigt, wenn das Issue noch nicht geschlossen/abgelehnt ist
+- **Tags direkt in der Issue-Ansicht bearbeiten**: Tags können in der Sidebar der Detailansicht ohne den Edit-Modus verwaltet werden
+  - Bestehende Tags zeigen ein ×-Symbol zum Entfernen (nur für berechtigte User)
+  - Kleines Dropdown zum Hinzufügen weiterer Tags (zeigt nur noch nicht vergebene Tags)
+- **Standard-Tags bei Installation/Update**: Die Tags Bug, Feature, Docs und Good Idea werden beim Installieren und Updaten automatisch angelegt (falls noch nicht vorhanden)
+
+### Verbesserungen
+- **Einheitliche Status-Label-Farben**: Liste und Detailansicht verwenden jetzt durchgehend dieselben Farben
+  - `open → rot (danger)`, `in_progress → orange (warning)`, `planned → blau (info)`, `closed → grün (success)`, `rejected → grau (default)`, `info → dunkelblau (primary)`
+- **Prioritäts-Label übersetzt**: Priorität wird jetzt als übersetztes Label angezeigt statt als roher DB-Schlüssel
+- **Kombinierte Benachrichtigung**: `NotificationService::notifyCommentWithClose()` sendet eine E-Mail an alle Beteiligten wenn ein Issue via Kommentar geschlossen wird
+- **Effizientere User-Abfrage**: Alle berechtigten User werden einmalig geladen und für Watcher-Panel wie @mention-Autocomplete genutzt
+
+### Neue Datenbank-Tabelle
+- `rex_issue_tracker_mentions`: Speichert @mention-Einträge mit `issue_id`, `comment_id`, `mentioned_user_id`, `created_by`, `created_at`
+
+### Neue Datenbankspalte
+- `rex_issue_tracker_notifications.email_on_mention` (tinyint, Standard: 1): Steuert @mention-E-Mail-Benachrichtigung pro User
+
 ## [1.5.1] – 2026-02-11
 
 ### Verbesserungen

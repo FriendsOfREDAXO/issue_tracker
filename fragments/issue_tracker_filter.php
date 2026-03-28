@@ -16,6 +16,7 @@ $filterCategory = $this->getVar('filterCategory', '');
 $filterTag = $this->getVar('filterTag', 0);
 $filterCreatedBy = $this->getVar('filterCreatedBy', 0);
 $filterWatched = $this->getVar('filterWatched', 0);
+$filterMentioned = $this->getVar('filterMentioned', 0);
 $searchTerm = $this->getVar('searchTerm', '');
 ?>
 
@@ -31,6 +32,7 @@ $searchTerm = $this->getVar('searchTerm', '');
     if ($filterTag > 0) $activeFilterCount++;
     if ($filterCreatedBy > 0) $activeFilterCount++;
     if ($filterWatched === 1) $activeFilterCount++;
+    if ($filterMentioned === 1) $activeFilterCount++;
     if ($searchTerm !== '') $activeFilterCount++;
     ?>
     <div class="panel-heading" style="padding: 8px 15px;">
@@ -56,9 +58,21 @@ $searchTerm = $this->getVar('searchTerm', '');
                         </button>
                         <ul class="dropdown-menu">
                             <?php if (!$savedFilter['is_default']): ?>
-                            <li><a href="<?= rex_url::currentBackendPage(['set_default_filter' => $savedFilter['id']]) ?>"><i class="rex-icon fa-star"></i> <?= $package->i18n('issue_tracker_set_as_default') ?></a></li>
+                            <li>
+                                <a href="<?= rex_url::currentBackendPage(['set_default_filter' => $savedFilter['id']]) ?>">
+                                    <i class="rex-icon fa-star"></i> <?= $package->i18n('issue_tracker_set_as_default') ?>
+                                </a>
+                            </li>
                             <?php endif; ?>
-                            <li><a href="<?= rex_url::currentBackendPage(['delete_filter' => $savedFilter['id']]) ?>" onclick="return confirm('<?= $package->i18n('issue_tracker_delete_filter') ?>?')"><i class="rex-icon fa-trash"></i> <?= $package->i18n('issue_tracker_delete') ?></a></li>
+                            <li>
+                                <form method="post" action="<?= rex_url::currentBackendPage([], false) ?>" style="display:inline;">
+                                    <input type="hidden" name="delete_filter" value="<?= (int) $savedFilter['id'] ?>" />
+                                    <button type="submit" class="btn btn-link" style="padding: 3px 20px; text-align:left; width:100%; color:#d9534f;"
+                                        onclick="return confirm('<?= rex_escape($package->i18n('issue_tracker_delete_filter')) ?>?')">
+                                        <i class="rex-icon fa-trash"></i> <?= $package->i18n('issue_tracker_delete') ?>
+                                    </button>
+                                </form>
+                            </li>
                         </ul>
                     </div>
                 <?php endforeach; ?>
@@ -156,6 +170,7 @@ $searchTerm = $this->getVar('searchTerm', '');
                 <input type="hidden" name="filter_tag" value="<?= $filterTag ?>" />
                 <input type="hidden" name="filter_created_by" value="<?= $filterCreatedBy ?>" />
                 <input type="hidden" name="filter_watched" value="<?= $filterWatched ?>" />
+                <input type="hidden" name="filter_mentioned" value="<?= $filterMentioned ?>" />
                 <input type="hidden" name="search" value="<?= rex_escape($searchTerm) ?>" />
                 
                 <div class="modal-header">

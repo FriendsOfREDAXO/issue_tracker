@@ -43,54 +43,59 @@
             // $(this).closest('form').submit();
         });
 
-        // Lightbox Handler
+        // Lightbox Handler – eigenes Overlay statt Bootstrap-Modal
         $(document).on('click', '.issue-attachment-lightbox', function(e) {
             e.preventDefault();
             var url = $(this).attr('href');
             var type = $(this).data('type') || 'image';
             var title = $(this).attr('title') || '';
-            
-            var modalId = 'issue-tracker-lightbox-modal';
-            var $modal = $('#' + modalId);
-            
-            if ($modal.length === 0) {
-                // Modal erstellen
-                var modalHtml = 
-                    '<div class="modal fade" id="' + modalId + '" tabindex="-1" role="dialog" style="z-index: 1060;">' +
-                        '<div class="modal-dialog modal-lg" role="document" style="width: 90%; max-width: 1200px;">' +
-                            '<div class="modal-content" style="background-color: transparent; border: none; box-shadow: none;">' +
-                                '<div class="modal-header" style="border: none; padding: 10px;">' +
-                                    '<button type="button" class="close" data-dismiss="modal" style="color: #fff; opacity: 0.8; font-size: 30px; text-shadow: none;">&times;</button>' +
-                                    '<h4 class="modal-title" style="color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);"></h4>' +
-                                '</div>' +
-                                '<div class="modal-body" style="text-align: center; padding: 0;"></div>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>';
-                
-                $('body').append(modalHtml);
-                $modal = $('#' + modalId);
-                
-                // Video anhalten wenn Modal geschlossen wird
-                $modal.on('hidden.bs.modal', function() {
-                    $(this).find('.modal-body').empty();
-                });
-            }
-            
-            var content = '';
+
+            var overlayId = 'it-lightbox-overlay';
+            // Altes Overlay entfernen
+            $('#' + overlayId).remove();
+
+            var mediaHtml;
             if (type === 'video') {
-                content = '<div style="background: rgba(0,0,0,0.8); padding: 5px; border-radius: 4px; display: inline-block;">' +
-                          '<video controls autoplay style="max-width: 100%; max-height: 80vh; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">' + 
-                          '<source src="' + url + '">' + 
-                          'Ihr Browser unterstützt dieses Video-Format nicht.' + 
-                          '</video></div>';
+                mediaHtml = '<video controls autoplay style="max-width:90vw;max-height:80vh;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,0.6);">' +
+                            '<source src="' + url + '">Ihr Browser unterstützt dieses Video-Format nicht.</video>';
             } else {
-                content = '<img src="' + url + '" class="img-responsive" style="display: inline-block; max-height: 80vh; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-radius: 4px;">';
+                mediaHtml = '<img src="' + url + '" alt="" style="max-width:90vw;max-height:80vh;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,0.6);display:block;">';
             }
-            
-            $modal.find('.modal-title').text(title);
-            $modal.find('.modal-body').html(content);
-            $modal.modal('show');
+
+            var overlayHtml =
+                '<div id="' + overlayId + '" style="' +
+                    'position:fixed;top:0;left:0;width:100%;height:100%;' +
+                    'background:rgba(0,0,0,0.88);z-index:99999;' +
+                    'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
+                    'cursor:pointer;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);">' +
+                    '<button type="button" style="' +
+                        'position:absolute;top:16px;right:20px;background:none;border:none;' +
+                        'color:#fff;font-size:36px;line-height:1;cursor:pointer;opacity:0.8;z-index:2;' +
+                        'text-shadow:0 2px 6px rgba(0,0,0,0.5);">&times;</button>' +
+                    '<div style="cursor:default;">' + mediaHtml + '</div>' +
+                    (title ? '<p style="color:#ddd;font-size:13px;margin-top:12px;text-align:center;' +
+                        'max-width:80vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' +
+                        'text-shadow:0 1px 4px rgba(0,0,0,0.8);">' + $('<span>').text(title).html() + '</p>' : '') +
+                '</div>';
+
+            $('body').append(overlayHtml);
+            var $overlay = $('#' + overlayId);
+
+            // Schließen bei Klick auf Overlay-Hintergrund oder Close-Button
+            $overlay.on('click', function(ev) {
+                if ($(ev.target).closest('div > div').length === 0 || $(ev.target).is('button')) {
+                    $overlay.find('video').each(function() { this.pause(); });
+                    $overlay.fadeOut(180, function() { $(this).remove(); });
+                }
+            });
+
+            // Schließen per ESC
+            $(document).one('keydown.itlightbox', function(ev) {
+                if (ev.key === 'Escape') {
+                    $overlay.find('video').each(function() { this.pause(); });
+                    $overlay.fadeOut(180, function() { $(this).remove(); });
+                }
+            });
         });
 
         // EasyMDE Markdown Editor initialisieren
@@ -151,9 +156,10 @@
             };
 
             // Issue-Beschreibung
+            var descriptionEasyMDE = null;
             var descriptionField = document.getElementById('issue-description');
             if (descriptionField && !descriptionField.nextSibling?.classList?.contains('EasyMDEContainer')) {
-                new EasyMDE({
+                descriptionEasyMDE = new EasyMDE({
                     element: descriptionField,
                     spellChecker: false,
                     toolbar: [
@@ -169,12 +175,13 @@
             }
 
             // Kommentar-Felder (alle textareas mit name="comment")
+            var newCommentEasyMDE = null;
             var commentFields = document.querySelectorAll('textarea[name="comment"]');
             commentFields.forEach(function(commentField) {
                 // Nur sichtbare Felder initialisieren und nur wenn noch nicht geschehen
                 var isVisible = commentField.offsetParent !== null || commentField.id === 'new-comment-text';
                 if (isVisible && !commentField.nextSibling?.classList?.contains('EasyMDEContainer')) {
-                    new EasyMDE({
+                    var commentEditor = new EasyMDE({
                         element: commentField,
                         spellChecker: false,
                         toolbar: [
@@ -187,6 +194,9 @@
                         placeholder: "Kommentar schreiben...",
                         minHeight: "150px"
                     });
+                    if (commentField.id === 'new-comment-text') {
+                        newCommentEasyMDE = commentEditor;
+                    }
                 }
             });
         }
@@ -239,7 +249,7 @@
                             title: "REDAXO-Seite verlinken"
                         };
                         
-                        new EasyMDE({
+                        var replyEditor = new EasyMDE({
                             element: textarea,
                             spellChecker: false,
                             toolbar: [
@@ -252,18 +262,12 @@
                             placeholder: "Antwort schreiben...",
                             minHeight: "120px"
                         });
+                        if (window._itAttachMentionToEditor) {
+                            window._itAttachMentionToEditor(replyEditor);
+                        }
                     }
                 }
             }, 50);
-        });
-
-        // Bestätigungsdialog für gefährliche Aktionen
-        $('a[data-confirm]').on('click', function(e) {
-            var message = $(this).data('confirm');
-            if (!confirm(message)) {
-                e.preventDefault();
-                return false;
-            }
         });
 
         // Auto-save Draft (optional - für zukünftige Erweiterung)
@@ -284,6 +288,9 @@
                 $('.issue-tracker-form form').submit();
             }
         });
+
+        // @mention Autocomplete initialisieren
+        initMentionSupport(newCommentEasyMDE, descriptionEasyMDE);
     };
 
     // Initialisierung mit mehreren Events für maximale Kompatibilität
@@ -311,6 +318,157 @@
         }
     };
 
+    // =============================================================================
+    // @mention Autocomplete
+    // =============================================================================
+    function initMentionSupport(commentEditor, descriptionEditor) {
+        // Userdaten aus comment-area (view) oder form-area (create/edit) lesen
+        var area = document.getElementById('issue-tracker-comment-area') ||
+                   document.querySelector('[data-mention-users]');
+        if (!area) return;
+
+        var usersRaw = area.getAttribute('data-mention-users');
+        if (!usersRaw) return;
+
+        var users;
+        try { users = JSON.parse(usersRaw); } catch (e) { return; }
+        if (!users || !users.length) return;
+
+        // Dropdown-Element anlegen
+        var dropdown = document.createElement('ul');
+        dropdown.className = 'it-mention-dropdown';
+        dropdown.style.display = 'none';
+        document.body.appendChild(dropdown);
+
+        var activeIdx = 0;
+        var currentMatch = null;
+
+        function closeDropdown() {
+            dropdown.style.display = 'none';
+            dropdown.innerHTML = '';
+            currentMatch = null;
+        }
+
+        function getCmCoords(cm) {
+            var cursor = cm.getCursor();
+            var coords = cm.charCoords(cursor, 'window');
+            return {top: coords.bottom + window.scrollY, left: coords.left + window.scrollX};
+        }
+
+        function insertMention(cm, matchedText, login) {
+            var cursor = cm.getCursor();
+            var mentionStart = cursor.ch - matchedText.length;
+            cm.replaceRange('@' + login + ' ',
+                {line: cursor.line, ch: mentionStart},
+                {line: cursor.line, ch: cursor.ch}
+            );
+            cm.focus();
+        }
+
+        function attachMentionToCM(cm) {
+            if (!cm || cm._itMentionAttached) return;
+            cm._itMentionAttached = true;
+
+            cm.on('keyup', function(instance, e) {
+                var ignoredKeys = [13, 27, 38, 40, 9];
+                if (ignoredKeys.indexOf(e.keyCode) !== -1) return;
+
+                var cursor = cm.getCursor();
+                var lineText = cm.getLine(cursor.line).substring(0, cursor.ch);
+                var match = lineText.match(/@([\w\-\.]*)$/);
+
+                if (!match) { closeDropdown(); return; }
+
+                currentMatch = match;
+                var query = match[1].toLowerCase();
+                var filtered = users.filter(function(u) {
+                    return u.login.toLowerCase().indexOf(query) === 0
+                        || u.name.toLowerCase().indexOf(query) !== -1;
+                }).slice(0, 8);
+
+                if (!filtered.length) { closeDropdown(); return; }
+
+                dropdown.innerHTML = '';
+                activeIdx = 0;
+                filtered.forEach(function(u, i) {
+                    var li = document.createElement('li');
+                    li.textContent = u.login + ' (' + u.name + ')';
+                    if (i === 0) li.classList.add('active');
+                    li.setAttribute('data-login', u.login);
+                    dropdown.appendChild(li);
+                });
+
+                // Einzelner delegierter mousedown-Handler
+                dropdown.onmousedown = function(ev) {
+                    var li = ev.target.closest('li');
+                    if (!li) return;
+                    ev.preventDefault();
+                    var login = li.getAttribute('data-login');
+                    if (login && currentMatch) {
+                        insertMention(cm, currentMatch[0], login);
+                        closeDropdown();
+                    }
+                };
+
+                var pos = getCmCoords(cm);
+                dropdown.style.top = pos.top + 'px';
+                dropdown.style.left = pos.left + 'px';
+                dropdown.style.display = 'block';
+            });
+
+            cm.on('keydown', function(instance, e) {
+                if (dropdown.style.display === 'none') return;
+                var items = dropdown.querySelectorAll('li');
+                if (!items.length) return;
+
+                if (e.keyCode === 40) { // Pfeil runter
+                    e.preventDefault();
+                    items[activeIdx].classList.remove('active');
+                    activeIdx = (activeIdx + 1) % items.length;
+                    items[activeIdx].classList.add('active');
+                } else if (e.keyCode === 38) { // Pfeil hoch
+                    e.preventDefault();
+                    items[activeIdx].classList.remove('active');
+                    activeIdx = (activeIdx - 1 + items.length) % items.length;
+                    items[activeIdx].classList.add('active');
+                } else if (e.keyCode === 13 || e.keyCode === 9) { // Enter oder Tab
+                    var activeItem = items[activeIdx];
+                    if (activeItem && currentMatch) {
+                        e.preventDefault();
+                        var login = activeItem.getAttribute('data-login');
+                        if (login) {
+                            insertMention(cm, currentMatch[0], login);
+                            closeDropdown();
+                        }
+                    }
+                } else if (e.keyCode === 27) { // Esc
+                    closeDropdown();
+                }
+            });
+
+            cm.on('blur', function() {
+                setTimeout(closeDropdown, 200);
+            });
+        }
+
+        // Haupt-Kommentar-Editor direkt über EasyMDE-Instanz anhängen
+        if (commentEditor && commentEditor.codemirror) {
+            attachMentionToCM(commentEditor.codemirror);
+        }
+
+        // Beschreibungs-Editor bei neuen/zu bearbeitenden Issues
+        if (descriptionEditor && descriptionEditor.codemirror) {
+            attachMentionToCM(descriptionEditor.codemirror);
+        }
+
+        // Globale Funktion für dynamisch erstellte Editoren (Reply/Edit)
+        window._itAttachMentionToEditor = function(easyMDEInstance) {
+            if (easyMDEInstance && easyMDEInstance.codemirror) {
+                attachMentionToCM(easyMDEInstance.codemirror);
+            }
+        };
+    }
+
 })(jQuery);
 
 // =============================================================================
@@ -331,7 +489,7 @@ function toggleReplyForm(commentId) {
         var textarea = form.querySelector('textarea[name="comment"]');
         if (textarea && !textarea.nextSibling?.classList?.contains('EasyMDEContainer')) {
             if (typeof EasyMDE !== 'undefined') {
-                new EasyMDE({
+                var replyEasyMDE = new EasyMDE({
                     element: textarea,
                     spellChecker: false,
                     toolbar: ["bold", "italic", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "|", "preview", "guide"],
@@ -339,6 +497,9 @@ function toggleReplyForm(commentId) {
                     placeholder: "Antwort schreiben...",
                     minHeight: "120px"
                 });
+                if (window._itAttachMentionToEditor) {
+                    window._itAttachMentionToEditor(replyEasyMDE);
+                }
             }
         }
     } else {
@@ -363,7 +524,7 @@ function toggleEditForm(commentId) {
         var textarea = form.querySelector('textarea[name="comment_text"]');
         if (textarea && !textarea.nextSibling?.classList?.contains('EasyMDEContainer')) {
             if (typeof EasyMDE !== 'undefined') {
-                new EasyMDE({
+                var editEasyMDE = new EasyMDE({
                     element: textarea,
                     spellChecker: false,
                     toolbar: ["bold", "italic", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "|", "preview", "guide"],
@@ -371,6 +532,9 @@ function toggleEditForm(commentId) {
                     placeholder: "Kommentar bearbeiten...",
                     minHeight: "150px"
                 });
+                if (window._itAttachMentionToEditor) {
+                    window._itAttachMentionToEditor(editEasyMDE);
+                }
             }
         }
     } else {

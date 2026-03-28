@@ -56,8 +56,8 @@ if (rex_post('save_filter', 'int', 0) === 1) {
 }
 
 // Filter löschen
-if (rex_request('delete_filter', 'int', 0) > 0) {
-    $filterId = rex_request('delete_filter', 'int', 0);
+if (rex_post('delete_filter', 'int', 0) > 0) {
+    $filterId = rex_post('delete_filter', 'int', 0);
     \FriendsOfREDAXO\IssueTracker\SavedFilterService::delete($filterId, rex::getUser()->getId());
     echo rex_view::success($package->i18n('issue_tracker_filter_deleted'));
 }
@@ -86,6 +86,7 @@ $hasFilterParams = rex_request('filter_status', 'string', null) !== null
                 || rex_request('filter_tag', 'int', null) !== null
                 || rex_request('filter_created_by', 'int', null) !== null
                 || rex_request('filter_watched', 'int', null) !== null
+                || rex_request('filter_mentioned', 'int', null) !== null
                 || rex_request('search', 'string', null) !== null;
 
 if ($hasFilterParams) {
@@ -95,6 +96,7 @@ if ($hasFilterParams) {
     $filterTag = rex_request('filter_tag', 'int', 0);
     $filterCreatedBy = rex_request('filter_created_by', 'int', 0);
     $filterWatched = rex_request('filter_watched', 'int', 0);
+    $filterMentioned = rex_request('filter_mentioned', 'int', 0);
     $searchTerm = rex_request('search', 'string', '');
     
     rex_set_session($sessionKey, [
@@ -103,6 +105,7 @@ if ($hasFilterParams) {
         'filter_tag' => $filterTag,
         'filter_created_by' => $filterCreatedBy,
         'filter_watched' => $filterWatched,
+        'filter_mentioned' => $filterMentioned,
         'search' => $searchTerm,
     ]);
 } else {
@@ -113,6 +116,7 @@ if ($hasFilterParams) {
     $filterTag = $sessionFilter['filter_tag'] ?? 0;
     $filterCreatedBy = $sessionFilter['filter_created_by'] ?? 0;
     $filterWatched = $sessionFilter['filter_watched'] ?? 0;
+    $filterMentioned = $sessionFilter['filter_mentioned'] ?? 0;
     $searchTerm = $sessionFilter['search'] ?? '';
 }
 
@@ -191,6 +195,12 @@ if ($filterWatched === 1) {
     $joins .= ' INNER JOIN ' . rex::getTable('issue_tracker_watchers') . ' w ON i.id = w.issue_id AND w.user_id = ' . (int) rex::getUser()->getId();
 }
 
+// Filter: Nur Issues in denen der aktuelle User erwähnt wurde
+if ($filterMentioned === 1) {
+    $joins .= ' INNER JOIN ' . rex::getTable('issue_tracker_mentions') . ' im ON i.id = im.issue_id';
+    $where[] = 'im.mentioned_user_id = ' . (int) PermissionService::getUserId();
+}
+
 if ($searchTerm !== '') {
     $escapedTerm = $escapeSql->escape($searchTerm);
     // escape() fügt Anführungszeichen hinzu, für LIKE müssen wir sie entfernen
@@ -226,6 +236,7 @@ $fragment->setVar('filterCategory', $filterCategory);
 $fragment->setVar('filterTag', $filterTag);
 $fragment->setVar('filterCreatedBy', $filterCreatedBy);
 $fragment->setVar('filterWatched', $filterWatched);
+$fragment->setVar('filterMentioned', $filterMentioned);
 $fragment->setVar('searchTerm', $searchTerm);
 echo $fragment->parse('issue_tracker_filter.php');
 

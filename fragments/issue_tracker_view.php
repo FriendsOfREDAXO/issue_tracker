@@ -5,12 +5,21 @@
  * @var rex_fragment $this
  */
 
+use FriendsOfREDAXO\IssueTracker\ContentRenderer;
+use FriendsOfREDAXO\IssueTracker\PermissionService;
+
 $package = rex_addon::get('issue_tracker');
 
 $issue = $this->getVar('issue');
 $comments = $this->getVar('comments', []);
 $attachments = $this->getVar('attachments', []);
 $statuses = $this->getVar('statuses', []);
+$priorities = $this->getVar('priorities', []);
+$allUsers = $this->getVar('allUsers', []);
+$allTags = $this->getVar('allTags', []);
+$currentTags = $this->getVar('currentTags', []);
+$currentTagIds = $this->getVar('currentTagIds', []);
+$totalTimeMinutes = (int) $this->getVar('totalTimeMinutes', 0);
 
 if (!$issue) {
     throw new \RuntimeException('Issue object is required');
@@ -18,7 +27,7 @@ if (!$issue) {
 
 $createdBy = $issue->getCreator();
 $assignedUser = $issue->getAssignedUser();
-$tags = $issue->getTags();
+$tags = $currentTags ?: $issue->getTags();
 
 $statusClass = [
     'open' => 'danger',
@@ -79,7 +88,7 @@ $priorityClass = [
                     <i class="rex-icon fa-circle"></i> <?= rex_escape($statuses[$issue->getStatus()] ?? $issue->getStatus()) ?>
                 </span>
                 <span class="label label-<?= $priorityClass[$issue->getPriority()] ?? 'default' ?>" style="font-size: 13px; margin-left: 5px;">
-                    <i class="rex-icon fa-exclamation"></i> <?= rex_escape($issue->getPriority()) ?>
+                    <i class="rex-icon fa-exclamation"></i> <?= rex_escape($priorities[$issue->getPriority()] ?? $issue->getPriority()) ?>
                 </span>
                 <?php if (!empty($tags)): ?>
                     <?php foreach ($tags as $tag): ?>
@@ -94,8 +103,22 @@ $priorityClass = [
             <div class="row">
                 <div class="col-sm-9">
                     <!-- Beschreibung -->
-                    <div style="margin-bottom: 20px;">
-                        <?= rex_markdown::factory()->parse($issue->getDescription()) ?>
+                    <div style="margin-bottom: 20px;" id="description">
+                        <?php
+                        $clProgress = ContentRenderer::getChecklistProgress($issue->getDescription());
+                        if ($clProgress['total'] > 0):
+                        ?>
+                        <div style="margin-bottom: 8px;">
+                            <small class="text-muted">
+                                <i class="rex-icon fa-check-square-o"></i>
+                                <?= $clProgress['checked'] ?>/<?= $clProgress['total'] ?> <?= $package->i18n('issue_tracker_checklist_items') ?>
+                            </small>
+                            <div class="progress" style="height: 6px; margin: 4px 0 0; border-radius: 3px;">
+                                <div class="progress-bar progress-bar-success" style="width: <?= $clProgress['total'] > 0 ? round($clProgress['checked'] / $clProgress['total'] * 100) : 0 ?>%"></div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        <?= ContentRenderer::render($issue->getDescription(), $issue->getId()) ?>
                     </div>
 
                     <!-- Attachments -->
@@ -164,7 +187,7 @@ $priorityClass = [
                                     <?= rex_escape($statuses[$issue->getStatus()] ?? $issue->getStatus()) ?>
                                 </span>
                                 <span class="label label-<?= $priorityClass[$issue->getPriority()] ?? 'default' ?>" style="font-size: 13px; padding: 4px 10px;">
-                                    <?= rex_escape($issue->getPriority()) ?>
+                                    <?= rex_escape($priorities[$issue->getPriority()] ?? $issue->getPriority()) ?>
                                 </span>
                             </div>
                             <?php if ($issue->getDueDate()): ?>
@@ -179,16 +202,41 @@ $priorityClass = [
                             <?php endif; ?>
 
                             <?php 
-                            // Tags direkt unter Status/Priorität
-                            if (!empty($tags)): ?>
+                            // Tags mit Quick-Edit
+                            $canEditTags = $currentUser->isAdmin() || \FriendsOfREDAXO\IssueTracker\PermissionService::canEdit($issue);
+                            ?>
                             <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #eee;">
-                                <?php foreach ($tags as $tag): ?>
-                                    <span class="label" style="background-color: <?= rex_escape($tag->getColor()) ?>; margin: 1px; font-size: 11px;">
+                                <?php if (!empty($tags)): ?>
+                                    <?php foreach ($tags as $tag): ?>
+                                    <span class="label" style="background-color: <?= rex_escape($tag->getColor()) ?>; margin: 1px 2px 1px 0; font-size: 11px; white-space: nowrap;">
                                         <?= rex_escape($tag->getName()) ?>
+                                        <?php if ($canEditTags): ?>
+                                        <form method="post" style="display:inline; margin:0; padding:0;">
+                                            <input type="hidden" name="remove_tag" value="<?= $tag->getId() ?>" />
+                                            <button type="submit" style="background:none;border:none;padding:0 0 0 3px;color:inherit;opacity:.7;cursor:pointer;font-size:10px;" title="<?= $package->i18n('issue_tracker_tag_remove') ?>">&times;</button>
+                                        </form>
+                                        <?php endif; ?>
                                     </span>
-                                <?php endforeach; ?>
+                                    <?php endforeach; ?>
+                                <?php elseif (!$canEditTags): ?>
+                                    <span class="text-muted" style="font-size: 11px;">–</span>
+                                <?php endif; ?>
+
+                                <?php if ($canEditTags): ?>
+                                <?php
+                                $addableTags = array_filter($allTags, static fn($t) => !in_array($t->getId(), $currentTagIds, true));
+                                if (!empty($addableTags)): ?>
+                                <form method="post" style="display:inline-block; margin-top: 4px; vertical-align: middle;">
+                                    <select name="add_tag" onchange="this.form.submit()" class="it-tag-add-select" title="+ Tag">
+                                        <option value="">+ Tag</option>
+                                        <?php foreach ($addableTags as $aTag): ?>
+                                        <option value="<?= $aTag->getId() ?>"><?= rex_escape($aTag->getName()) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </form>
+                                <?php endif; ?>
+                                <?php endif; ?>
                             </div>
-                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -248,6 +296,16 @@ $priorityClass = [
                                 <tr>
                                     <td style="padding: 6px 12px; color: #888;"><?= $package->i18n('issue_tracker_closed') ?></td>
                                     <td style="padding: 6px 12px;"><?= $issue->getClosedAt()->format('d.m.Y H:i') ?></td>
+                                </tr>
+                                <?php endif; ?>
+                                <?php if ($totalTimeMinutes > 0): ?>
+                                <tr>
+                                    <td style="padding: 6px 12px; color: #888;"><i class="rex-icon fa-clock-o"></i> <?= $package->i18n('issue_tracker_time_spent') ?></td>
+                                    <td style="padding: 6px 12px;">
+                                        <span class="label label-primary" style="font-size: 12px;">
+                                            <?= rex_escape(ContentRenderer::formatMinutes($totalTimeMinutes)) ?>
+                                        </span>
+                                    </td>
                                 </tr>
                                 <?php endif; ?>
                                 <?php 
@@ -691,7 +749,7 @@ $priorityClass = [
                                 </form>
                             </div>
                             
-                            <div class="issue-tracker-comment-content" id="comment-content-<?= $comment->getId() ?>"><?= rex_markdown::factory()->parse($comment->getComment()) ?></div>
+                            <div class="issue-tracker-comment-content" id="comment-content-<?= $comment->getId() ?>"><?= ContentRenderer::render($comment->getComment(), $issue->getId(), $comment->getId()) ?></div>
                         
                             <?php if (!empty($commentAttachments)): ?>
                             <div class="row" style="margin-top: 10px;">
@@ -825,7 +883,7 @@ $priorityClass = [
                             </form>
                         </div>
                         
-                        <div class="issue-tracker-comment-content" id="comment-content-<?= $comment->getId() ?>"><?= rex_markdown::factory()->parse($comment->getComment()) ?></div>
+                        <div class="issue-tracker-comment-content" id="comment-content-<?= $comment->getId() ?>"><?= ContentRenderer::render($comment->getComment(), $issue->getId(), $comment->getId()) ?></div>
                         
                         <?php if (!empty($commentAttachments)): ?>
                         <div class="row" style="margin-top: 10px;">
@@ -904,7 +962,7 @@ $priorityClass = [
                                     <strong><?= $replyUser ? rex_escape($replyUser->getValue('name')) : 'Unknown' ?></strong>
                                     <small class="text-muted"> - <?= $reply->getCreatedAt() ? $reply->getCreatedAt()->format('d.m.Y H:i') : '-' ?></small>
                                 </div>
-                                <div style="margin-top: 8px;"><?= rex_markdown::factory()->parse($reply->getComment()) ?></div>
+                                <div style="margin-top: 8px;"><?= ContentRenderer::render($reply->getComment(), $issue->getId(), $reply->getId()) ?></div>
                                 
                                 <?php if (!empty($replyAttachments)): ?>
                                 <div class="row" style="margin-top: 10px;">
@@ -953,7 +1011,7 @@ $priorityClass = [
             <?php endif; ?>
 
             <!-- Neuer Kommentar -->
-            <div style="margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px;">
+            <div style="margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px;" id="issue-tracker-comment-area" data-mention-users="<?= rex_escape(json_encode(array_values($allUsers))) ?>">
                 <h5><?= $package->i18n('issue_tracker_add_comment') ?></h5>
                 <form method="post" enctype="multipart/form-data">
                     <input type="hidden" name="add_comment" value="1" />
@@ -964,10 +1022,21 @@ $priorityClass = [
                     <div class="form-group">
                         <label><?= $package->i18n('issue_tracker_attachments') ?></label>
                         <input type="file" name="comment_attachments[]" multiple 
-                               accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar" 
+                               accept="image/*,video/*,.pdf,.doc,.docx,.odt,.xls,.xlsx,.ods,.csv,.ppt,.pptx,.odp,.txt,.md,.zip,.rar" 
                                class="form-control">
                         <p class="help-block"><?= $package->i18n('issue_tracker_attachments_help') ?></p>
                     </div>
+                    <?php if (!\FriendsOfREDAXO\IssueTracker\PermissionService::canEdit($issue) || in_array($issue->getStatus(), ['closed', 'rejected'], true)): ?>
+                    <?php else: ?>
+                    <div class="checkbox" style="margin: 8px 0 12px;">
+                        <label style="font-weight: normal;">
+                            <input type="checkbox" name="close_and_comment" value="1">
+                            <i class="rex-icon fa-times-circle text-danger"></i>
+                            <?= $package->i18n('issue_tracker_close_and_comment') ?>
+                            <small class="text-muted"> – <?= $package->i18n('issue_tracker_close_and_comment_help') ?></small>
+                        </label>
+                    </div>
+                    <?php endif; ?>
                     <button type="submit" class="btn btn-primary">
                         <i class="rex-icon fa-comment"></i> <?= $package->i18n('issue_tracker_add_comment') ?>
                     </button>

@@ -128,6 +128,99 @@ class NotificationService
     }
 
     /**
+     * Sendet eine kombinierte E-Mail für Kommentar + Schließen eines Issues (GitHub-Stil).
+     *
+     * Statt zwei separater E-Mails (Kommentar + Status-Änderung) wird nur eine E-Mail gesendet.
+     */
+    public static function notifyCommentWithClose(Comment $comment, Issue $issue, string $oldStatus): void
+    {
+        if (!self::isEmailEnabled()) {
+            return;
+        }
+
+        // Alle beteiligten User mit comment-Berechtigung holen (Status-Änderung ist im gleichen Schritt)
+        $usersFromComment = self::getInvolvedUsers($issue, 'email_on_comment', $comment->getCreatedBy());
+        $usersFromStatus = self::getInvolvedUsers($issue, 'email_on_status_change', $comment->getCreatedBy());
+
+        // Vereinigung beider Listen (ohne Doppelungen)
+        $userMap = [];
+        foreach ($usersFromComment as $u) {
+            $userMap[$u->getId()] = $u;
+        }
+        foreach ($usersFromStatus as $u) {
+            $userMap[$u->getId()] = $u;
+        }
+
+        $creator = $comment->getCreator();
+        $token = self::createEmailToken($issue->getId());
+        $url = rex::getServer() . 'index.php?rex-api-call=issue_tracker_link&token=' . $token;
+
+        foreach ($userMap as $user) {
+            $body = sprintf(
+                "Hallo %s,\n\n%s hat Issue #%d \"%s\" kommentiert und gleichzeitig geschlossen.\n\nKommentar:\n%s\n\nStatus: %s → %s\n\nZum Issue:\n%s\n\n---\nDiese E-Mail wurde automatisch vom REDAXO Issue Tracker generiert.",
+                $user->getName(),
+                $creator ? $creator->getName() : 'Unbekannt',
+                $issue->getId(),
+                $issue->getTitle(),
+                $comment->getComment(),
+                $oldStatus,
+                $issue->getStatus(),
+                $url,
+            );
+
+            self::sendMail(
+                $user->getValue('email'),
+                'Geschlossen via Kommentar: Issue #' . $issue->getId() . ': ' . $issue->getTitle(),
+                $body,
+            );
+        }
+    }
+
+    /**
+     * Sendet eine E-Mail-Benachrichtigung wenn ein User per @mention erwähnt wird.
+     */
+    public static function notifyMentioned(Issue $issue, rex_user $mentionedUser, rex_user $mentioner, ?int $commentId = null): void
+    {
+        if (!self::isEmailEnabled()) {
+            return;
+        }
+
+        if (!$mentionedUser->getValue('email') || (int) $mentionedUser->getValue('status') !== 1) {
+            return;
+        }
+
+        // Nicht sich selbst benachrichtigen
+        if ($mentionedUser->getId() === $mentioner->getId()) {
+            return;
+        }
+
+        if (!self::hasNotificationEnabled($mentionedUser->getId(), 'email_on_mention')) {
+            return;
+        }
+
+        $token = self::createEmailToken($issue->getId());
+        $url = rex::getServer() . 'index.php?rex-api-call=issue_tracker_link&token=' . $token;
+
+        $context = $commentId !== null ? 'einem Kommentar' : 'der Beschreibung';
+
+        $body = sprintf(
+            "Hallo %s,\n\n%s hat Sie in %s zu Issue #%d \"%s\" erwähnt.\n\nZum Issue:\n%s\n\n---\nDiese E-Mail wurde automatisch vom REDAXO Issue Tracker generiert.",
+            $mentionedUser->getName(),
+            $mentioner->getName(),
+            $context,
+            $issue->getId(),
+            $issue->getTitle(),
+            $url,
+        );
+
+        self::sendMail(
+            $mentionedUser->getValue('email'),
+            $mentioner->getName() . ' hat Sie in Issue #' . $issue->getId() . ' erwähnt',
+            $body,
+        );
+    }
+
+    /**
      * Sendet E-Mail-Benachrichtigung wenn Issue als Duplikat markiert wurde.
      */
     public static function sendDuplicateMarked(Issue $duplicate, Issue $original): void
@@ -324,7 +417,7 @@ class NotificationService
      */
     private static function hasNotificationEnabled(int $userId, string $notificationType): bool
     {
-        $allowedTypes = ['email_on_new', 'email_on_comment', 'email_on_status_change', 'email_on_assignment', 'email_on_message'];
+        $allowedTypes = ['email_on_new', 'email_on_comment', 'email_on_status_change', 'email_on_assignment', 'email_on_message', 'email_on_mention'];
         if (!in_array($notificationType, $allowedTypes, true)) {
             return false;
         }
@@ -516,7 +609,7 @@ class NotificationService
      */
     private static function getUsersForNotification(string $notificationType): array
     {
-        $allowedTypes = ['email_on_new', 'email_on_comment', 'email_on_status_change', 'email_on_assignment', 'email_on_message'];
+        $allowedTypes = ['email_on_new', 'email_on_comment', 'email_on_status_change', 'email_on_assignment', 'email_on_message', 'email_on_mention'];
         if (!in_array($notificationType, $allowedTypes, true)) {
             return [];
         }
