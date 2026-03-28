@@ -43,54 +43,59 @@
             // $(this).closest('form').submit();
         });
 
-        // Lightbox Handler
+        // Lightbox Handler – eigenes Overlay statt Bootstrap-Modal
         $(document).on('click', '.issue-attachment-lightbox', function(e) {
             e.preventDefault();
             var url = $(this).attr('href');
             var type = $(this).data('type') || 'image';
             var title = $(this).attr('title') || '';
-            
-            var modalId = 'issue-tracker-lightbox-modal';
-            var $modal = $('#' + modalId);
-            
-            if ($modal.length === 0) {
-                // Modal erstellen
-                var modalHtml = 
-                    '<div class="modal fade" id="' + modalId + '" tabindex="-1" role="dialog" style="z-index: 1060;">' +
-                        '<div class="modal-dialog modal-lg" role="document" style="width: 90%; max-width: 1200px;">' +
-                            '<div class="modal-content" style="background-color: transparent; border: none; box-shadow: none;">' +
-                                '<div class="modal-header" style="border: none; padding: 10px;">' +
-                                    '<button type="button" class="close" data-dismiss="modal" style="color: #fff; opacity: 0.8; font-size: 30px; text-shadow: none;">&times;</button>' +
-                                    '<h4 class="modal-title" style="color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);"></h4>' +
-                                '</div>' +
-                                '<div class="modal-body" style="text-align: center; padding: 0;"></div>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>';
-                
-                $('body').append(modalHtml);
-                $modal = $('#' + modalId);
-                
-                // Video anhalten wenn Modal geschlossen wird
-                $modal.on('hidden.bs.modal', function() {
-                    $(this).find('.modal-body').empty();
-                });
-            }
-            
-            var content = '';
+
+            var overlayId = 'it-lightbox-overlay';
+            // Altes Overlay entfernen
+            $('#' + overlayId).remove();
+
+            var mediaHtml;
             if (type === 'video') {
-                content = '<div style="background: rgba(0,0,0,0.8); padding: 5px; border-radius: 4px; display: inline-block;">' +
-                          '<video controls autoplay style="max-width: 100%; max-height: 80vh; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">' + 
-                          '<source src="' + url + '">' + 
-                          'Ihr Browser unterstützt dieses Video-Format nicht.' + 
-                          '</video></div>';
+                mediaHtml = '<video controls autoplay style="max-width:90vw;max-height:80vh;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,0.6);">' +
+                            '<source src="' + url + '">Ihr Browser unterstützt dieses Video-Format nicht.</video>';
             } else {
-                content = '<img src="' + url + '" class="img-responsive" style="display: inline-block; max-height: 80vh; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-radius: 4px;">';
+                mediaHtml = '<img src="' + url + '" alt="" style="max-width:90vw;max-height:80vh;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,0.6);display:block;">';
             }
-            
-            $modal.find('.modal-title').text(title);
-            $modal.find('.modal-body').html(content);
-            $modal.modal('show');
+
+            var overlayHtml =
+                '<div id="' + overlayId + '" style="' +
+                    'position:fixed;top:0;left:0;width:100%;height:100%;' +
+                    'background:rgba(0,0,0,0.88);z-index:99999;' +
+                    'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
+                    'cursor:pointer;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);">' +
+                    '<button type="button" style="' +
+                        'position:absolute;top:16px;right:20px;background:none;border:none;' +
+                        'color:#fff;font-size:36px;line-height:1;cursor:pointer;opacity:0.8;z-index:2;' +
+                        'text-shadow:0 2px 6px rgba(0,0,0,0.5);">&times;</button>' +
+                    '<div style="cursor:default;">' + mediaHtml + '</div>' +
+                    (title ? '<p style="color:#ddd;font-size:13px;margin-top:12px;text-align:center;' +
+                        'max-width:80vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' +
+                        'text-shadow:0 1px 4px rgba(0,0,0,0.8);">' + $('<span>').text(title).html() + '</p>' : '') +
+                '</div>';
+
+            $('body').append(overlayHtml);
+            var $overlay = $('#' + overlayId);
+
+            // Schließen bei Klick auf Overlay-Hintergrund oder Close-Button
+            $overlay.on('click', function(ev) {
+                if ($(ev.target).closest('div > div').length === 0 || $(ev.target).is('button')) {
+                    $overlay.find('video').each(function() { this.pause(); });
+                    $overlay.fadeOut(180, function() { $(this).remove(); });
+                }
+            });
+
+            // Schließen per ESC
+            $(document).one('keydown.itlightbox', function(ev) {
+                if (ev.key === 'Escape') {
+                    $overlay.find('video').each(function() { this.pause(); });
+                    $overlay.fadeOut(180, function() { $(this).remove(); });
+                }
+            });
         });
 
         // EasyMDE Markdown Editor initialisieren

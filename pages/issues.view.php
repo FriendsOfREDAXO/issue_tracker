@@ -251,6 +251,16 @@ if (rex_post('add_comment', 'int', 0) === 1) {
                     if ($_FILES['comment_attachments']['error'][$i] === UPLOAD_ERR_OK) {
                         // Eindeutigen Dateinamen generieren
                         $extension = strtolower(pathinfo($_FILES['comment_attachments']['name'][$i], PATHINFO_EXTENSION));
+                        $allowedExtensions = ['jpg','jpeg','png','gif','webp','svg','bmp','tiff','ico',
+                            'mp4','mov','avi','mkv','webm','ogg',
+                            'pdf','doc','docx','odt','rtf',
+                            'xls','xlsx','ods','csv',
+                            'ppt','pptx','odp',
+                            'txt','md','json','xml','html','htm','log',
+                            'zip','rar','7z','tar','gz'];
+                        if (!in_array($extension, $allowedExtensions, true)) {
+                            continue;
+                        }
                         $uniqueFilename = uniqid('comment_', true) . '.' . $extension;
                         
                         // Upload-Verzeichnis

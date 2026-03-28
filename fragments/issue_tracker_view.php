@@ -1022,7 +1022,7 @@ $priorityClass = [
                     <div class="form-group">
                         <label><?= $package->i18n('issue_tracker_attachments') ?></label>
                         <input type="file" name="comment_attachments[]" multiple 
-                               accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar" 
+                               accept="image/*,video/*,.pdf,.doc,.docx,.odt,.xls,.xlsx,.ods,.csv,.ppt,.pptx,.odp,.txt,.md,.zip,.rar" 
                                class="form-control">
                         <p class="help-block"><?= $package->i18n('issue_tracker_attachments_help') ?></p>
                     </div>

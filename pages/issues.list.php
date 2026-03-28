@@ -117,7 +117,6 @@ if ($hasFilterParams) {
     $filterCreatedBy = $sessionFilter['filter_created_by'] ?? 0;
     $filterWatched = $sessionFilter['filter_watched'] ?? 0;
     $filterMentioned = $sessionFilter['filter_mentioned'] ?? 0;
->>>>>>> a6c524c ([1.7.0])
     $searchTerm = $sessionFilter['search'] ?? '';
 }
 

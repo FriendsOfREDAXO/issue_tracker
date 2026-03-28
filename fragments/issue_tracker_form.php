@@ -256,7 +256,7 @@ $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
                         id="issue-attachments" 
                         name="attachments[]" 
                         multiple 
-                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.md,.zip"
+                        accept="image/*,video/*,.pdf,.doc,.docx,.odt,.xls,.xlsx,.ods,.csv,.ppt,.pptx,.odp,.txt,.md,.zip,.rar"
                         class="form-control"
                     >
                     <p class="help-block"><?= $package->i18n('issue_tracker_attachments_help') ?></p>
