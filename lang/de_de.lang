@@ -545,16 +545,6 @@ issue_tracker_details = Details
 issue_tracker_actions = Aktionen
 issue_tracker_related_help_text = Dieses Issue wird mit dem ausgewählten Issue verknüpft und geschlossen.
 
-# Kanban Board
-issue_tracker_view_list = Liste
-issue_tracker_view_board = Board
-issue_tracker_board_not_logged_in = Nicht eingeloggt
-issue_tracker_board_invalid_params = Ungültige Parameter
-issue_tracker_board_issue_not_found = Issue nicht gefunden
-issue_tracker_board_issue_wrong_project = Issue gehört nicht zu diesem Projekt
-issue_tracker_board_no_permission = Keine Berechtigung
-issue_tracker_board_position_saved = Position gespeichert
-
 # Mentions & Tags
 issue_tracker_close_and_comment = Schließen & kommentieren
 issue_tracker_close_and_comment_help = Issue gleichzeitig schließen (wie bei GitHub)
@@ -564,7 +554,6 @@ issue_tracker_my_mentions = Meine Erwähnungen
 issue_tracker_mentioned_you_in = hat dich erwähnt in
 issue_tracker_mark_read = Als gelesen markieren
 issue_tracker_mark_all_read = Alle als gelesen markieren
-issue_tracker_board_save_error = Fehler beim Speichern
 
 # Checklisten, Zeiterfassung, Issue-Referenzen
 issue_tracker_checklist_items = Aufgaben erledigt

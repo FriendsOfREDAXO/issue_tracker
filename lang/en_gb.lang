@@ -543,16 +543,6 @@ issue_tracker_details = Details
 issue_tracker_actions = Actions
 issue_tracker_related_help_text = This issue will be linked to the selected issue and closed.
 
-# Kanban Board
-issue_tracker_view_list = List
-issue_tracker_view_board = Board
-issue_tracker_board_not_logged_in = Not logged in
-issue_tracker_board_invalid_params = Invalid parameters
-issue_tracker_board_issue_not_found = Issue not found
-issue_tracker_board_issue_wrong_project = Issue does not belong to this project
-issue_tracker_board_no_permission = No permission
-issue_tracker_board_position_saved = Position saved
-
 # Mentions & Tags
 issue_tracker_close_and_comment = Close & comment
 issue_tracker_close_and_comment_help = Close the issue at the same time (like GitHub)
@@ -562,7 +552,6 @@ issue_tracker_my_mentions = My mentions
 issue_tracker_mentioned_you_in = mentioned you in
 issue_tracker_mark_read = Mark as read
 issue_tracker_mark_all_read = Mark all as read
-issue_tracker_board_save_error = Error saving
 
 # Checklists, Time Tracking, Issue References
 issue_tracker_checklist_items = tasks done
