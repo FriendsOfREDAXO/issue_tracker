@@ -240,14 +240,16 @@ $allTags = Tag::getAll();
 // Verfügbare User (alle aktiven Benutzer)
 $userSql = rex_sql::factory();
 $userSql->setQuery('
-    SELECT id, name 
+    SELECT id, name, login
     FROM ' . rex::getTable('user') . ' 
     WHERE status = 1
     ORDER BY name
 ');
 $users = [];
+$mentionUsers = [];
 foreach ($userSql as $row) {
     $users[(int) $row->getValue('id')] = $row->getValue('name');
+    $mentionUsers[] = ['login' => (string) $row->getValue('login'), 'name' => (string) $row->getValue('name')];
 }
 
 // Verfügbare Add
@@ -280,6 +282,7 @@ $fragment->setVar('statuses', $statuses);
 $fragment->setVar('priorities', $priorities);
 $fragment->setVar('allTags', $allTags);
 $fragment->setVar('users', $users);
+$fragment->setVar('mentionUsers', $mentionUsers);
 $fragment->setVar('addons', $addons);
 $fragment->setVar('projects', $projects);
 echo $fragment->parse('issue_tracker_form.php');

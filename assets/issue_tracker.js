@@ -151,9 +151,10 @@
             };
 
             // Issue-Beschreibung
+            var descriptionEasyMDE = null;
             var descriptionField = document.getElementById('issue-description');
             if (descriptionField && !descriptionField.nextSibling?.classList?.contains('EasyMDEContainer')) {
-                new EasyMDE({
+                descriptionEasyMDE = new EasyMDE({
                     element: descriptionField,
                     spellChecker: false,
                     toolbar: [
@@ -169,12 +170,13 @@
             }
 
             // Kommentar-Felder (alle textareas mit name="comment")
+            var newCommentEasyMDE = null;
             var commentFields = document.querySelectorAll('textarea[name="comment"]');
             commentFields.forEach(function(commentField) {
                 // Nur sichtbare Felder initialisieren und nur wenn noch nicht geschehen
                 var isVisible = commentField.offsetParent !== null || commentField.id === 'new-comment-text';
                 if (isVisible && !commentField.nextSibling?.classList?.contains('EasyMDEContainer')) {
-                    new EasyMDE({
+                    var commentEditor = new EasyMDE({
                         element: commentField,
                         spellChecker: false,
                         toolbar: [
@@ -187,6 +189,9 @@
                         placeholder: "Kommentar schreiben...",
                         minHeight: "150px"
                     });
+                    if (commentField.id === 'new-comment-text') {
+                        newCommentEasyMDE = commentEditor;
+                    }
                 }
             });
         }
@@ -239,7 +244,7 @@
                             title: "REDAXO-Seite verlinken"
                         };
                         
-                        new EasyMDE({
+                        var replyEditor = new EasyMDE({
                             element: textarea,
                             spellChecker: false,
                             toolbar: [
@@ -252,6 +257,9 @@
                             placeholder: "Antwort schreiben...",
                             minHeight: "120px"
                         });
+                        if (window._itAttachMentionToEditor) {
+                            window._itAttachMentionToEditor(replyEditor);
+                        }
                     }
                 }
             }, 50);
@@ -275,6 +283,9 @@
                 $('.issue-tracker-form form').submit();
             }
         });
+
+        // @mention Autocomplete initialisieren
+        initMentionSupport(newCommentEasyMDE, descriptionEasyMDE);
     };
 
     // Initialisierung mit mehreren Events für maximale Kompatibilität
@@ -302,6 +313,157 @@
         }
     };
 
+    // =============================================================================
+    // @mention Autocomplete
+    // =============================================================================
+    function initMentionSupport(commentEditor, descriptionEditor) {
+        // Userdaten aus comment-area (view) oder form-area (create/edit) lesen
+        var area = document.getElementById('issue-tracker-comment-area') ||
+                   document.querySelector('[data-mention-users]');
+        if (!area) return;
+
+        var usersRaw = area.getAttribute('data-mention-users');
+        if (!usersRaw) return;
+
+        var users;
+        try { users = JSON.parse(usersRaw); } catch (e) { return; }
+        if (!users || !users.length) return;
+
+        // Dropdown-Element anlegen
+        var dropdown = document.createElement('ul');
+        dropdown.className = 'it-mention-dropdown';
+        dropdown.style.display = 'none';
+        document.body.appendChild(dropdown);
+
+        var activeIdx = 0;
+        var currentMatch = null;
+
+        function closeDropdown() {
+            dropdown.style.display = 'none';
+            dropdown.innerHTML = '';
+            currentMatch = null;
+        }
+
+        function getCmCoords(cm) {
+            var cursor = cm.getCursor();
+            var coords = cm.charCoords(cursor, 'window');
+            return {top: coords.bottom + window.scrollY, left: coords.left + window.scrollX};
+        }
+
+        function insertMention(cm, matchedText, login) {
+            var cursor = cm.getCursor();
+            var mentionStart = cursor.ch - matchedText.length;
+            cm.replaceRange('@' + login + ' ',
+                {line: cursor.line, ch: mentionStart},
+                {line: cursor.line, ch: cursor.ch}
+            );
+            cm.focus();
+        }
+
+        function attachMentionToCM(cm) {
+            if (!cm || cm._itMentionAttached) return;
+            cm._itMentionAttached = true;
+
+            cm.on('keyup', function(instance, e) {
+                var ignoredKeys = [13, 27, 38, 40, 9];
+                if (ignoredKeys.indexOf(e.keyCode) !== -1) return;
+
+                var cursor = cm.getCursor();
+                var lineText = cm.getLine(cursor.line).substring(0, cursor.ch);
+                var match = lineText.match(/@([\w\-\.]*)$/);
+
+                if (!match) { closeDropdown(); return; }
+
+                currentMatch = match;
+                var query = match[1].toLowerCase();
+                var filtered = users.filter(function(u) {
+                    return u.login.toLowerCase().indexOf(query) === 0
+                        || u.name.toLowerCase().indexOf(query) !== -1;
+                }).slice(0, 8);
+
+                if (!filtered.length) { closeDropdown(); return; }
+
+                dropdown.innerHTML = '';
+                activeIdx = 0;
+                filtered.forEach(function(u, i) {
+                    var li = document.createElement('li');
+                    li.textContent = u.login + ' (' + u.name + ')';
+                    if (i === 0) li.classList.add('active');
+                    li.setAttribute('data-login', u.login);
+                    dropdown.appendChild(li);
+                });
+
+                // Einzelner delegierter mousedown-Handler
+                dropdown.onmousedown = function(ev) {
+                    var li = ev.target.closest('li');
+                    if (!li) return;
+                    ev.preventDefault();
+                    var login = li.getAttribute('data-login');
+                    if (login && currentMatch) {
+                        insertMention(cm, currentMatch[0], login);
+                        closeDropdown();
+                    }
+                };
+
+                var pos = getCmCoords(cm);
+                dropdown.style.top = pos.top + 'px';
+                dropdown.style.left = pos.left + 'px';
+                dropdown.style.display = 'block';
+            });
+
+            cm.on('keydown', function(instance, e) {
+                if (dropdown.style.display === 'none') return;
+                var items = dropdown.querySelectorAll('li');
+                if (!items.length) return;
+
+                if (e.keyCode === 40) { // Pfeil runter
+                    e.preventDefault();
+                    items[activeIdx].classList.remove('active');
+                    activeIdx = (activeIdx + 1) % items.length;
+                    items[activeIdx].classList.add('active');
+                } else if (e.keyCode === 38) { // Pfeil hoch
+                    e.preventDefault();
+                    items[activeIdx].classList.remove('active');
+                    activeIdx = (activeIdx - 1 + items.length) % items.length;
+                    items[activeIdx].classList.add('active');
+                } else if (e.keyCode === 13 || e.keyCode === 9) { // Enter oder Tab
+                    var activeItem = items[activeIdx];
+                    if (activeItem && currentMatch) {
+                        e.preventDefault();
+                        var login = activeItem.getAttribute('data-login');
+                        if (login) {
+                            insertMention(cm, currentMatch[0], login);
+                            closeDropdown();
+                        }
+                    }
+                } else if (e.keyCode === 27) { // Esc
+                    closeDropdown();
+                }
+            });
+
+            cm.on('blur', function() {
+                setTimeout(closeDropdown, 200);
+            });
+        }
+
+        // Haupt-Kommentar-Editor direkt über EasyMDE-Instanz anhängen
+        if (commentEditor && commentEditor.codemirror) {
+            attachMentionToCM(commentEditor.codemirror);
+        }
+
+        // Beschreibungs-Editor bei neuen/zu bearbeitenden Issues
+        if (descriptionEditor && descriptionEditor.codemirror) {
+            attachMentionToCM(descriptionEditor.codemirror);
+        }
+
+        // Globale Funktion für dynamisch erstellte Editoren (Reply/Edit)
+        window._itAttachMentionToEditor = function(easyMDEInstance) {
+            if (easyMDEInstance && easyMDEInstance.codemirror) {
+                attachMentionToCM(easyMDEInstance.codemirror);
+            }
+        };
+    }
+
 })(jQuery);
 
 // =============================================================================
@@ -322,7 +484,7 @@ function toggleReplyForm(commentId) {
         var textarea = form.querySelector('textarea[name="comment"]');
         if (textarea && !textarea.nextSibling?.classList?.contains('EasyMDEContainer')) {
             if (typeof EasyMDE !== 'undefined') {
-                new EasyMDE({
+                var replyEasyMDE = new EasyMDE({
                     element: textarea,
                     spellChecker: false,
                     toolbar: ["bold", "italic", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "|", "preview", "guide"],
@@ -330,6 +492,9 @@ function toggleReplyForm(commentId) {
                     placeholder: "Antwort schreiben...",
                     minHeight: "120px"
                 });
+                if (window._itAttachMentionToEditor) {
+                    window._itAttachMentionToEditor(replyEasyMDE);
+                }
             }
         }
     } else {
@@ -354,7 +519,7 @@ function toggleEditForm(commentId) {
         var textarea = form.querySelector('textarea[name="comment_text"]');
         if (textarea && !textarea.nextSibling?.classList?.contains('EasyMDEContainer')) {
             if (typeof EasyMDE !== 'undefined') {
-                new EasyMDE({
+                var editEasyMDE = new EasyMDE({
                     element: textarea,
                     spellChecker: false,
                     toolbar: ["bold", "italic", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "|", "preview", "guide"],
@@ -362,6 +527,9 @@ function toggleEditForm(commentId) {
                     placeholder: "Kommentar bearbeiten...",
                     minHeight: "150px"
                 });
+                if (window._itAttachMentionToEditor) {
+                    window._itAttachMentionToEditor(editEasyMDE);
+                }
             }
         }
     } else {

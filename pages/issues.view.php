@@ -12,6 +12,8 @@ use FriendsOfREDAXO\IssueTracker\Attachment;
 use FriendsOfREDAXO\IssueTracker\NotificationService;
 use FriendsOfREDAXO\IssueTracker\HistoryService;
 use FriendsOfREDAXO\IssueTracker\PermissionService;
+use FriendsOfREDAXO\IssueTracker\Tag;
+use FriendsOfREDAXO\IssueTracker\ContentRenderer;
 
 $package = rex_addon::get('issue_tracker');
 
@@ -33,6 +35,37 @@ if (!$issue) {
 if (!PermissionService::canView($issue)) {
     echo rex_view::error($package->i18n('issue_tracker_no_permission'));
     return;
+}
+
+// Checklisten-Item umschalten (interaktive Checklisten)
+if (rex_post('toggle_checklist', 'int', 0) === 1) {
+    $clSource = rex_post('cl_source', 'string', '');
+    $clIndex  = rex_post('cl_index', 'int', -1);
+
+    if ($clIndex >= 0 && $clSource !== '') {
+        if ($clSource === 'description' && PermissionService::canEdit($issue)) {
+            $toggled = ContentRenderer::toggleChecklistItem($issue->getDescription(), $clIndex);
+            $issue->setDescription($toggled);
+            $issue->save();
+        } elseif (str_starts_with($clSource, 'comment_')) {
+            $commentId = (int) substr($clSource, 8);
+            $clComment = Comment::get($commentId);
+            if (
+                $clComment !== null
+                && $clComment->getIssueId() === $issue->getId()
+                && (rex::getUser()->isAdmin() || $clComment->getCreatedBy() === PermissionService::getUserId())
+            ) {
+                $toggled = ContentRenderer::toggleChecklistItem($clComment->getComment(), $clIndex);
+                $clComment->setComment($toggled);
+                $clComment->save();
+            }
+        }
+    }
+
+    $redirectUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]);
+    $redirectUrl = html_entity_decode($redirectUrl, ENT_QUOTES, 'UTF-8');
+    header('Location: ' . $redirectUrl . '#' . ($clSource === 'description' ? 'description' : 'comment-' . substr($clSource, 8)));
+    exit;
 }
 
 // Als verwandtes Issue markieren
@@ -178,10 +211,25 @@ if (rex_post('toggle_solution', 'int', 0) > 0) {
     }
 }
 
+// Tag hinzufügen
+if (rex_post('add_tag', 'int', 0) > 0 && PermissionService::canEdit($issue)) {
+    $tagId = rex_post('add_tag', 'int', 0);
+    $issue->addTag($tagId);
+    $issue = Issue::get($issueId);
+}
+
+// Tag entfernen
+if (rex_post('remove_tag', 'int', 0) > 0 && PermissionService::canEdit($issue)) {
+    $tagId = rex_post('remove_tag', 'int', 0);
+    $issue->removeTag($tagId);
+    $issue = Issue::get($issueId);
+}
+
 // Kommentar hinzufügen
 if (rex_post('add_comment', 'int', 0) === 1) {
     $commentText = rex_post('comment', 'string', '');
     $parentCommentId = rex_post('parent_comment_id', 'int', 0);
+    $closeAndComment = rex_post('close_and_comment', 'int', 0) === 1;
     
     if ($commentText !== '') {
         $comment = new Comment();
@@ -238,8 +286,100 @@ if (rex_post('add_comment', 'int', 0) === 1) {
                 null
             );
             
-            // Benachrichtigung senden
-            NotificationService::notifyNewComment($comment, $issue);
+            // @Mentions aus Kommentar extrahieren und speichern
+            if (preg_match_all('/@([\w\-\.]+)/', $commentText, $mentionMatches)) {
+                $mentionedLogins = array_unique($mentionMatches[1]);
+                $mentioner = rex::getUser();
+                foreach ($mentionedLogins as $login) {
+                    $mentionedUserSql = rex_sql::factory();
+                    $mentionedUserSql->setQuery(
+                        'SELECT id FROM ' . rex::getTable('user') . ' WHERE login = ? AND status = 1',
+                        [$login]
+                    );
+                    if ($mentionedUserSql->getRows() > 0) {
+                        $mentionedUserId = (int) $mentionedUserSql->getValue('id');
+                        // Mention speichern
+                        $mentionSql = rex_sql::factory();
+                        $mentionSql->setTable(rex::getTable('issue_tracker_mentions'));
+                        $mentionSql->setValue('issue_id', $issue->getId());
+                        $mentionSql->setValue('comment_id', $comment->getId());
+                        $mentionSql->setValue('mentioned_user_id', $mentionedUserId);
+                        $mentionSql->setValue('created_by', PermissionService::getUserId());
+                        $mentionSql->setValue('created_at', date('Y-m-d H:i:s'));
+                        $mentionSql->insert();
+                        // E-Mail-Benachrichtigung
+                        $mentionedUser = rex_user::get($mentionedUserId);
+                        if ($mentionedUser && $mentioner) {
+                            NotificationService::notifyMentioned($issue, $mentionedUser, $mentioner, $comment->getId());
+                        }
+                    }
+                }
+            }
+
+            // /spent Zeiterfassung aus Kommentar extrahieren
+            $spentMinutes = ContentRenderer::extractSpentMinutes($commentText);
+            if ($spentMinutes > 0) {
+                $timeSql = rex_sql::factory();
+                $timeSql->setTable(rex::getTable('issue_tracker_time_entries'));
+                $timeSql->setValue('issue_id', $issue->getId());
+                $timeSql->setValue('comment_id', $comment->getId());
+                $timeSql->setValue('user_id', PermissionService::getUserId());
+                $timeSql->setValue('minutes', $spentMinutes);
+                $note = ContentRenderer::stripSpentCommand($commentText);
+                $timeSql->setValue('note', substr($note, 0, 255));
+                $timeSql->setValue('created_at', date('Y-m-d H:i:s'));
+                $timeSql->insert();
+                HistoryService::add(
+                    $issue->getId(),
+                    PermissionService::getUserId(),
+                    'time_logged',
+                    'time',
+                    null,
+                    ContentRenderer::formatMinutes($spentMinutes)
+                );
+            }
+
+            // #Issue-Referenzen aus Kommentar extrahieren und History-Eintrag erstellen
+            if (preg_match_all('/#(\d+)/', $commentText, $refMatches)) {
+                $refIds = array_unique($refMatches[1]);
+                foreach ($refIds as $refIdStr) {
+                    $refId = (int) $refIdStr;
+                    if ($refId === $issue->getId() || $refId <= 0) {
+                        continue;
+                    }
+                    $refIssue = Issue::get($refId);
+                    if ($refIssue !== null) {
+                        HistoryService::add(
+                            $refId,
+                            PermissionService::getUserId(),
+                            'referenced',
+                            'reference',
+                            null,
+                            '#' . $issue->getId()
+                        );
+                    }
+                }
+            }
+
+            // Schließen via Kommentar (GitHub-Stil)
+            if ($closeAndComment && PermissionService::canEdit($issue) && !in_array($issue->getStatus(), ['closed', 'rejected'], true)) {
+                $oldStatus = $issue->getStatus();
+                $issue->setStatus('closed');
+                $issue->save();
+                HistoryService::add(
+                    $issue->getId(),
+                    PermissionService::getUserId(),
+                    'updated',
+                    'status',
+                    $oldStatus,
+                    'closed'
+                );
+                // Kombinierte Benachrichtigung (1 E-Mail statt 2)
+                NotificationService::notifyCommentWithClose($comment, $issue, $oldStatus);
+            } else {
+                // Normale Kommentar-Benachrichtigung
+                NotificationService::notifyNewComment($comment, $issue);
+            }
             
             // Redirect zur aktuellen Seite mit Anker zum neuen Kommentar
             $redirectUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]);
@@ -357,6 +497,10 @@ $settingsSql = rex_sql::factory();
 $settingsSql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "statuses"');
 $statuses = $settingsSql->getRows() > 0 ? json_decode($settingsSql->getValue('setting_value'), true) : [];
 
+$prioritiesSql = rex_sql::factory();
+$prioritiesSql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "priorities"');
+$priorities = $prioritiesSql->getRows() > 0 ? json_decode($prioritiesSql->getValue('setting_value'), true) : [];
+
 // Kommentare laden
 $comments = Comment::getByIssue($issue->getId());
 
@@ -398,18 +542,38 @@ $availableWatcherUsers = [];
 $canManageWatchers = rex::getUser()->isAdmin()
     || rex::getUser()->hasPerm('issue_tracker[issue_manager]')
     || $issue->getCreatedBy() === $currentUserId;
-if ($canManageWatchers) {
-    $allUsersSql = rex_sql::factory();
-    $allUsersSql->setQuery('SELECT id FROM ' . rex::getTable('user') . ' WHERE status = 1');
-    foreach ($allUsersSql as $row) {
-        $uid = (int) $row->getValue('id');
-        $u = rex_user::get($uid);
-        if ($u && ($u->isAdmin() || $u->hasPerm('issue_tracker[]') || $u->hasPerm('issue_tracker[issuer]') || $u->hasPerm('issue_tracker[issue_manager]'))) {
-            if (!in_array($uid, $watcherIds, true)) {
-                $availableWatcherUsers[$uid] = $u->getName() . ' (' . $u->getLogin() . ')';
-            }
+
+// Alle berechtigten User laden (für Watcher + Mentions)
+$allIssueTrackerUsers = [];
+$allUsersSql = rex_sql::factory();
+$allUsersSql->setQuery('SELECT id FROM ' . rex::getTable('user') . ' WHERE status = 1');
+foreach ($allUsersSql as $row) {
+    $uid = (int) $row->getValue('id');
+    $u = rex_user::get($uid);
+    if ($u && ($u->isAdmin() || $u->hasPerm('issue_tracker[]') || $u->hasPerm('issue_tracker[issuer]') || $u->hasPerm('issue_tracker[issue_manager]'))) {
+        $allIssueTrackerUsers[$uid] = ['name' => $u->getName(), 'login' => $u->getLogin()];
+        if ($canManageWatchers && !in_array($uid, $watcherIds, true)) {
+            $availableWatcherUsers[$uid] = $u->getName() . ' (' . $u->getLogin() . ')';
         }
     }
+}
+
+// Tags laden
+$allTags = Tag::getAll();
+$currentTags = Tag::getByIssue($issue->getId());
+$currentTagIds = array_map(static fn($t) => $t->getId(), $currentTags);
+
+// Zeiterfassung: Gesamtzeit für dieses Issue summieren
+$totalTimeMinutes = 0;
+$timeEntriesSql = rex_sql::factory();
+$timeEntriesSql->setQuery(
+    'SELECT COALESCE(SUM(te.minutes), 0) as total, COUNT(*) as entries'
+    . ' FROM ' . rex::getTable('issue_tracker_time_entries') . ' te'
+    . ' WHERE te.issue_id = ?',
+    [$issue->getId()]
+);
+if ($timeEntriesSql->getRows() > 0) {
+    $totalTimeMinutes = (int) $timeEntriesSql->getValue('total');
 }
 
 // Fragment ausgeben
@@ -421,8 +585,14 @@ $fragment->setVar('statuses', $statuses);
 $fragment->setVar('history', $history);
 $fragment->setVar('canSendReminder', $canSendReminder);
 $fragment->setVar('lastReminderAt', $lastReminderAt);
+$fragment->setVar('priorities', $priorities);
+$fragment->setVar('allUsers', $allIssueTrackerUsers);
+$fragment->setVar('allTags', $allTags);
+$fragment->setVar('currentTags', $currentTags);
+$fragment->setVar('currentTagIds', $currentTagIds);
 $fragment->setVar('isWatching', $isWatching);
 $fragment->setVar('watcherCount', $watcherCount);
 $fragment->setVar('watcherUsers', $watcherUsers);
 $fragment->setVar('availableWatcherUsers', $availableWatcherUsers);
+$fragment->setVar('totalTimeMinutes', $totalTimeMinutes);
 echo $fragment->parse('issue_tracker_view.php');

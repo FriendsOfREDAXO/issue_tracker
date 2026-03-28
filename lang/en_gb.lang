@@ -287,6 +287,8 @@ issue_tracker_email_on_assignment = Assignment
 issue_tracker_email_on_assignment_desc = Notify me when an issue is assigned to me
 issue_tracker_email_on_message = Private Messages
 issue_tracker_email_on_message_desc = I want to be notified when I receive a private message
+issue_tracker_email_on_mention = Mentions
+issue_tracker_email_on_mention_desc = Notify me when I am mentioned in a comment via @mention
 issue_tracker_email_message_full_text = Full Message Text
 issue_tracker_email_message_full_text_desc = Receive the complete message via email (otherwise just a notification)
 issue_tracker_email_new_message_subject = New message from {0}: {1}
@@ -550,4 +552,20 @@ issue_tracker_board_issue_not_found = Issue not found
 issue_tracker_board_issue_wrong_project = Issue does not belong to this project
 issue_tracker_board_no_permission = No permission
 issue_tracker_board_position_saved = Position saved
+
+# Mentions & Tags
+issue_tracker_close_and_comment = Close & comment
+issue_tracker_close_and_comment_help = Close the issue at the same time (like GitHub)
+issue_tracker_closed_via_comment = Closed via comment
+issue_tracker_tag_remove = Remove tag
+issue_tracker_my_mentions = My mentions
+issue_tracker_mentioned_you_in = mentioned you in
+issue_tracker_mark_read = Mark as read
+issue_tracker_mark_all_read = Mark all as read
 issue_tracker_board_save_error = Error saving
+
+# Checklists, Time Tracking, Issue References
+issue_tracker_checklist_items = tasks done
+issue_tracker_time_spent = Time spent
+issue_tracker_time_logged = Time logged
+issue_tracker_referenced_in = Referenced in issue

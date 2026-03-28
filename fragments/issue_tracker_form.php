@@ -16,6 +16,7 @@ $allTags = $this->getVar('allTags', []);
 $users = $this->getVar('users', []);
 $addons = $this->getVar('addons', []);
 $projects = $this->getVar('projects', []);
+$mentionUsers = $this->getVar('mentionUsers', []);
 
 // Sicherstellen, dass $issue ein Objekt ist
 if (!$issue) {
@@ -26,7 +27,7 @@ $issueTags = $issue->getTags();
 $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
 ?>
 
-<div class="issue-tracker-form">
+<div class="issue-tracker-form"<?= !empty($mentionUsers) ? ' data-mention-users="' . rex_escape(json_encode(array_values($mentionUsers))) . '"' : '' ?>>
     <form method="post" action="<?= rex_url::currentBackendPage() ?>" enctype="multipart/form-data">
         <input type="hidden" name="save" value="1" />
         <?php if (!$isNew): ?>

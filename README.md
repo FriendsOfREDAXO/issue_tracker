@@ -11,9 +11,16 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - ✅ **Prioritäten**: Niedrig, Normal, Hoch, Dringend
 - ✅ **Kategorien**: Frei konfigurierbare Kategorien in den Einstellungen
 - ✅ **Tags**: Flexible Tag-Verwaltung mit Farbcodierung und Zufallsfarben für neue Tags
+- ✅ **Tags direkt in der Ansicht bearbeiten**: Tags in der Sidebar der Detailansicht hinzufügen/entfernen ohne Edit-Modus
+- ✅ **Standard-Tags**: Bug, Feature, Docs und Good Idea werden bei Installation automatisch angelegt
 - ✅ **Private Issues**: Issues können als privat markiert werden (nur für Ersteller und Admins sichtbar)
 - ✅ **Kommentare**: Diskussion und Feedback zu jedem Issue mit Thread-System
 - ✅ **Interne Kommentare**: Kommentare können als intern markiert werden (nur für Admins sichtbar)
+- ✅ **@mentions**: User per `@login` in Kommentaren erwähnen – Autocomplete-Dropdown direkt im Editor, E-Mail-Benachrichtigung an Erwähnte
+- ✅ **Issue per Kommentar schließen**: Checkbox „Schließen & kommentieren" (GitHub-Stil) – ein Schritt, eine kombinierte E-Mail
+- ✅ **Interaktive Checklisten**: `- [ ] Offene Aufgabe` und `- [x] Erledigte Aufgabe` in Beschreibungen und Kommentaren – per Klick abhaken ohne Seite zu verlassen, Fortschrittsbalken in Liste und Detailansicht
+- ✅ **Zeiterfassung**: `/spent 2h 30m` in einem Kommentar loggt Zeit für das Issue – unterstützt `h`, `m` und `min`, Gesamtzeit im Details-Panel der Detailansicht sichtbar
+- ✅ **#Issue-Referenzen**: `#42` in Kommentaren wird zu klickbarem Link, das referenzierte Issue erhält automatisch einen Cross-Reference-Eintrag im Aktivitätsverlauf
 - ✅ **Zuweisungen**: Issues können Benutzern und AddOns zugeordnet werden
 - ✅ **Versionsverwaltung**: Issues können einer Version zugeordnet werden
 - ✅ **Fälligkeitsdatum**: Issues können mit Deadlines versehen werden, überfällige Issues werden markiert
@@ -48,8 +55,10 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - ✅ Benachrichtigungen bei neuen Kommentaren
 - ✅ Benachrichtigungen bei Status-Änderungen
 - ✅ Benachrichtigungen bei Zuweisungen
+- ✅ **@mention-Benachrichtigungen**: E-Mail an erwähnte User (individual abschaltbar)
 - ✅ Benachrichtigungen bei privaten Nachrichten (optional)
 - ✅ **Erinnerungs-Funktion**: Zugewiesene Benutzer per Klick an offene Issues erinnern (mit konfigurierbarem Cooldown)
+- ✅ **Kombinierte Benachrichtigung** beim Schließen via Kommentar: eine E-Mail statt zwei
 - ✅ **HTML E-Mail Templates** mit professionellem Design – anpassbar über die Einstellungen
 - ✅ **Markdown in E-Mails**: Beschreibungen und Kommentare unterstützen `**fett**`, `*kursiv*`, Links und automatische URL-Erkennung
 - ✅ **Deep Links** mit One-Time-Token für Issues und Nachrichten (30 Tage gültig, einmalige Verwendung)
@@ -168,6 +177,49 @@ Admins können Issues als privat markieren. Private Issues sind:
 3. Gib deinen Kommentar ein
 4. Optional: Markiere den Kommentar als "Intern" (nur für Admins sichtbar)
 5. Klicke auf "Kommentar hinzufügen"
+
+### Interaktive Checklisten
+
+In Beschreibungen und Kommentaren können Aufgabenlisten als Markdown-Checklisten angelegt werden:
+
+```markdown
+- [ ] Offene Aufgabe
+- [x] Bereits erledigte Aufgabe
+- [ ] Weitere Aufgabe
+```
+
+- Checklisten-Items können per Klick direkt in der Ansicht ab- oder angehakt werden – ohne Bearbeitungsmodus
+- In der Issue-Detailansicht wird unterhalb der Beschreibung ein **Fortschrittsbalken** mit Zähler (`x/y Aufgaben erledigt`) angezeigt
+- In der **Issue-Liste** erscheint ebenfalls ein kompakter Fortschrittsbalken (4px Höhe) sofern Checklisten vorhanden sind
+- Änderungen werden sofort gespeichert und im Aktivitätsverlauf festgehalten
+
+### Zeiterfassung
+
+Zeit kann direkt über Kommentare erfasst werden. Schreibe `/spent` gefolgt von einer Zeitangabe:
+
+```
+/spent 2h          → 2 Stunden
+/spent 30m         → 30 Minuten
+/spent 1h 30m      → 1 Stunde 30 Minuten
+/spent 90min       → 90 Minuten
+```
+
+- Der `/spent`-Befehl wird **nicht** im angezeigten Kommentar ausgegeben
+- Die erfasste Zeit wird in der Tabelle `rex_issue_tracker_time_entries` gespeichert
+- Im **Details-Panel** der Issue-Detailansicht wird die Gesamtzeit aller Zeiteinträge angezeigt
+- Der Zeiteintrag erscheint im **Aktivitätsverlauf** des Issues
+
+### #Issue-Referenzen
+
+In Kommentaren kann auf andere Issues verwiesen werden, indem die Issue-Nummer mit `#` vorangestellt wird:
+
+```
+Dieses Problem hängt mit #42 zusammen. Siehe auch #7.
+```
+
+- `#42` wird automatisch zu einem klickbaren Link auf das referenzierte Issue
+- Das **referenzierte** Issue (`#42`) erhält automatisch einen Cross-Reference-Eintrag in seinem Aktivitätsverlauf mit Verweis auf das aktuelle Issue
+- Links innerhalb von Code-Blöcken (` ``` ` oder `\``) werden **nicht** ersetzt
 
 ### Projekte verwalten
 

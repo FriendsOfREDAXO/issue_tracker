@@ -283,6 +283,7 @@ $existingUserIds = array_column($users, 'user_id');
                             'planned' => 'label-info',
                             'closed' => 'label-success',
                             'rejected' => 'label-default',
+                            'info' => 'label-primary',
                         ];
                         $priorityClasses = [
                             'low' => 'label-default',

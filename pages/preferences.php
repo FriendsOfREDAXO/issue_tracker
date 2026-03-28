@@ -85,11 +85,12 @@ if (rex_post('save_preferences', 'boolean')) {
     $sql->setTable(rex::getTable('issue_tracker_notifications'));
     
     $sql->setValue('user_id', $currentUser->getId());
-    $sql->setValue('email_on_new', rex_post('email_on_new', 'int', 0));
-    $sql->setValue('email_on_comment', rex_post('email_on_comment', 'int', 0));
-    $sql->setValue('email_on_status_change', rex_post('email_on_status_change', 'int', 0));
-    $sql->setValue('email_on_assignment', rex_post('email_on_assignment', 'int', 0));
-    $sql->setValue('email_on_message', rex_post('email_on_message', 'int', 0));
+    $sql->setValue('email_on_new', rex_post('email_on_new', 'int', 1));
+    $sql->setValue('email_on_comment', rex_post('email_on_comment', 'int', 1));
+    $sql->setValue('email_on_status_change', rex_post('email_on_status_change', 'int', 1));
+    $sql->setValue('email_on_assignment', rex_post('email_on_assignment', 'int', 1));
+    $sql->setValue('email_on_message', rex_post('email_on_message', 'int', 1));
+    $sql->setValue('email_on_mention', rex_post('email_on_mention', 'int', 1));
     $sql->setValue('email_message_full_text', rex_post('email_message_full_text', 'int', 0));
     
     try {
@@ -109,6 +110,7 @@ $emailOnComment = 1;
 $emailOnStatusChange = 1;
 $emailOnAssignment = 1;
 $emailOnMessage = 1;
+$emailOnMention = 1;
 $emailMessageFullText = 0;
 
 if ($sql->getRows() > 0) {
@@ -117,6 +119,7 @@ if ($sql->getRows() > 0) {
     $emailOnStatusChange = $sql->getValue('email_on_status_change');
     $emailOnAssignment = $sql->getValue('email_on_assignment');
     $emailOnMessage = $sql->getValue('email_on_message') ?? 1;
+    $emailOnMention = $sql->getValue('email_on_mention') ?? 1;
     $emailMessageFullText = $sql->getValue('email_message_full_text') ?? 0;
 }
 
@@ -170,6 +173,11 @@ $formElements[] = $n;
 $n = [];
 $n['label'] = '<label>' . $package->i18n('issue_tracker_email_on_message') . '</label>';
 $n['field'] = $selectYesNo('email_on_message', (int) $emailOnMessage) . '<p class="help-block">' . $package->i18n('issue_tracker_email_on_message_desc') . '</p>';
+$formElements[] = $n;
+
+$n = [];
+$n['label'] = '<label>' . $package->i18n('issue_tracker_email_on_mention') . '</label>';
+$n['field'] = '<input type="checkbox" name="email_on_mention" value="1" ' . ($emailOnMention ? 'checked' : '') . ' /> ' . $package->i18n('issue_tracker_email_on_mention_desc');
 $formElements[] = $n;
 
 $n = [];

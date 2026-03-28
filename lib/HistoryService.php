@@ -164,6 +164,16 @@ class HistoryService
             case 'close':
                 return $package->i18n('issue_tracker_history_closed');
             
+            case 'time_logged':
+                $time = $entry['new_value'] ?: '?';
+                return '<i class="rex-icon fa-clock-o"></i> ' . $package->i18n('issue_tracker_time_logged') . ': <strong>' . \rex_escape($time) . '</strong>';
+            
+            case 'referenced':
+                $refId = $entry['new_value'] ?: '?';
+                $url = \rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => ltrim($refId, '#')]);
+                return '<i class="rex-icon fa-link"></i> ' . $package->i18n('issue_tracker_referenced_in')
+                    . ' <a href="' . \rex_escape($url) . '">' . \rex_escape($refId) . '</a>';
+            
             default:
                 return $entry['action'];
         }

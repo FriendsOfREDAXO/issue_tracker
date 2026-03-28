@@ -91,6 +91,26 @@ foreach ($defaultTemplates as $key => $value) {
         ->insertOrUpdate();
 }
 
+// Standard-Tags anlegen (Bug, Feature, Docs, Good Idea)
+$defaultTagsList = [
+    ['name' => 'Bug',       'color' => '#dc3545'],
+    ['name' => 'Feature',   'color' => '#28a745'],
+    ['name' => 'Docs',      'color' => '#17a2b8'],
+    ['name' => 'Good Idea', 'color' => '#fd7e14'],
+];
+foreach ($defaultTagsList as $tagData) {
+    $tagCheck = rex_sql::factory();
+    $tagCheck->setQuery('SELECT id FROM ' . rex::getTable('issue_tracker_tags') . ' WHERE name = ?', [$tagData['name']]);
+    if ($tagCheck->getRows() === 0) {
+        rex_sql::factory()
+            ->setTable(rex::getTable('issue_tracker_tags'))
+            ->setValue('name', $tagData['name'])
+            ->setValue('color', $tagData['color'])
+            ->setValue('created_at', date('Y-m-d H:i:s'))
+            ->insert();
+    }
+}
+
 // Media Manager Typen für Issue Tracker Attachments erstellen (falls Media Manager verfügbar)
 if (rex_addon::get('media_manager')->isAvailable()) {
     // Prüfe ob Type bereits existiert

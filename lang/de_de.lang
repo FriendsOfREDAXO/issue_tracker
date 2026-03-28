@@ -287,6 +287,8 @@ issue_tracker_email_on_assignment = Bei Zuweisung
 issue_tracker_email_on_assignment_desc = Benachrichtigung, wenn mir ein Issue zugewiesen wird
 issue_tracker_email_on_message = Bei privaten Nachrichten
 issue_tracker_email_on_message_desc = Ich möchte benachrichtigt werden, wenn ich eine private Nachricht erhalte
+issue_tracker_email_on_mention = Bei Erwähnungen
+issue_tracker_email_on_mention_desc = Benachrichtigung, wenn ich in einem Kommentar per @mention erwähnt werde
 issue_tracker_email_message_full_text = Vollständiger Nachrichtentext
 issue_tracker_email_message_full_text_desc = Die komplette Nachricht per E-Mail erhalten (ansonsten nur Hinweis)
 issue_tracker_email_new_message_subject = Neue Nachricht von {0}: {1}
@@ -552,4 +554,20 @@ issue_tracker_board_issue_not_found = Issue nicht gefunden
 issue_tracker_board_issue_wrong_project = Issue gehört nicht zu diesem Projekt
 issue_tracker_board_no_permission = Keine Berechtigung
 issue_tracker_board_position_saved = Position gespeichert
+
+# Mentions & Tags
+issue_tracker_close_and_comment = Schließen & kommentieren
+issue_tracker_close_and_comment_help = Issue gleichzeitig schließen (wie bei GitHub)
+issue_tracker_closed_via_comment = Per Kommentar geschlossen
+issue_tracker_tag_remove = Tag entfernen
+issue_tracker_my_mentions = Meine Erwähnungen
+issue_tracker_mentioned_you_in = hat dich erwähnt in
+issue_tracker_mark_read = Als gelesen markieren
+issue_tracker_mark_all_read = Alle als gelesen markieren
 issue_tracker_board_save_error = Fehler beim Speichern
+
+# Checklisten, Zeiterfassung, Issue-Referenzen
+issue_tracker_checklist_items = Aufgaben erledigt
+issue_tracker_time_spent = Aufgewendete Zeit
+issue_tracker_time_logged = Zeit erfasst
+issue_tracker_referenced_in = In Issue erwähnt
