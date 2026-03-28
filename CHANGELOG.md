@@ -5,6 +5,23 @@ Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 ## [1.7.0] – 2026-03-29
 
 ### Neue Funktionen
+
+## Neue Funktionen
+
+- **@mention-System**: User können in Kommentaren per `@login` erwähnt werden
+  - Autocomplete-Dropdown direkt im CodeMirror/EasyMDE-Editor (erscheint nach `@`-Eingabe, Navigation mit Pfeiltasten)
+  - Erwähnungen werden in der neuen Tabelle `issue_tracker_mentions` gespeichert
+  - Erwähnte User erhalten eine E-Mail-Benachrichtigung (individual abschaltbar über Präferenzen)
+  - Neue Option in den Benachrichtigungs-Präferenzen: „Bei Erwähnungen"
+- **Issue per Kommentar schließen** (GitHub-Stil): Checkbox „Schließen & kommentieren" im Kommentarformular
+  - Schließt das Issue und speichert den Kommentar in einem Schritt
+  - Sendet eine kombinierte E-Mail statt zwei separater Benachrichtigungen
+  - Kommentar wird nur angezeigt, wenn das Issue noch nicht geschlossen/abgelehnt ist
+- **Tags direkt in der Issue-Ansicht bearbeiten**: Tags können in der Sidebar der Detailansicht ohne den Edit-Modus verwaltet werden
+  - Bestehende Tags zeigen ein ×-Symbol zum Entfernen (nur für berechtigte User)
+  - Kleines Dropdown zum Hinzufügen weiterer Tags (zeigt nur noch nicht vergebene Tags)
+- **Standard-Tags bei Installation/Update**: Die Tags Bug, Feature, Docs und Good Idea werden beim Installieren und Updaten automatisch angelegt (falls noch nicht vorhanden)
+  
 - **Interaktive Checklisten**: Aufgabenlisten in Beschreibungen und Kommentaren können per Klick direkt abgehakt werden
   - Markdown-Syntax: `- [ ] Offene Aufgabe` und `- [x] Erledigte Aufgabe`
   - Fortschrittsbalken mit Zähler (`x/y Aufgaben erledigt`) in der Detailansicht
