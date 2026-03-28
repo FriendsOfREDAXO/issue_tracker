@@ -34,6 +34,7 @@ $statusClasses = [
 ];
 $priorityClasses = [
     'urgent' => 'danger',
+    'critical' => 'danger',
     'high' => 'warning',
     'normal' => 'info',
     'low' => 'default',
@@ -214,7 +215,10 @@ $priorityClasses = [
                         <span class="badge"><?= $unreadMentionsCount ?></span>
                         <?php endif; ?>
                         <?php if ($unreadMentionsCount > 0): ?>
-                        <a href="<?= rex_url::backendPage('issue_tracker/dashboard', ['mark_all_mentions_read' => 1]) ?>" class="btn btn-xs btn-default pull-right" style="margin-left:5px;"><?= $package->i18n('issue_tracker_mark_all_read') ?></a>
+                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/dashboard', [], false) ?>" style="display:inline; float:right; margin-left:5px;">
+                            <input type="hidden" name="mark_all_mentions_read" value="1">
+                            <button type="submit" class="btn btn-xs btn-default"><?= $package->i18n('issue_tracker_mark_all_read') ?></button>
+                        </form>
                         <?php endif; ?>
                     </h3>
                 </div>
@@ -235,10 +239,12 @@ $priorityClasses = [
                             <small class="text-muted"><?= rex_escape(date('d.m.Y H:i', strtotime($mention['created_at']))) ?></small>
                         </div>
                         <?php if ($isUnread): ?>
-                        <a href="<?= rex_url::backendPage('issue_tracker/dashboard', ['mark_mention_read' => (int) $mention['id']]) ?>" 
-                           class="btn btn-xs btn-default" title="<?= $package->i18n('issue_tracker_mark_read') ?>" style="flex-shrink:0;">
-                            <i class="rex-icon fa-check"></i>
-                        </a>
+                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/dashboard', [], false) ?>" style="display:inline; flex-shrink:0;">
+                            <input type="hidden" name="mark_mention_read" value="<?= (int) $mention['id'] ?>">
+                            <button type="submit" class="btn btn-xs btn-default" title="<?= $package->i18n('issue_tracker_mark_read') ?>">
+                                <i class="rex-icon fa-check"></i>
+                            </button>
+                        </form>
                         <?php endif; ?>
                     </div>
                     <?php endforeach; ?>

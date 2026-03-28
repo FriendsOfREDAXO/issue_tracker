@@ -135,6 +135,7 @@ function getSortIcon($column, $currentColumn, $currentOrder) {
                         'normal' => 'label-info',
                         'high' => 'label-warning',
                         'urgent' => 'label-danger',
+                        'critical' => 'label-danger',
                     ];
                     
                     $assignedUser = $issue->getAssignedUser();

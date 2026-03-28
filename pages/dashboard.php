@@ -124,23 +124,25 @@ foreach ($watchedIds as $wIssue) {
     $watchedIssues[] = $wIssue;
 }
 
-// Erwähnung als gelesen markieren
-if (rex_request('mark_mention_read', 'int', 0) > 0) {
-    $mentionId = rex_request('mark_mention_read', 'int', 0);
+// Erwähnung als gelesen markieren (nur via POST, PRG-Pattern)
+if (rex_post('mark_mention_read', 'int', 0) > 0) {
+    $mentionId = rex_post('mark_mention_read', 'int', 0);
     $markSql = rex_sql::factory();
     $markSql->setQuery(
         'UPDATE ' . rex::getTable('issue_tracker_mentions') . ' SET read_at = ? WHERE id = ? AND mentioned_user_id = ? AND read_at IS NULL',
         [date('Y-m-d H:i:s'), $mentionId, $userId]
     );
+    rex_response::sendRedirect(rex_url::currentBackendPage());
 }
 
-// Alle Erwähnungen als gelesen markieren
-if (rex_request('mark_all_mentions_read', 'int', 0) === 1) {
+// Alle Erwähnungen als gelesen markieren (nur via POST, PRG-Pattern)
+if (rex_post('mark_all_mentions_read', 'int', 0) === 1) {
     $markSql = rex_sql::factory();
     $markSql->setQuery(
         'UPDATE ' . rex::getTable('issue_tracker_mentions') . ' SET read_at = ? WHERE mentioned_user_id = ? AND read_at IS NULL',
         [date('Y-m-d H:i:s'), $userId]
     );
+    rex_response::sendRedirect(rex_url::currentBackendPage());
 }
 
 // Letzte Erwähnungen laden (max. 10, ungelesene zuerst)
@@ -159,7 +161,14 @@ $mentionSql->setQuery('
     LIMIT 10
 ');
 $recentMentions = $mentionSql->getArray();
-$unreadMentionsCount = count(array_filter($recentMentions, static fn($m) => $m['read_at'] === null));
+
+// Exakte Anzahl ungelesener Erwähnungen per eigener Abfrage (unabhängig vom LIMIT)
+$countSql = rex_sql::factory();
+$countSql->setQuery(
+    'SELECT COUNT(*) AS cnt FROM ' . rex::getTable('issue_tracker_mentions') . ' WHERE mentioned_user_id = ? AND read_at IS NULL',
+    [$userId]
+);
+$unreadMentionsCount = (int) $countSql->getValue('cnt');
 
 // Dashboard ausgeben
 $fragment = new rex_fragment();

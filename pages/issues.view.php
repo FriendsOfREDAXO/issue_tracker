@@ -298,6 +298,16 @@ if (rex_post('add_comment', 'int', 0) === 1) {
                     );
                     if ($mentionedUserSql->getRows() > 0) {
                         $mentionedUserId = (int) $mentionedUserSql->getValue('id');
+                        $mentionedUser = rex_user::get($mentionedUserId);
+                        // Permission-Check: Nur erwähnen wenn User das private Issue sehen darf
+                        if ($issue->getIsPrivate()) {
+                            $mentionedCanView = $mentionedUserId === $issue->getCreatedBy()
+                                || $mentionedUserId === $issue->getAssignedUserId()
+                                || ($mentionedUser !== null && ($mentionedUser->isAdmin() || $mentionedUser->hasPerm('issue_tracker[manager]')));
+                            if (!$mentionedCanView) {
+                                continue;
+                            }
+                        }
                         // Mention speichern
                         $mentionSql = rex_sql::factory();
                         $mentionSql->setTable(rex::getTable('issue_tracker_mentions'));
@@ -308,8 +318,7 @@ if (rex_post('add_comment', 'int', 0) === 1) {
                         $mentionSql->setValue('created_at', date('Y-m-d H:i:s'));
                         $mentionSql->insert();
                         // E-Mail-Benachrichtigung
-                        $mentionedUser = rex_user::get($mentionedUserId);
-                        if ($mentionedUser && $mentioner) {
+                        if ($mentionedUser !== null && $mentioner) {
                             NotificationService::notifyMentioned($issue, $mentionedUser, $mentioner, $comment->getId());
                         }
                     }
@@ -340,7 +349,7 @@ if (rex_post('add_comment', 'int', 0) === 1) {
             }
 
             // #Issue-Referenzen aus Kommentar extrahieren und History-Eintrag erstellen
-            if (preg_match_all('/#(\d+)/', $commentText, $refMatches)) {
+            if (preg_match_all('/(?<!\w)#(\d+)(?!\w)/', $commentText, $refMatches)) {
                 $refIds = array_unique($refMatches[1]);
                 foreach ($refIds as $refIdStr) {
                     $refId = (int) $refIdStr;
