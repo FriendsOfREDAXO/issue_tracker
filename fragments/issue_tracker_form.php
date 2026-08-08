@@ -149,6 +149,9 @@ $issueTagIds = array_map(fn($tag) => $tag->getId(), $issueTags);
                             <label for="issue-assigned-user"><?= $package->i18n('issue_tracker_assigned_user') ?> <span class="text-danger">*</span></label>
                             <select class="form-control selectpicker" id="issue-assigned-user" name="assigned_user_id" data-live-search="true" required>
                                 <option value=""><?= $package->i18n('issue_tracker_please_select') ?></option>
+                                <option value="all" <?= $issue->getAssignedUserId() === null ? 'selected' : '' ?>>
+                                    <?= $package->i18n('issue_tracker_assigned_all_users') ?>
+                                </option>
                                 <?php foreach ($users as $userId => $userName): ?>
                                 <option value="<?= $userId ?>" <?= $issue->getAssignedUserId() === $userId ? 'selected' : '' ?>>
                                     <?= rex_escape($userName) ?>

@@ -37,6 +37,7 @@ issue_tracker_status = Status
 issue_tracker_priority = Priorität
 issue_tracker_assigned = Zugewiesen
 issue_tracker_assigned_user = Zugewiesener User
+issue_tracker_assigned_all_users = Alle (gemeinsame Zuständigkeit)
 issue_tracker_assigned_addon = Zugewiesenes AddOn
 issue_tracker_addon = AddOn
 issue_tracker_version = Version

@@ -220,7 +220,11 @@ function getSortIcon($column, $currentColumn, $currentOrder) {
                             </span>
                         </td>
                         <td>
-                            <?= $assignedUser ? rex_escape($assignedUser->getValue('name')) : '-' ?>
+                            <?php if ($issue->getAssignedUserId() === null): ?>
+                                <?= $package->i18n('issue_tracker_assigned_all_users') ?>
+                            <?php else: ?>
+                                <?= $assignedUser ? rex_escape($assignedUser->getValue('name')) : '-' ?>
+                            <?php endif; ?>
                         </td>
                         <td>
                             <?php if ($issue->getDueDate()): ?>

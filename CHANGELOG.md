@@ -2,6 +2,15 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [1.7.1] – 2026-08-08
+
+### Bugfixes
+- **Leere Einträge bei „Zugewiesener User“ behoben**: In der Create/Edit-Maske wurden Benutzer bisher ausschließlich über das Feld `name` angezeigt. Leere oder whitespace-only Namen führten zu unsichtbaren Optionen im Select-Dropdown. Die Anzeige verwendet jetzt eine robuste Fallback-Kette (`name` → `login` → `User #ID`) und trimmt Eingabewerte vor der Ausgabe.
+- **@mention-Namensanzeige stabilisiert**: Dieselbe Fallback-Logik wird nun auch für die übergebenen Mention-Userdaten verwendet, damit Erwähnungslisten keine leeren Namen enthalten.
+- **Benutzerliste bei Zuweisung auf Berechtigte eingeschränkt**: In der Maske `issue_tracker/issues/create` werden im Feld „Zugewiesener User“ jetzt nur noch aktive Benutzer mit Issue-Tracker-Zugriff angezeigt (Admin, `issue_tracker[]`, `issue_tracker[issuer]`, `issue_tracker[issue_manager]`).
+- **Neue Option „Alle (gemeinsame Zuständigkeit)“**: Issues können nun ohne feste Einzelzuweisung mit gemeinsamer Zuständigkeit gespeichert werden. Die Option ist im Assignee-Select verfügbar und wird in Liste/Detailansicht entsprechend angezeigt.
+- **Benachrichtigungen bei gemeinsamer Zuständigkeit**: Bei „Alle (gemeinsame Zuständigkeit)“ werden beim Erstellen eines neuen Issues alle berechtigten Issue-Tracker-Benutzer benachrichtigt, sofern deren Einstellung „Neue Issues per E-Mail“ aktiv ist. Der Ersteller selbst wird dabei weiterhin nicht benachrichtigt.
+
 ## [1.7.0] – 2026-03-29
 
 ### Neue Funktionen

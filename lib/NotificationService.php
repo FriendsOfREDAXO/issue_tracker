@@ -32,9 +32,34 @@ class NotificationService
             return;
         }
 
-        // Nur den zugewiesenen User benachrichtigen
+        // Bei gemeinsamer Zuständigkeit alle berechtigten User benachrichtigen
         $assignedUserId = $issue->getAssignedUserId();
-        if (!$assignedUserId || $assignedUserId === $issue->getCreatedBy()) {
+        if (!$assignedUserId) {
+            $users = self::getAllIssueTrackerUsers(true);
+            $creator = $issue->getCreator();
+
+            foreach ($users as $user) {
+                $userId = (int) $user->getId();
+                if ($userId === $issue->getCreatedBy()) {
+                    continue;
+                }
+
+                if (!self::hasNotificationEnabled($userId, 'email_on_new')) {
+                    continue;
+                }
+
+                self::sendMail(
+                    $user->getValue('email'),
+                    'Neues Issue: ' . $issue->getTitle(),
+                    self::getNewIssueTemplate($issue, $creator, $user),
+                );
+            }
+
+            return;
+        }
+
+        // Sonst nur den konkret zugewiesenen User benachrichtigen
+        if ($assignedUserId === $issue->getCreatedBy()) {
             return;
         }
 
@@ -662,8 +687,8 @@ class NotificationService
         foreach ($sql as $row) {
             $user = rex_user::get((int) $row->getValue('id'));
             if ($user) {
-                // Prüfen ob User Issue-Tracker Berechtigung hat (Admin oder issue_tracker[])
-                if (!$user->isAdmin() && !$user->hasPerm('issue_tracker[]')) {
+                // Prüfen ob User Issue-Tracker Berechtigung hat
+                if (!$user->isAdmin() && !$user->hasPerm('issue_tracker[]') && !$user->hasPerm('issue_tracker[issuer]') && !$user->hasPerm('issue_tracker[issue_manager]')) {
                     continue;
                 }
 

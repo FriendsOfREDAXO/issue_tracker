@@ -18,6 +18,12 @@ $package = rex_addon::get('issue_tracker');
 $issueId = rex_request('issue_id', 'int', 0);
 $func = rex_request('func', 'string', 'add');
 
+$currentUser = rex::getUser();
+if (!$currentUser) {
+    echo rex_view::error($package->i18n('issue_tracker_no_permission'));
+    return;
+}
+
 // Attachment löschen
 if (rex_request('delete_attachment', 'int', 0) > 0) {
     $attachmentId = rex_request('delete_attachment', 'int', 0);
@@ -31,13 +37,16 @@ if (rex_request('delete_attachment', 'int', 0) > 0) {
 // Einstellungen laden
 $settingsSql = rex_sql::factory();
 $settingsSql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "categories"');
-$categories = $settingsSql->getRows() > 0 ? json_decode($settingsSql->getValue('setting_value'), true) : [];
+$categoriesValue = $settingsSql->getRows() > 0 ? $settingsSql->getValue('setting_value') : null;
+$categories = is_string($categoriesValue) ? (json_decode($categoriesValue, true) ?: []) : [];
 
 $settingsSql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "statuses"');
-$statuses = $settingsSql->getRows() > 0 ? json_decode($settingsSql->getValue('setting_value'), true) : [];
+$statusesValue = $settingsSql->getRows() > 0 ? $settingsSql->getValue('setting_value') : null;
+$statuses = is_string($statusesValue) ? (json_decode($statusesValue, true) ?: []) : [];
 
 $settingsSql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "priorities"');
-$priorities = $settingsSql->getRows() > 0 ? json_decode($settingsSql->getValue('setting_value'), true) : [];
+$prioritiesValue = $settingsSql->getRows() > 0 ? $settingsSql->getValue('setting_value') : null;
+$priorities = is_string($prioritiesValue) ? (json_decode($prioritiesValue, true) ?: []) : [];
 
 // Issue laden oder neu erstellen
 $issue = null;
@@ -49,7 +58,6 @@ if ($issueId > 0) {
         $isNew = false;
         
         // Berechtigungsprüfung: Admin, Issue-Manager oder Ersteller darf bearbeiten
-        $currentUser = rex::getUser();
         if (!$currentUser->isAdmin() && !$currentUser->hasPerm('issue_tracker[issue_manager]') && $issue->getCreatedBy() !== $currentUser->getId()) {
             echo rex_view::error($package->i18n('issue_tracker_no_permission'));
             return;
@@ -59,14 +67,14 @@ if ($issueId > 0) {
 
 if (!$issue) {
     $issue = new Issue();
-    $issue->setCreatedBy(rex::getUser()->getId());
+    $issue->setCreatedBy($currentUser->getId());
     $isNew = true;
     
     // Projekt-ID aus Request übernehmen wenn vorhanden
     $projectIdFromRequest = rex_request('project_id', 'int', 0);
     if ($projectIdFromRequest > 0) {
         $project = Project::get($projectIdFromRequest);
-        if ($project && $project->canWrite(rex::getUser()->getId())) {
+        if ($project && $project->canWrite($currentUser->getId())) {
             $issue->setProjectId($projectIdFromRequest);
         }
     }
@@ -87,13 +95,18 @@ if (rex_post('save', 'int', 0) === 1) {
     $issue->setCategory(rex_post('category', 'string', ''));
     $issue->setStatus(rex_post('status', 'string', 'open'));
     $issue->setPriority(rex_post('priority', 'string', 'normal'));
-    $issue->setAssignedUserId(rex_post('assigned_user_id', 'int', null));
+    $assignedUserSelection = trim(rex_post('assigned_user_id', 'string', ''));
+    if ('all' === $assignedUserSelection) {
+        $issue->setAssignedUserId(null);
+    } else {
+        $issue->setAssignedUserId((int) rex_post('assigned_user_id', 'int', 0) ?: null);
+    }
     $issue->setAssignedAddon(rex_post('assigned_addon', 'string', null));
     $issue->setVersion(rex_post('version', 'string', null));
     $issue->setIsPrivate(rex_post('is_private', 'int', 0) === 1);
 
-    // Pflichtfeld: Zugewiesener User
-    if (!$issue->getAssignedUserId()) {
+    // Pflichtfeld: Zugewiesener User oder gemeinsame Zuständigkeit (Alle)
+    if ('all' !== $assignedUserSelection && !$issue->getAssignedUserId()) {
         echo rex_view::error($package->i18n('issue_tracker_assigned_user_required'));
         // Formular erneut anzeigen (weiter unten)
     } else {
@@ -121,14 +134,14 @@ if (rex_post('save', 'int', 0) === 1) {
         if ($isNew) {
             \FriendsOfREDAXO\IssueTracker\HistoryService::add(
                 $issue->getId(),
-                rex::getUser()->getId(),
+                $currentUser->getId(),
                 'create'
             );
         } else {
             \FriendsOfREDAXO\IssueTracker\HistoryService::trackChanges(
                 $oldIssue,
                 $issue,
-                rex::getUser()->getId()
+                $currentUser->getId()
             );
         }
         
@@ -137,7 +150,7 @@ if (rex_post('save', 'int', 0) === 1) {
             $issue->close();
             \FriendsOfREDAXO\IssueTracker\HistoryService::add(
                 $issue->getId(),
-                rex::getUser()->getId(),
+                $currentUser->getId(),
                 'close'
             );
         }
@@ -199,7 +212,7 @@ if (rex_post('save', 'int', 0) === 1) {
             }
             
             if (!empty($uploadedFiles)) {
-                Attachment::createFromUpload($issue->getId(), $uploadedFiles, rex::getUser()->getId());
+                Attachment::createFromUpload($issue->getId(), $uploadedFiles, $currentUser->getId());
             }
         }
         
@@ -207,7 +220,7 @@ if (rex_post('save', 'int', 0) === 1) {
         if ($isNew) {
             NotificationService::notifyNewIssue($issue);
         } elseif ($oldStatus !== $issue->getStatus()) {
-            NotificationService::notifyStatusChange($issue, $oldStatus, $issue->getStatus(), rex::getUser()->getId());
+            NotificationService::notifyStatusChange($issue, $oldStatus, $issue->getStatus(), $currentUser->getId());
         }
         
         if ($issue->getAssignedUserId() && $issue->getAssignedUserId() !== rex_post('old_assigned_user_id', 'int', 0)) {
@@ -237,7 +250,7 @@ if (!$isNew && rex_post('add_comment', 'int', 0) === 1) {
     $comment->setIssueId($issue->getId());
     $comment->setComment(rex_post('comment', 'string', ''));
     $comment->setIsInternal(rex_post('is_internal', 'bool', false));
-    $comment->setCreatedBy(rex::getUser()->getId());
+    $comment->setCreatedBy($currentUser->getId());
     
     if ($comment->save()) {
         NotificationService::notifyNewComment($comment, $issue);
@@ -259,8 +272,30 @@ $userSql->setQuery('
 $users = [];
 $mentionUsers = [];
 foreach ($userSql as $row) {
-    $users[(int) $row->getValue('id')] = $row->getValue('name');
-    $mentionUsers[] = ['login' => (string) $row->getValue('login'), 'name' => (string) $row->getValue('name')];
+    $user = rex_user::get((int) $row->getValue('id'));
+    if (!$user) {
+        continue;
+    }
+
+    $hasIssueAccess = $user->isAdmin()
+        || $user->hasPerm('issue_tracker[]')
+        || $user->hasPerm('issue_tracker[issuer]')
+        || $user->hasPerm('issue_tracker[issue_manager]');
+
+    if (!$hasIssueAccess) {
+        continue;
+    }
+
+    $userId = (int) $row->getValue('id');
+    $login = trim((string) $row->getValue('login'));
+    $displayName = trim((string) $row->getValue('name'));
+
+    if ('' === $displayName) {
+        $displayName = '' !== $login ? $login : 'User #' . $userId;
+    }
+
+    $users[$userId] = $displayName;
+    $mentionUsers[] = ['login' => $login, 'name' => $displayName];
 }
 
 // Verfügbare Add
@@ -275,7 +310,6 @@ foreach (rex_addon::getAvailableAddons() as $addon) {
 }
 
 // Verfügbare Projekte (nur wo User schreiben darf)
-$currentUser = rex::getUser();
 $allProjects = Project::getAll($currentUser->getId());
 $projects = [];
 foreach ($allProjects as $proj) {

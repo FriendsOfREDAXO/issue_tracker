@@ -147,10 +147,18 @@ $allTags = \FriendsOfREDAXO\IssueTracker\Tag::getAll();
 
 // Alle Benutzer für Filter laden
 $usersSql = rex_sql::factory();
-$usersSql->setQuery('SELECT id, name FROM ' . rex::getTable('user') . ' ORDER BY name');
+$usersSql->setQuery('SELECT id, name, login FROM ' . rex::getTable('user') . ' ORDER BY name');
 $users = [];
 foreach ($usersSql as $row) {
-    $users[(int) $row->getValue('id')] = $row->getValue('name');
+    $userId = (int) $row->getValue('id');
+    $login = trim((string) $row->getValue('login'));
+    $displayName = trim((string) $row->getValue('name'));
+
+    if ('' === $displayName) {
+        $displayName = '' !== $login ? $login : 'User #' . $userId;
+    }
+
+    $users[$userId] = $displayName;
 }
 
 // Sortierung

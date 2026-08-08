@@ -249,7 +249,13 @@ $priorityClass = [
                             <table class="table" style="margin: 0; font-size: 13px;">
                                 <tr>
                                     <td style="padding: 8px 12px; width: 40%; color: #888; border-top: none;"><?= $package->i18n('issue_tracker_assigned') ?></td>
-                                    <td style="padding: 8px 12px; border-top: none; font-weight: 500;"><?= $assignedUser ? rex_escape($assignedUser->getValue('name')) : '<span class="text-muted">–</span>' ?></td>
+                                    <td style="padding: 8px 12px; border-top: none; font-weight: 500;"><?php
+                                        if ($issue->getAssignedUserId() === null) {
+                                            echo rex_escape($package->i18n('issue_tracker_assigned_all_users'));
+                                        } else {
+                                            echo $assignedUser ? rex_escape($assignedUser->getValue('name')) : '<span class="text-muted">–</span>';
+                                        }
+                                    ?></td>
                                 </tr>
                                 <tr>
                                     <td style="padding: 8px 12px; color: #888;"><?= $package->i18n('issue_tracker_created_by') ?></td>
