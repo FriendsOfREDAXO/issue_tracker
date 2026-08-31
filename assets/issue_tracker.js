@@ -43,24 +43,49 @@
             // $(this).closest('form').submit();
         });
 
-        // Lightbox Handler – eigenes Overlay statt Bootstrap-Modal
+        // Lightbox Handler – eigenes Overlay statt Bootstrap-Modal, mit Galerie-Navigation
+        // wenn mehrere Anhänge im selben [data-lightbox-group]-Container liegen.
         $(document).on('click', '.issue-attachment-lightbox', function(e) {
             e.preventDefault();
-            var url = $(this).attr('href');
-            var type = $(this).data('type') || 'image';
-            var title = $(this).attr('title') || '';
+
+            var $group = $(this).closest('[data-lightbox-group]');
+            var $items = $group.length ? $group.find('.issue-attachment-lightbox') : $(this);
+            var items = $items.toArray();
+            var index = items.indexOf(this);
+            if (index === -1) { index = 0; items = [this]; }
+
+            showItLightbox(items, index);
+        });
+
+        function showItLightbox(items, index) {
+            var el = items[index];
+            var $el = $(el);
+            var url = $el.attr('href');
+            var type = $el.data('type') || 'image';
+            var title = $el.attr('title') || '';
 
             var overlayId = 'it-lightbox-overlay';
-            // Altes Overlay entfernen
             $('#' + overlayId).remove();
+            $(document).off('keydown.itlightbox');
 
             var mediaHtml;
             if (type === 'video') {
                 mediaHtml = '<video controls autoplay style="max-width:90vw;max-height:80vh;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,0.6);">' +
                             '<source src="' + url + '">Ihr Browser unterstützt dieses Video-Format nicht.</video>';
+            } else if (type === 'pdf') {
+                mediaHtml = '<iframe src="' + url + '" style="width:85vw;height:82vh;border:none;border-radius:4px;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,0.6);"></iframe>';
             } else {
                 mediaHtml = '<img src="' + url + '" alt="" style="max-width:90vw;max-height:80vh;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,0.6);display:block;">';
             }
+
+            var hasMultiple = items.length > 1;
+            var navHtml = hasMultiple
+                ? '<button type="button" class="it-lightbox-nav it-lightbox-prev">&lsaquo;</button>' +
+                  '<button type="button" class="it-lightbox-nav it-lightbox-next">&rsaquo;</button>'
+                : '';
+            var counterHtml = hasMultiple
+                ? '<div class="it-lightbox-counter">' + (index + 1) + ' / ' + items.length + '</div>'
+                : '';
 
             var overlayHtml =
                 '<div id="' + overlayId + '" style="' +
@@ -68,35 +93,59 @@
                     'background:rgba(0,0,0,0.88);z-index:99999;' +
                     'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
                     'cursor:pointer;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);">' +
-                    '<button type="button" style="' +
+                    '<button type="button" class="it-lightbox-close" style="' +
                         'position:absolute;top:16px;right:20px;background:none;border:none;' +
                         'color:#fff;font-size:36px;line-height:1;cursor:pointer;opacity:0.8;z-index:2;' +
                         'text-shadow:0 2px 6px rgba(0,0,0,0.5);">&times;</button>' +
+                    navHtml +
                     '<div style="cursor:default;">' + mediaHtml + '</div>' +
                     (title ? '<p style="color:#ddd;font-size:13px;margin-top:12px;text-align:center;' +
                         'max-width:80vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' +
                         'text-shadow:0 1px 4px rgba(0,0,0,0.8);">' + $('<span>').text(title).html() + '</p>' : '') +
+                    counterHtml +
                 '</div>';
 
             $('body').append(overlayHtml);
             var $overlay = $('#' + overlayId);
 
+            function closeLightbox() {
+                $overlay.find('video').each(function() { this.pause(); });
+                $(document).off('keydown.itlightbox');
+                $overlay.fadeOut(180, function() { $(this).remove(); });
+            }
+
+            function goTo(newIndex) {
+                if (newIndex < 0) { newIndex = items.length - 1; }
+                if (newIndex >= items.length) { newIndex = 0; }
+                $overlay.find('video').each(function() { this.pause(); });
+                $overlay.remove();
+                showItLightbox(items, newIndex);
+            }
+
             // Schließen bei Klick auf Overlay-Hintergrund oder Close-Button
             $overlay.on('click', function(ev) {
-                if ($(ev.target).closest('div > div').length === 0 || $(ev.target).is('button')) {
-                    $overlay.find('video').each(function() { this.pause(); });
-                    $overlay.fadeOut(180, function() { $(this).remove(); });
+                if ($(ev.target).is('.it-lightbox-close') || $(ev.target).closest('.it-lightbox-close').length) {
+                    closeLightbox();
+                } else if ($(ev.target).is('.it-lightbox-prev') || $(ev.target).closest('.it-lightbox-prev').length) {
+                    goTo(index - 1);
+                } else if ($(ev.target).is('.it-lightbox-next') || $(ev.target).closest('.it-lightbox-next').length) {
+                    goTo(index + 1);
+                } else if ($(ev.target).closest('div > div, iframe, video, img').length === 0) {
+                    closeLightbox();
                 }
             });
 
-            // Schließen per ESC
-            $(document).one('keydown.itlightbox', function(ev) {
+            // Tastatursteuerung: ESC schließt, Pfeiltasten blättern (nur bei Galerie)
+            $(document).on('keydown.itlightbox', function(ev) {
                 if (ev.key === 'Escape') {
-                    $overlay.find('video').each(function() { this.pause(); });
-                    $overlay.fadeOut(180, function() { $(this).remove(); });
+                    closeLightbox();
+                } else if (hasMultiple && ev.key === 'ArrowLeft') {
+                    goTo(index - 1);
+                } else if (hasMultiple && ev.key === 'ArrowRight') {
+                    goTo(index + 1);
                 }
             });
-        });
+        }
 
         // EasyMDE Markdown Editor initialisieren
         if (typeof EasyMDE !== 'undefined') {

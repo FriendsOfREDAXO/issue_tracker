@@ -93,7 +93,14 @@ if (rex_post('save', 'int', 0) === 1) {
     $issue->setTitle(rex_post('title', 'string', ''));
     $issue->setDescription(rex_post('description', 'string', ''));
     $issue->setCategory(rex_post('category', 'string', ''));
-    $issue->setStatus(rex_post('status', 'string', 'open'));
+
+    // Beim Neuanlegen dürfen nur Admin/Issue-Manager einen abweichenden Status setzen;
+    // normale Melder starten immer mit "Offen" (Feld ist im Formular für sie ausgeblendet).
+    $postedStatus = rex_post('status', 'string', 'open');
+    if ($isNew && !\FriendsOfREDAXO\IssueTracker\PermissionService::isAdminOrManager()) {
+        $postedStatus = 'open';
+    }
+    $issue->setStatus($postedStatus);
     $issue->setPriority(rex_post('priority', 'string', 'normal'));
     $assignedUserSelection = trim(rex_post('assigned_user_id', 'string', ''));
     if ('all' === $assignedUserSelection) {

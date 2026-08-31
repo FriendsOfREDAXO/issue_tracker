@@ -13,9 +13,20 @@ issue_tracker_issues_list = Overview
 issue_tracker_issues_view = View issue
 issue_tracker_issues_create = New Issue
 issue_tracker_issues_edit = Edit Issue
+issue_tracker_knowledge = Knowledge
 issue_tracker_preferences = Notifications
 issue_tracker_settings = Settings
 issue_tracker_help = Help
+
+# Knowledge (collected info issues)
+issue_tracker_knowledge_intro = Collected knowledge and notes (status "Info") in one place – searchable and sorted by category.
+issue_tracker_knowledge_search_placeholder = Search knowledge...
+issue_tracker_knowledge_new_entry = New knowledge entry
+issue_tracker_knowledge_empty = No knowledge entries yet.
+issue_tracker_knowledge_empty_filtered = No results for this search/filter.
+issue_tracker_knowledge_count = {0} entries
+issue_tracker_knowledge_uncategorized = Uncategorized
+issue_tracker_knowledge_updated = Updated
 
 # Dashboard
 issue_tracker_status_open = Open
@@ -77,6 +88,12 @@ issue_tracker_please_select = Please select
 issue_tracker_not_assigned = Not assigned
 issue_tracker_save = Save
 issue_tracker_cancel = Cancel
+issue_tracker_form_section_problem = What's the problem?
+issue_tracker_form_section_classification = Classification
+issue_tracker_form_section_assignment = Assignment
+issue_tracker_form_section_advanced = Advanced options
+issue_tracker_form_section_advanced_hint = Version, domains, YForm tables
+issue_tracker_form_section_attachments = Attachments
 
 # Comments
 issue_tracker_comments = Comments
@@ -120,6 +137,7 @@ issue_tracker_status_changed = Status changed
 
 # Messages
 issue_tracker_no_issues = No issues found
+issue_tracker_no_issues_filtered = No issues found for this search/filter
 issue_tracker_issue_created = Issue was successfully created
 issue_tracker_issue_updated = Issue was successfully updated
 issue_tracker_issue_deleted = Issue was successfully deleted
@@ -248,6 +266,7 @@ issue_tracker_project_save_error = Error saving project
 issue_tracker_project_not_found = Project not found
 issue_tracker_project_delete_confirm = Do you really want to delete this project? The issues will be preserved.
 issue_tracker_no_projects = No projects available
+issue_tracker_no_projects_filtered = No projects found for this search/filter
 issue_tracker_no_project = No project
 issue_tracker_project_help = Optional: Assign this issue to a project
 issue_tracker_project_status_active = Active

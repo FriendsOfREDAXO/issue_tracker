@@ -1,5 +1,5 @@
 package: issue_tracker
-version: '1.7.1'
+version: '1.8.0'
 author: Thomas Skerbis
 supportpage: https://github.com/FriendsOfREDAXO/issue_tracker
 
@@ -34,6 +34,9 @@ page:
                 edit:
                     title: 'translate:issue_tracker_issues_edit'
                     hidden: true
+        knowledge:
+            title: 'translate:issue_tracker_knowledge'
+            icon: rex-icon fa-book
         projects:
             title: 'translate:issue_tracker_projects'
             icon: rex-icon fa-folder-open

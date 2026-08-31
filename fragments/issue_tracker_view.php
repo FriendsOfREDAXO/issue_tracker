@@ -130,41 +130,10 @@ $priorityClass = [
                             </h4>
                         </div>
                         <div class="panel-body">
-                            <div class="row">
+                            <div class="row" data-lightbox-group="issue-<?= $issue->getId() ?>">
                                 <?php foreach ($attachments as $attachment): ?>
                                 <div class="col-sm-6 col-md-4" style="margin-bottom: 15px;">
-                                    <div class="thumbnail">
-                                        <?php if ($attachment->isImage()): ?>
-                                            <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="image" title="<?= rex_escape($attachment->getOriginalFilename()) ?>">
-                                                <img src="<?= $attachment->getThumbnailUrl() ?>" alt="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="max-height: 150px; width: auto;">
-                                            </a>
-                                        <?php elseif ($attachment->isVideo()): ?>
-                                            <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="video" title="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="text-decoration: none; display: block;">
-                                                <div style="padding: 30px; text-align: center; background: #f5f5f5; position: relative;">
-                                                    <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 48px; color: #999;"></i>
-                                                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
-                                                        <i class="rex-icon fa-play-circle" style="font-size: 32px;"></i>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        <?php else: ?>
-                                            <div style="padding: 30px; text-align: center; background: #f5f5f5;">
-                                                <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 48px; color: #999;"></i>
-                                            </div>
-                                        <?php endif; ?>
-                                        <div class="caption">
-                                            <h5 style="margin-top: 5px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" 
-                                                title="<?= rex_escape($attachment->getOriginalFilename()) ?>">
-                                                <?= rex_escape($attachment->getOriginalFilename()) ?>
-                                            </h5>
-                                            <p class="text-muted" style="font-size: 12px; margin-bottom: 10px;">
-                                                <?= $attachment->getFormattedFilesize() ?>
-                                            </p>
-                                            <a href="<?= $attachment->getUrl() ?>" class="btn btn-xs btn-default" target="_blank">
-                                                <i class="rex-icon fa-download"></i> <?= $package->i18n('issue_tracker_download') ?>
-                                            </a>
-                                        </div>
-                                    </div>
+                                    <?= $attachment->renderCard(['maxHeight' => 150]) ?>
                                 </div>
                                 <?php endforeach; ?>
                             </div>
@@ -758,41 +727,10 @@ $priorityClass = [
                             <div class="issue-tracker-comment-content" id="comment-content-<?= $comment->getId() ?>"><?= ContentRenderer::render($comment->getComment(), $issue->getId(), $comment->getId()) ?></div>
                         
                             <?php if (!empty($commentAttachments)): ?>
-                            <div class="row" style="margin-top: 10px;">
+                            <div class="row" style="margin-top: 10px;" data-lightbox-group="comment-<?= $comment->getId() ?>">
                                 <?php foreach ($commentAttachments as $attachment): ?>
                                 <div class="col-sm-6 col-md-3" style="margin-bottom: 10px;">
-                                    <div class="thumbnail" style="margin-bottom: 0;">
-                                        <?php if ($attachment->isImage()): ?>
-                                            <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="image" title="<?= rex_escape($attachment->getOriginalFilename()) ?>">
-                                                <img src="<?= $attachment->getThumbnailUrl() ?>" alt="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="max-height: 100px; width: auto;">
-                                            </a>
-                                        <?php elseif ($attachment->isVideo()): ?>
-                                            <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="video" title="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="text-decoration: none; display: block;">
-                                                <div style="padding: 20px; text-align: center; background: #f5f5f5; position: relative;">
-                                                    <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
-                                                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
-                                                        <i class="rex-icon fa-play-circle" style="font-size: 24px;"></i>
-                                                    </div>
-                                                </div>
-                                            </a   <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
-                                                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
-                                                        <i class="rex-icon fa-play-circle" style="font-size: 24px;"></i>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        <?php else: ?>
-                                            <div style="padding: 20px; text-align: center; background: #f5f5f5;">
-                                                <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
-                                            </div>
-                                        <?php endif; ?>
-                                        <div class="caption">
-                                            <p style="margin: 0; font-size: 12px; word-break: break-all;">
-                                                <a href="<?= $attachment->getUrl() ?>" target="_blank">
-                                                    <?= rex_escape($attachment->getOriginalFilename()) ?>
-                                                </a>
-                                            </p>
-                                        </div>
-                                    </div>
+                                    <?= $attachment->renderCard(['maxHeight' => 100, 'compact' => true]) ?>
                                 </div>
                                 <?php endforeach; ?>
                             </div>
@@ -892,43 +830,15 @@ $priorityClass = [
                         <div class="issue-tracker-comment-content" id="comment-content-<?= $comment->getId() ?>"><?= ContentRenderer::render($comment->getComment(), $issue->getId(), $comment->getId()) ?></div>
                         
                         <?php if (!empty($commentAttachments)): ?>
-                        <div class="row" style="margin-top: 10px;">
+                        <div class="row" style="margin-top: 10px;" data-lightbox-group="comment-<?= $comment->getId() ?>">
                             <?php foreach ($commentAttachments as $attachment): ?>
                             <div class="col-sm-6 col-md-3" style="margin-bottom: 10px;">
-                                <div class="thumbnail" style="margin-bottom: 0;">
-                                    <?php if ($attachment->isImage()): ?>
-                                        <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="image" title="<?= rex_escape($attachment->getOriginalFilename()) ?>">
-                                            <img src="<?= $attachment->getThumbnailUrl() ?>" alt="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="max-height: 100px; width: auto;">
-                                        </a>
-                                    <?php elseif ($attachment->isVideo()): ?>
-                                        <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="video" title="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="text-decoration: none; display: block;">
-                                            <div style="padding: 20px; text-align: center; background: #f5f5f5; position: relative;">
-                                                <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
-                                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
-                                                    <i class="rex-icon fa-play-circle" style="font-size: 24px;"></i>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    <?php else: ?>
-                                        <div style="padding: 20px; text-align: center; background: #f5f5f5;">
-                                            <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
-                                        </div>
-                                    <?php endif; ?>
-                                    <div class="caption">
-                                        <p style="font-size: 11px; margin: 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" 
-                                           title="<?= rex_escape($attachment->getOriginalFilename()) ?>">
-                                            <?= rex_escape($attachment->getOriginalFilename()) ?>
-                                        </p>
-                                        <a href="<?= $attachment->getUrl() ?>" class="btn btn-xs btn-default btn-block" target="_blank">
-                                            <i class="rex-icon fa-download"></i>
-                                        </a>
-                                    </div>
-                                </div>
+                                <?= $attachment->renderCard(['maxHeight' => 100, 'compact' => true]) ?>
                             </div>
                             <?php endforeach; ?>
                         </div>
                         <?php endif; ?>
-                        
+
                         <!-- Antworten Button -->
                         <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
                             <button type="button" class="btn btn-xs btn-default" onclick="toggleReplyForm(<?= $comment->getId() ?>)">
@@ -971,38 +881,10 @@ $priorityClass = [
                                 <div style="margin-top: 8px;"><?= ContentRenderer::render($reply->getComment(), $issue->getId(), $reply->getId()) ?></div>
                                 
                                 <?php if (!empty($replyAttachments)): ?>
-                                <div class="row" style="margin-top: 10px;">
+                                <div class="row" style="margin-top: 10px;" data-lightbox-group="comment-<?= $reply->getId() ?>">
                                     <?php foreach ($replyAttachments as $attachment): ?>
                                     <div class="col-sm-6 col-md-3" style="margin-bottom: 10px;">
-                                        <div class="thumbnail" style="margin-bottom: 0;">
-                                            <?php if ($attachment->isImage()): ?>
-                                                <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="image" title="<?= rex_escape($attachment->getOriginalFilename()) ?>">
-                                                    <img src="<?= $attachment->getThumbnailUrl() ?>" alt="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="max-height: 100px; width: auto;">
-                                                </a>
-                                            <?php elseif ($attachment->isVideo()): ?>
-                                                <a href="<?= $attachment->getUrl() ?>" class="issue-attachment-lightbox" data-type="video" title="<?= rex_escape($attachment->getOriginalFilename()) ?>" style="text-decoration: none; display: block;">
-                                                    <div style="padding: 20px; text-align: center; background: #f5f5f5; position: relative;">
-                                                        <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
-                                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
-                                                            <i class="rex-icon fa-play-circle" style="font-size: 24px;"></i>
-                                                        </div>
-                                                    </div>
-                                                </a>
-                                            <?php else: ?>
-                                                <div style="padding: 20px; text-align: center; background: #f5f5f5;">
-                                                    <i class="rex-icon <?= $attachment->getFileIcon() ?>" style="font-size: 32px; color: #999;"></i>
-                                                </div>
-                                            <?php endif; ?>
-                                            <div class="caption">
-                                                <p style="font-size: 11px; margin: 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" 
-                                                   title="<?= rex_escape($attachment->getOriginalFilename()) ?>">
-                                                    <?= rex_escape($attachment->getOriginalFilename()) ?>
-                                                </p>
-                                                <a href="<?= $attachment->getUrl() ?>" class="btn btn-xs btn-default btn-block" target="_blank">
-                                                    <i class="rex-icon fa-download"></i>
-                                                </a>
-                                            </div>
-                                        </div>
+                                        <?= $attachment->renderCard(['maxHeight' => 100, 'compact' => true]) ?>
                                     </div>
                                     <?php endforeach; ?>
                                 </div>

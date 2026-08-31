@@ -299,6 +299,16 @@ class Attachment
     }
 
     /**
+     * Prüft ob es sich um ein PDF handelt (Inline-Vorschau in der Lightbox möglich)
+     *
+     * @return bool
+     */
+    public function isPdf(): bool
+    {
+        return strtolower(\rex_file::extension($this->filename)) === 'pdf';
+    }
+
+    /**
      * Gibt das passende Font Awesome 6 Icon für den Dateityp zurück
      *
      * @return string
@@ -528,6 +538,63 @@ class Attachment
         }
 
         return $attachments;
+    }
+
+    /**
+     * Rendert eine einheitliche Vorschau-Karte (Thumbnail/Icon, Lightbox-Link, Download,
+     * optional Löschen) für die Verwendung in den Issue- und Kommentar-Templates.
+     *
+     * Zentralisiert das Markup, damit Bild/Video/PDF-Vorschau und Lightbox-Anbindung
+     * überall identisch und konsistent sind.
+     *
+     * @param array{maxHeight?: int, deleteUrl?: string|null, compact?: bool} $options
+     */
+    public function renderCard(array $options = []): string
+    {
+        $package = \rex_addon::get('issue_tracker');
+        $maxHeight = $options['maxHeight'] ?? 150;
+        $deleteUrl = $options['deleteUrl'] ?? null;
+        $compact = $options['compact'] ?? false;
+
+        $name = \rex_escape($this->getOriginalFilename());
+        $url = $this->getUrl();
+        $iconClass = $this->getFileIcon();
+
+        if ($this->isImage()) {
+            $preview = '<a href="' . $url . '" class="issue-attachment-lightbox" data-type="image" title="' . $name . '">'
+                . '<img src="' . $this->getThumbnailUrl() . '" alt="' . $name . '" style="max-height:' . $maxHeight . 'px; width:auto;">'
+                . '</a>';
+        } elseif ($this->isVideo()) {
+            $preview = '<a href="' . $url . '" class="issue-attachment-lightbox" data-type="video" title="' . $name . '" style="text-decoration:none; display:block;">'
+                . '<div class="issue-attachment-icon-preview"><i class="rex-icon ' . $iconClass . '"></i>'
+                . '<div class="issue-attachment-play-overlay"><i class="rex-icon fa-play-circle"></i></div></div>'
+                . '</a>';
+        } elseif ($this->isPdf()) {
+            $preview = '<a href="' . $url . '" class="issue-attachment-lightbox" data-type="pdf" title="' . $name . '" style="text-decoration:none; display:block;">'
+                . '<div class="issue-attachment-icon-preview"><i class="rex-icon ' . $iconClass . '"></i></div>'
+                . '</a>';
+        } else {
+            $preview = '<div class="issue-attachment-icon-preview"><i class="rex-icon ' . $iconClass . '"></i></div>';
+        }
+
+        $downloadLabel = \rex_escape($package->i18n('issue_tracker_download'));
+        $actions = '<a href="' . $url . '" class="btn btn-xs btn-default" target="_blank">'
+            . '<i class="rex-icon fa-download"></i>' . ($compact ? '' : ' ' . $downloadLabel)
+            . '</a>';
+
+        if (null !== $deleteUrl) {
+            $confirmMsg = \rex_escape($package->i18n('issue_tracker_delete_attachment_confirm'));
+            $actions .= ' <a href="' . $deleteUrl . '" class="btn btn-xs btn-danger" onclick="return confirm(\'' . $confirmMsg . '\')">'
+                . '<i class="rex-icon fa-trash"></i></a>';
+        }
+
+        return '<div class="thumbnail issue-attachment-thumb' . ($compact ? ' is-compact' : '') . '">'
+            . $preview
+            . '<div class="caption">'
+            . '<h5 title="' . $name . '">' . $name . '</h5>'
+            . '<p class="text-muted issue-attachment-size">' . \rex_escape($this->getFormattedFilesize()) . '</p>'
+            . '<div class="btn-group btn-group-xs">' . $actions . '</div>'
+            . '</div></div>';
     }
 
     /**

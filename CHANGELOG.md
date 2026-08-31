@@ -2,6 +2,30 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [1.8.0] – 2026-08-31
+
+### Neue Funktionen
+- **Neuer Menüpunkt „Wissen“**: Themen mit Status „Info“ verschwinden nicht mehr zwischen offenen Tickets in der normalen Liste, sondern werden unter „Wissen“ gesammelt, durchsuchbar (Titel/Beschreibung) und nach Kategorie gruppiert als Karten dargestellt. Filter nach Kategorie/Tag, respektiert private Themen wie gewohnt. Klick auf einen Eintrag öffnet die normale, bereits bestehende Detailansicht (inkl. Kommentare, Anhänge, Lightbox).
+
+### Usability & Workflow (Projektbereich)
+- **Suche/Filter/Pagination in der Projekt-Themenliste**: Die Issue-Tabelle innerhalb einer Projektansicht ist jetzt nach Titel/Beschreibung durchsuchbar, nach Status filterbar und blättert bei mehr als 20 Themen seitenweise, statt alles unsortiert auf einer Seite zu zeigen.
+- **Projektliste filterbar**: Die Projektübersicht lässt sich jetzt nach Status (Aktiv/Abgeschlossen/Archiviert) filtern und nach Name/Beschreibung durchsuchen.
+- **Tote Tab-Leiste in der Projektansicht entfernt**: Ein Rest einer 2026 wieder entfernten Kanban-Board-Funktion (Tab mit fehlender Übersetzung, führte ins Leere) wurde aufgeräumt.
+
+### Usability & Workflow
+- **Anhänge einheitlich per Lightbox ansehen**: Bilder, Videos und jetzt auch PDFs lassen sich überall (Issue-Ansicht, Kommentare, Antworten und jetzt auch im Bearbeiten-Formular) direkt in einer Lightbox öffnen, ohne die Datei herunterzuladen. PDFs werden inline als Vorschau eingebettet.
+- **Galerie-Navigation in der Lightbox**: Bei mehreren Anhängen am selben Issue/Kommentar kann jetzt mit Pfeil-Buttons oder den Tastatur-Pfeiltasten durchgeblättert werden, statt die Lightbox für jede Datei neu öffnen zu müssen.
+- **Anhänge im Bearbeiten-Formular jetzt ebenfalls per Lightbox nutzbar**: Bisher gab es dort nur ein statisches Vorschaubild ohne Lightbox-Anbindung – jetzt identisch zur Detailansicht.
+- **Formular „Issue erstellen/bearbeiten“ übersichtlicher gegliedert**: Statt einer langen Feldliste ist das Formular jetzt in klare Abschnitte unterteilt („Worum geht es?“, „Einordnung“, „Zuständigkeit“, „Anhänge“). Selten benötigte technische Felder (Domains, YForm-Tabellen) sind in einem eigenen, einklappbaren „Erweiterte Optionen“-Bereich zusammengefasst.
+- **Status beim Neuanlegen vereinheitlicht**: Neue Issues starten für normale Melder immer mit Status „Offen“ (Feld ist beim Erstellen ausgeblendet); Admins und Issue-Manager können weiterhin auch beim Anlegen direkt einen abweichenden Status setzen, z. B. um bereits erledigte Punkte zu dokumentieren. Serverseitig abgesichert, nicht nur im Formular ausgeblendet.
+- **Feld „Version“ in die Erweiterten Optionen verschoben**: Betrifft meist die aktuelle Installation und ist den wenigsten Meldern bekannt – steht jetzt nicht mehr prominent neben Kategorie/Priorität, sondern im einklappbaren Bereich (klappt automatisch auf, wenn bereits ein Wert gesetzt ist).
+
+### Bugfixes
+- **Kaputtes Markup bei Video-Anhängen in hervorgehobenen Kommentaren behoben**: Ein doppelt eingefügter, nicht geschlossener HTML-Block sorgte dort für fehlerhaftes Rendering.
+
+### Intern
+- Anhänge-Vorschaukarten (Bild/Video/PDF/Icon + Lightbox-Link + Download/Löschen) sind jetzt über `Attachment::renderCard()` zentralisiert statt an fünf Stellen dupliziert – Grundlage für den behobenen Markup-Bug.
+
 ## [1.7.1] – 2026-08-08
 
 ### Bugfixes

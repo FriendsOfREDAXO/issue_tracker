@@ -10,11 +10,15 @@ $package = rex_addon::get('issue_tracker');
 $project = $this->getVar('project');
 $stats = $this->getVar('stats', []);
 $issues = $this->getVar('issues', []);
+$issuesTotalCount = $this->getVar('issuesTotalCount', count($issues));
 $users = $this->getVar('users', []);
 $statuses = $this->getVar('statuses', []);
 $canEdit = $this->getVar('canEdit', false);
 $canWrite = $this->getVar('canWrite', false);
-$view = $this->getVar('view', 'list');
+$searchTerm = $this->getVar('searchTerm', '');
+$filterStatus = $this->getVar('filterStatus', '');
+$pager = $this->getVar('pager');
+$hasActiveFilter = $searchTerm !== '' || $filterStatus !== '';
 
 $currentUser = rex::getUser();
 
@@ -163,15 +167,6 @@ $existingUserIds = array_column($users, 'user_id');
         </div>
     </div>
 
-    <!-- Tab Navigation -->
-    <ul class="nav nav-tabs project-view-tabs">
-        <li class="active">
-            <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId(), 'view' => 'list']) ?>">
-                <i class="rex-icon fa-list"></i> <?= $package->i18n('issue_tracker_view_list') ?>
-            </a>
-        </li>
-    </ul>
-
     <!-- Liste Ansicht -->
     <div class="row">
         <!-- Issues Liste -->
@@ -179,13 +174,46 @@ $existingUserIds = array_column($users, 'user_id');
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h4 class="panel-title">
-                        <i class="rex-icon fa-ticket"></i> <?= $package->i18n('issue_tracker_issues') ?> (<?= count($issues) ?>)
+                        <i class="rex-icon fa-ticket"></i> <?= $package->i18n('issue_tracker_issues') ?> (<?= $issuesTotalCount ?>)
                     </h4>
+                </div>
+                <div class="panel-body" style="padding-bottom: 0;">
+                    <form method="get" action="<?= rex_url::currentBackendPage() ?>">
+                        <input type="hidden" name="page" value="issue_tracker/projects/view" />
+                        <input type="hidden" name="project_id" value="<?= $project->getId() ?>" />
+                        <div class="row">
+                            <div class="col-sm-5" style="margin-bottom: 10px;">
+                                <div class="input-group">
+                                    <input type="text" name="search" class="form-control" value="<?= rex_escape($searchTerm) ?>" placeholder="<?= $package->i18n('issue_tracker_search_placeholder') ?>" style="height: 34px;">
+                                    <span class="input-group-btn">
+                                        <button type="submit" class="btn btn-primary"><i class="rex-icon fa-search"></i></button>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-sm-4" style="margin-bottom: 10px;">
+                                <select name="filter_status" class="form-control selectpicker" data-width="100%" title="<?= $package->i18n('issue_tracker_status') ?>" onchange="this.form.submit()">
+                                    <option value=""><?= $package->i18n('issue_tracker_all') ?></option>
+                                    <?php foreach ($statuses as $statusKey => $statusLabel): ?>
+                                    <option value="<?= rex_escape($statusKey) ?>" <?= $filterStatus === $statusKey ? 'selected' : '' ?>><?= $package->i18n('issue_tracker_status_' . $statusKey) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-sm-3" style="margin-bottom: 10px;">
+                                <?php if ($hasActiveFilter): ?>
+                                <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId()]) ?>" class="btn btn-default" style="width: 100%;">
+                                    <i class="rex-icon fa-times"></i> <?= $package->i18n('issue_tracker_filter_reset') ?>
+                                </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </form>
                 </div>
                 <?php if (empty($issues)): ?>
                 <div class="panel-body">
-                    <p class="text-muted"><?= $package->i18n('issue_tracker_no_issues') ?></p>
-                    <?php if ($canWrite): ?>
+                    <p class="text-muted">
+                        <?= $package->i18n($hasActiveFilter ? 'issue_tracker_no_issues_filtered' : 'issue_tracker_no_issues') ?>
+                    </p>
+                    <?php if ($canWrite && !$hasActiveFilter): ?>
                     <a href="<?= rex_url::backendPage('issue_tracker/issues/create', ['project_id' => $project->getId()]) ?>" class="btn btn-success btn-sm">
                         <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_create_new') ?>
                     </a>
@@ -240,10 +268,26 @@ $existingUserIds = array_column($users, 'user_id');
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                <?php if ($pager->getRowCount() > $pager->getRowsPerPage()): ?>
+                <div class="panel-footer">
+                    <?php
+                    $pagerUrlProvider = new rex_context([
+                        'page' => 'issue_tracker/projects/view',
+                        'project_id' => $project->getId(),
+                        'search' => $searchTerm,
+                        'filter_status' => $filterStatus,
+                    ]);
+                    $pagerFragment = new rex_fragment();
+                    $pagerFragment->setVar('urlprovider', $pagerUrlProvider);
+                    $pagerFragment->setVar('pager', $pager);
+                    echo $pagerFragment->parse('core/navigations/pagination.php');
+                    ?>
+                </div>
+                <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>
-        
+
         <!-- Team Mitglieder -->
         <div class="col-md-4">
             <div class="panel panel-default">
@@ -261,7 +305,7 @@ $existingUserIds = array_column($users, 'user_id');
                         <i class="rex-icon fa-user"></i>
                         <?= rex_escape($user['name']) ?>
                         <?php if ($canEdit && $user['user_id'] !== $currentUser->getId()): ?>
-                        <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId(), 'func' => 'remove_user', 'user_id' => $user['user_id'], 'view' => $view]) ?>" 
+                        <a href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId(), 'func' => 'remove_user', 'user_id' => $user['user_id']]) ?>"
                            class="text-danger pull-right" style="margin-right: 10px;"
                            onclick="return confirm('<?= $package->i18n('issue_tracker_user_remove_confirm') ?>')">
                             <i class="rex-icon fa-times"></i>

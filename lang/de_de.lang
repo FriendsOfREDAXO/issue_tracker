@@ -13,9 +13,20 @@ issue_tracker_issues_list = Übersicht
 issue_tracker_issues_view = Thema anzeigen
 issue_tracker_issues_create = Neues Thema
 issue_tracker_issues_edit = Thema bearbeiten
+issue_tracker_knowledge = Wissen
 issue_tracker_preferences = Benachrichtigungen
 issue_tracker_settings = Einstellungen
 issue_tracker_help = Hilfe
+
+# Wissen (gesammelte Info-Themen)
+issue_tracker_knowledge_intro = Gesammeltes Wissen und Hinweise (Status „Info“) an einem Ort – durchsuchbar und nach Kategorie sortiert.
+issue_tracker_knowledge_search_placeholder = Wissen durchsuchen...
+issue_tracker_knowledge_new_entry = Neuer Wissenseintrag
+issue_tracker_knowledge_empty = Noch keine Wissenseinträge vorhanden.
+issue_tracker_knowledge_empty_filtered = Keine Treffer für diese Suche/Filter.
+issue_tracker_knowledge_count = {0} Einträge
+issue_tracker_knowledge_uncategorized = Ohne Kategorie
+issue_tracker_knowledge_updated = Aktualisiert
 
 # Dashboard
 issue_tracker_status_open = Offen
@@ -77,6 +88,12 @@ issue_tracker_please_select = Bitte auswählen
 issue_tracker_not_assigned = Nicht zugewiesen
 issue_tracker_save = Speichern
 issue_tracker_cancel = Abbrechen
+issue_tracker_form_section_problem = Worum geht es?
+issue_tracker_form_section_classification = Einordnung
+issue_tracker_form_section_assignment = Zuständigkeit
+issue_tracker_form_section_advanced = Erweiterte Optionen
+issue_tracker_form_section_advanced_hint = Version, Domains, YForm-Tabellen
+issue_tracker_form_section_attachments = Anhänge
 
 # Kommentare
 issue_tracker_comments = Kommentare
@@ -120,6 +137,7 @@ issue_tracker_status_changed = Status wurde geändert
 
 # Meldungen
 issue_tracker_no_issues = Keine Themen gefunden
+issue_tracker_no_issues_filtered = Keine Themen für diese Suche/Filter gefunden
 issue_tracker_issue_created = Thema wurde erfolgreich erstellt
 issue_tracker_issue_updated = Thema wurde erfolgreich aktualisiert
 issue_tracker_issue_deleted = Thema wurde erfolgreich gelöscht
@@ -248,6 +266,7 @@ issue_tracker_project_save_error = Fehler beim Speichern des Projekts
 issue_tracker_project_not_found = Projekt wurde nicht gefunden
 issue_tracker_project_delete_confirm = Möchten Sie dieses Projekt wirklich löschen? Die Themen bleiben erhalten.
 issue_tracker_no_projects = Keine Projekte vorhanden
+issue_tracker_no_projects_filtered = Keine Projekte für diese Suche/Filter gefunden
 issue_tracker_no_project = Kein Projekt
 issue_tracker_project_help = Optional: Ordnen Sie dieses Thema einem Projekt zu
 issue_tracker_project_status_active = Aktiv

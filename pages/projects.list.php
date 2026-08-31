@@ -25,10 +25,25 @@ if (rex_request('func', 'string') === 'delete' && rex_request('project_id', 'int
     }
 }
 
-// Projekte laden (gefiltert nach Berechtigung)
-$projects = Project::getAll($currentUser->getId());
+// Filter: Status & Suche
+$filterStatus = rex_request('filter_status', 'string', '');
+$searchTerm = rex_request('search', 'string', '');
+
+// Projekte laden (gefiltert nach Berechtigung und Status)
+$projects = Project::getAll($currentUser->getId(), $filterStatus !== '' ? $filterStatus : null);
+
+// Suche client-seitig anwenden (Projektlisten sind klein, kein eigener SQL-Roundtrip nötig)
+if ($searchTerm !== '') {
+    $needle = mb_strtolower($searchTerm);
+    $projects = array_values(array_filter($projects, static function (Project $project) use ($needle): bool {
+        return str_contains(mb_strtolower($project->getName()), $needle)
+            || str_contains(mb_strtolower($project->getDescription()), $needle);
+    }));
+}
 
 // Fragment einbinden
 $fragment = new rex_fragment();
 $fragment->setVar('projects', $projects);
+$fragment->setVar('filterStatus', $filterStatus);
+$fragment->setVar('searchTerm', $searchTerm);
 echo $fragment->parse('issue_tracker_project_list.php');

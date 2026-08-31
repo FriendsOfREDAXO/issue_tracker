@@ -9,6 +9,8 @@ use FriendsOfREDAXO\IssueTracker\PermissionService;
 
 $package = rex_addon::get('issue_tracker');
 $projects = $this->getVar('projects', []);
+$filterStatus = $this->getVar('filterStatus', '');
+$searchTerm = $this->getVar('searchTerm', '');
 $currentUser = rex::getUser();
 
 $statusLabels = [
@@ -16,6 +18,8 @@ $statusLabels = [
     'completed' => ['label' => $package->i18n('issue_tracker_project_status_completed'), 'class' => 'info'],
     'archived' => ['label' => $package->i18n('issue_tracker_project_status_archived'), 'class' => 'default'],
 ];
+
+$hasActiveFilter = $filterStatus !== '' || $searchTerm !== '';
 ?>
 
 <div class="panel panel-default">
@@ -29,10 +33,41 @@ $statusLabels = [
             <?php endif; ?>
         </div>
     </div>
-    
+
+    <div class="panel-body" style="padding-bottom: 0;">
+        <form method="get" action="<?= rex_url::currentBackendPage() ?>">
+            <input type="hidden" name="page" value="issue_tracker/projects/list" />
+            <div class="row">
+                <div class="col-sm-5" style="margin-bottom: 15px;">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" value="<?= rex_escape($searchTerm) ?>" placeholder="<?= $package->i18n('issue_tracker_search_placeholder') ?>" style="height: 34px;">
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-primary"><i class="rex-icon fa-search"></i></button>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-sm-4" style="margin-bottom: 15px;">
+                    <select name="filter_status" class="form-control selectpicker" data-width="100%" title="<?= $package->i18n('issue_tracker_status') ?>" onchange="this.form.submit()">
+                        <option value=""><?= $package->i18n('issue_tracker_all') ?></option>
+                        <?php foreach ($statusLabels as $statusKey => $info): ?>
+                        <option value="<?= rex_escape($statusKey) ?>" <?= $filterStatus === $statusKey ? 'selected' : '' ?>><?= $info['label'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-sm-3" style="margin-bottom: 15px;">
+                    <?php if ($hasActiveFilter): ?>
+                    <a href="<?= rex_url::backendPage('issue_tracker/projects/list') ?>" class="btn btn-default" style="width: 100%;">
+                        <i class="rex-icon fa-times"></i> <?= $package->i18n('issue_tracker_filter_reset') ?>
+                    </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </form>
+    </div>
+
     <?php if (empty($projects)): ?>
     <div class="panel-body">
-        <p class="text-muted"><?= $package->i18n('issue_tracker_no_projects') ?></p>
+        <p class="text-muted"><?= $package->i18n($hasActiveFilter ? 'issue_tracker_no_projects_filtered' : 'issue_tracker_no_projects') ?></p>
     </div>
     <?php else: ?>
     <div class="row" style="padding: 15px;">
