@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Gesendete Nachrichten
+ * Gesendete Nachrichten – Postfach wie Mail (Liste + Lesebereich)
  *
  * @package issue_tracker
  */
@@ -12,10 +12,11 @@ $package = rex_addon::get('issue_tracker');
 $currentUser = rex::getUser();
 
 // Nachricht löschen
-if (rex_request('func', 'string') === 'delete' && rex_request('message_id', 'int', 0) > 0) {
+$func = rex_request('func', 'string');
+if ($func === 'delete' && rex_request('message_id', 'int', 0) > 0) {
     $messageId = rex_request('message_id', 'int', 0);
     $message = Message::get($messageId);
-    
+
     if ($message && $message->hasAccess($currentUser->getId())) {
         if ($message->delete($currentUser->getId())) {
             echo rex_view::success($package->i18n('issue_tracker_message_deleted'));
@@ -25,11 +26,27 @@ if (rex_request('func', 'string') === 'delete' && rex_request('message_id', 'int
     }
 }
 
-// Gesendete Nachrichten laden
+// Ausgewählte Unterhaltung im Lesebereich
+$selectedMessageId = $func === 'delete' ? 0 : rex_request('message_id', 'int', 0);
+$paneHtml = '';
+if ($selectedMessageId > 0) {
+    $renderPane = static function (): string {
+        $itEmbedded = true;
+        $itBox = 'sent';
+        ob_start();
+        include __DIR__ . '/messages.view.php';
+        return (string) ob_get_clean();
+    };
+    $paneHtml = $renderPane();
+}
+
+// Nachrichten laden (nach dem Lesebereich, damit „gelesen“ schon stimmt)
 $messages = Message::getSent($currentUser->getId());
 
 // Fragment einbinden
 $fragment = new rex_fragment();
 $fragment->setVar('messages', $messages);
 $fragment->setVar('type', 'sent');
+$fragment->setVar('selectedMessageId', $selectedMessageId);
+$fragment->setVar('paneHtml', $paneHtml, false);
 echo $fragment->parse('issue_tracker_message_list.php');

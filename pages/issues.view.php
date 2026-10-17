@@ -19,6 +19,19 @@ $package = rex_addon::get('issue_tracker');
 
 $issueId = rex_request('issue_id', 'int', 0);
 
+// Eingebettet = Lesebereich der Postfach-Liste (issues/list&issue_id=…); sonst Vollansicht (auch für E-Mail-Links)
+$itEmbedded = isset($itEmbedded) && true === $itEmbedded;
+$itSelfParams = ['issue_id' => $issueId];
+if ($itEmbedded) {
+    foreach (['sort' => 'string', 'order' => 'string', 'show' => 'int'] as $carryKey => $carryType) {
+        $carryValue = rex_request($carryKey, $carryType, null);
+        if ($carryValue !== null && $carryValue !== '' && $carryValue !== 0) {
+            $itSelfParams[$carryKey] = $carryValue;
+        }
+    }
+}
+$itSelfUrl = rex_url::backendPage($itEmbedded ? 'issue_tracker/issues/list' : 'issue_tracker/issues/view', $itSelfParams, false);
+
 if ($issueId === 0) {
     echo rex_view::error($package->i18n('issue_tracker_issue_not_found'));
     return;
@@ -62,9 +75,7 @@ if (rex_post('toggle_checklist', 'int', 0) === 1) {
         }
     }
 
-    $redirectUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]);
-    $redirectUrl = html_entity_decode($redirectUrl, ENT_QUOTES, 'UTF-8');
-    header('Location: ' . $redirectUrl . '#' . ($clSource === 'description' ? 'description' : 'comment-' . substr($clSource, 8)));
+    header('Location: ' . $itSelfUrl . '#' . ($clSource === 'description' ? 'description' : 'comment-' . substr($clSource, 8)));
     exit;
 }
 
@@ -128,9 +139,7 @@ if (rex_post('delete_comment', 'int', 0) > 0) {
                     null
                 );
                 
-                $redirectUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]);
-                $redirectUrl = html_entity_decode($redirectUrl, ENT_QUOTES, 'UTF-8');
-                header('Location: ' . $redirectUrl);
+                header('Location: ' . $itSelfUrl);
                 exit;
             }
         }
@@ -158,9 +167,7 @@ if (rex_post('edit_comment', 'int', 0) > 0) {
                         null
                     );
                     
-                    $redirectUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]);
-                    $redirectUrl = html_entity_decode($redirectUrl, ENT_QUOTES, 'UTF-8');
-                    $redirectUrl .= '#comment-' . $comment->getId();
+                    $redirectUrl = $itSelfUrl . '#comment-' . $comment->getId();
                     header('Location: ' . $redirectUrl);
                     exit;
                 }
@@ -401,9 +408,7 @@ if (rex_post('add_comment', 'int', 0) === 1) {
             }
             
             // Redirect zur aktuellen Seite mit Anker zum neuen Kommentar
-            $redirectUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]);
-            $redirectUrl = html_entity_decode($redirectUrl, ENT_QUOTES, 'UTF-8');
-            $redirectUrl .= '#comment-' . $comment->getId();
+            $redirectUrl = $itSelfUrl . '#comment-' . $comment->getId();
             header('Location: ' . $redirectUrl);
             exit;
         }
@@ -511,6 +516,53 @@ if (rex_post('add_watchers', 'int', 0) === 1) {
     }
 }
 
+// Priorität / Zuweisung direkt im Lesebereich ändern (Symbolleiste)
+$itQuickToken = rex_csrf_token::factory('issue_tracker_quick_edit');
+if ((rex_post('change_priority', 'int', 0) === 1 || rex_post('change_assignee', 'int', 0) === 1) && PermissionService::canEdit($issue)) {
+    if (!$itQuickToken->isValid()) {
+        echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
+    } else {
+        $oldIssue = clone $issue;
+        $changed = false;
+        if (rex_post('change_priority', 'int', 0) === 1) {
+            $prioritiesSql = rex_sql::factory();
+            $prioritiesSql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "priorities"');
+            $allowedPriorities = $prioritiesSql->getRows() > 0 ? array_keys(json_decode((string) $prioritiesSql->getValue('setting_value'), true) ?: []) : [];
+            $newPriority = rex_post('priority', 'string', '');
+            if (in_array($newPriority, $allowedPriorities, true) && $newPriority !== $issue->getPriority()) {
+                $issue->setPriority($newPriority);
+                $changed = true;
+            }
+        } else {
+            $assigneeSelection = rex_post('assigned_user_id', 'string', '');
+            $newAssignee = 'all' === $assigneeSelection ? null : (int) $assigneeSelection;
+            $assigneeUser = $newAssignee ? rex_user::get($newAssignee) : null;
+            $validAssignee = null === $newAssignee || ($assigneeUser && ($assigneeUser->isAdmin() || $assigneeUser->hasPerm('issue_tracker[]') || $assigneeUser->hasPerm('issue_tracker[issuer]') || $assigneeUser->hasPerm('issue_tracker[issue_manager]')));
+            if (('all' === $assigneeSelection || $newAssignee > 0) && $validAssignee && $newAssignee !== $issue->getAssignedUserId()) {
+                $issue->setAssignedUserId($newAssignee);
+                $changed = true;
+            }
+        }
+        if ($changed && $issue->save()) {
+            HistoryService::trackChanges($oldIssue, $issue, PermissionService::getUserId());
+            if (rex_post('change_assignee', 'int', 0) === 1 && $issue->getAssignedUserId()) {
+                $assigneeUser = rex_user::get($issue->getAssignedUserId());
+                if ($assigneeUser) {
+                    NotificationService::notifyAssignment($issue, $assigneeUser);
+                }
+            }
+        }
+        header('Location: ' . $itSelfUrl);
+        exit;
+    }
+}
+
+// Erwähnungen des aktuellen Benutzers in diesem Thema gelten beim Öffnen als gelesen (wie in Mail)
+rex_sql::factory()->setQuery(
+    'UPDATE ' . rex::getTable('issue_tracker_mentions') . ' SET read_at = ? WHERE issue_id = ? AND mentioned_user_id = ? AND read_at IS NULL',
+    [date('Y-m-d H:i:s'), $issue->getId(), PermissionService::getUserId()]
+);
+
 // Einstellungen laden
 $settingsSql = rex_sql::factory();
 $settingsSql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "statuses"');
@@ -605,13 +657,32 @@ $fragment->setVar('history', $history);
 $fragment->setVar('canSendReminder', $canSendReminder);
 $fragment->setVar('lastReminderAt', $lastReminderAt);
 $fragment->setVar('priorities', $priorities);
-$fragment->setVar('allUsers', $allIssueTrackerUsers);
+$fragment->setVar('allUsers', $allIssueTrackerUsers, false);
 $fragment->setVar('allTags', $allTags);
 $fragment->setVar('currentTags', $currentTags);
 $fragment->setVar('currentTagIds', $currentTagIds);
 $fragment->setVar('isWatching', $isWatching);
 $fragment->setVar('watcherCount', $watcherCount);
-$fragment->setVar('watcherUsers', $watcherUsers);
-$fragment->setVar('availableWatcherUsers', $availableWatcherUsers);
+$fragment->setVar('watcherUsers', $watcherUsers, false);
+$fragment->setVar('availableWatcherUsers', $availableWatcherUsers, false);
 $fragment->setVar('totalTimeMinutes', $totalTimeMinutes);
-echo $fragment->parse('issue_tracker_view.php');
+$fragment->setVar('embedded', $itEmbedded);
+$fragment->setVar('selfUrl', $itSelfUrl, false);
+$fragment->setVar('quickToken', $itQuickToken);
+$fragment->setVar('canChangeStatus', PermissionService::isAdmin() || PermissionService::canEdit($issue));
+
+if ($itEmbedded) {
+    echo $fragment->parse('issue_tracker_view.php');
+    return;
+}
+
+// Vollansicht (z. B. aus E-Mail-Links): Postfächer + Lesebereich in voller Breite
+$sidebar = new rex_fragment();
+?>
+<div class="it-mail it-mail--full it-mail--sel" data-it-mail data-mention-users="<?= rex_escape(json_encode(array_values($allIssueTrackerUsers))) ?>">
+    <?= $sidebar->parse('issue_tracker_filter.php') ?>
+    <section class="it-rp-wrap" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_reading_pane')) ?>" data-it-pane>
+        <?= $fragment->parse('issue_tracker_view.php') ?>
+    </section>
+</div>
+<?php

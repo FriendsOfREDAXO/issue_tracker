@@ -219,7 +219,7 @@
                         "guide"
                     ],
                     status: false,
-                    placeholder: "Beschreibung des Issues..."
+                    placeholder: (document.documentElement.lang || "de").indexOf("de") === 0 ? "Beschreiben Sie das Anliegen …" : "Describe the request …"
                 });
             }
 

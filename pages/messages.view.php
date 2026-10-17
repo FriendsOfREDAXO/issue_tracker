@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Nachricht anzeigen
+ * Nachricht anzeigen – Unterhaltung im Lesebereich (eingebettet in Eingang/Gesendet oder als Vollansicht)
  *
  * @package issue_tracker
  */
@@ -10,6 +10,9 @@ use FriendsOfREDAXO\IssueTracker\Message;
 
 $package = rex_addon::get('issue_tracker');
 $currentUser = rex::getUser();
+
+$itEmbedded = isset($itEmbedded) && true === $itEmbedded;
+$itBox = isset($itBox) && 'sent' === $itBox ? 'sent' : 'inbox';
 
 $messageId = rex_request('message_id', 'int', 0);
 
@@ -32,8 +35,8 @@ if (!$message->hasAccess($currentUser->getId())) {
 }
 
 // Konversation laden
-$partnerId = $message->getSenderId() === $currentUser->getId() 
-    ? $message->getRecipientId() 
+$partnerId = $message->getSenderId() === $currentUser->getId()
+    ? $message->getRecipientId()
     : $message->getSenderId();
 
 $conversation = Message::getConversation($currentUser->getId(), $partnerId);
@@ -50,4 +53,20 @@ $fragment = new rex_fragment();
 $fragment->setVar('message', $message);
 $fragment->setVar('conversation', $conversation);
 $fragment->setVar('partnerId', $partnerId);
-echo $fragment->parse('issue_tracker_message_view.php');
+$fragment->setVar('embedded', $itEmbedded);
+$fragment->setVar('box', $itBox);
+
+if ($itEmbedded) {
+    echo $fragment->parse('issue_tracker_message_view.php');
+    return;
+}
+
+$sidebar = new rex_fragment();
+$sidebar->setVar('active', $message->getSenderId() === $currentUser->getId() ? 'sent' : 'inbox');
+?>
+<div class="it-mail it-mail--full it-mail--sel it-mail--messages" data-it-mail>
+    <?= $sidebar->parse('issue_tracker_message_sidebar.php') ?>
+    <section class="it-rp-wrap" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_reading_pane')) ?>" data-it-pane>
+        <?= $fragment->parse('issue_tracker_message_view.php') ?>
+    </section>
+</div>

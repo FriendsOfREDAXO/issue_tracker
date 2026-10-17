@@ -43,6 +43,8 @@ foreach ($usersSql as $row) {
 $currentMembers = array_column($project->getUsers(), 'user_id');
 
 // Speichern
+$formErrors = [];
+$postedMembers = null;
 if (rex_post('save', 'int', 0) === 1) {
     $project->setName(rex_post('name', 'string', ''));
     $project->setDescription(rex_post('description', 'string', ''));
@@ -58,7 +60,14 @@ if (rex_post('save', 'int', 0) === 1) {
         $project->setDueDate(null);
     }
     
-    if ($project->save()) {
+    // Pflichtfeld prüfen – bei Fehler bleibt das Formular mit den eingegebenen Werten stehen
+    if (trim($project->getName()) === '') {
+        $formErrors['project-name'] = rex_i18n::rawMsg('issue_tracker_ui_error_project_name');
+    }
+
+    if ($formErrors) {
+        $postedMembers = array_map('intval', rex_post('members', 'array', []));
+    } elseif ($project->save()) {
         // Mitglieder aktualisieren
         $newMemberIds = rex_post('members', 'array', []);
         $newMemberIds = array_map('intval', $newMemberIds);
@@ -104,5 +113,6 @@ $fragment = new rex_fragment();
 $fragment->setVar('project', $project);
 $fragment->setVar('isNew', false);
 $fragment->setVar('allUsers', $allUsers);
-$fragment->setVar('currentMembers', $currentMembers);
+$fragment->setVar('formErrors', $formErrors);
+$fragment->setVar('currentMembers', $postedMembers ?? $currentMembers);
 echo $fragment->parse('issue_tracker_project_form.php');

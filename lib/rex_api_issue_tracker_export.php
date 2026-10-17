@@ -127,6 +127,8 @@ class rex_api_issue_tracker_export extends rex_api_function
         $filterStatus = rex_request('filter_status', 'string', '');
         $filterCategory = rex_request('filter_category', 'string', '');
         $filterTag = rex_request('filter_tag', 'int', 0);
+        $filterAssigned = rex_request('filter_assigned', 'int', 0);
+        $filterProject = rex_request('filter_project', 'int', 0);
         $filterCreatedBy = rex_request('filter_created_by', 'int', 0);
         $search = rex_request('search', 'string', '');
         $sortColumn = rex_request('sort', 'string', 'created_at');
@@ -164,6 +166,13 @@ class rex_api_issue_tracker_export extends rex_api_function
             $where[] = 'created_by = ' . (int)$filterCreatedBy;
         }
         
+        if ($filterAssigned > 0) {
+            $where[] = 'assigned_user_id = ' . (int) $filterAssigned;
+        }
+        if ($filterProject > 0) {
+            $where[] = 'project_id = ' . (int) $filterProject;
+        }
+
         // Text-Suche
         if ($search) {
             $search = $sql->escape('%' . $search . '%');

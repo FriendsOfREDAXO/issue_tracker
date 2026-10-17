@@ -15,6 +15,8 @@ $replyToId = rex_request('reply_to', 'int', 0);
 $recipientId = rex_request('recipient_id', 'int', 0);
 
 $replyToMessage = null;
+$prefilledMessage = '';
+$fieldErrors = [];
 $prefilledSubject = '';
 $prefilledRecipient = 0;
 
@@ -53,7 +55,11 @@ if (rex_post('send', 'int', 0) === 1) {
     $messageText = rex_post('message', 'string', '');
     
     if ($recipientId === 0 || empty($subject) || empty($messageText)) {
-        echo rex_view::error($package->i18n('issue_tracker_message_fill_all_fields'));
+        // Eingaben behalten, Fehler am Feld anzeigen
+        $prefilledRecipient = $recipientId;
+        $prefilledSubject = $subject;
+        $prefilledMessage = $messageText;
+        $fieldErrors = ['recipient' => $recipientId === 0, 'subject' => empty($subject), 'message' => empty($messageText)];
     } else {
         $message = new Message();
         $message->setSenderId($currentUser->getId());
@@ -72,8 +78,20 @@ if (rex_post('send', 'int', 0) === 1) {
 
 // Fragment einbinden
 $fragment = new rex_fragment();
-$fragment->setVar('allUsers', $allUsers);
-$fragment->setVar('prefilledSubject', $prefilledSubject);
+$fragment->setVar('allUsers', $allUsers, false);
+$fragment->setVar('prefilledSubject', $prefilledSubject, false);
 $fragment->setVar('prefilledRecipient', $prefilledRecipient);
 $fragment->setVar('replyToMessage', $replyToMessage);
-echo $fragment->parse('issue_tracker_message_form.php');
+$fragment->setVar('prefilledMessage', $prefilledMessage, false);
+$fragment->setVar('fieldErrors', $fieldErrors);
+
+$sidebar = new rex_fragment();
+$sidebar->setVar('active', 'compose');
+?>
+<div class="it-mail it-mail--full it-mail--sel it-mail--messages it-mail--compose" data-it-mail>
+    <?= $sidebar->parse('issue_tracker_message_sidebar.php') ?>
+    <section class="it-rp-wrap it-rp-wrap--sheet">
+        <?= $fragment->parse('issue_tracker_message_form.php') ?>
+    </section>
+</div>
+<?php

@@ -14,6 +14,8 @@ $userId = $currentUser->getId();
 $filterStatus = \rex_request('filter_status', 'string', '');
 $filterCategory = \rex_request('filter_category', 'string', '');
 $filterTag = \rex_request('filter_tag', 'int', 0);
+$filterAssigned = \rex_request('filter_assigned', 'int', 0);
+$filterProject = \rex_request('filter_project', 'int', 0);
 $search = \rex_request('search', 'string', '');
 $sortColumn = \rex_request('sort', 'string', 'created_at');
 $sortOrder = \rex_request('order', 'string', 'desc');
@@ -37,6 +39,12 @@ if ($filterCategory) {
     $where[] = 'category = ' . $sql->escape($filterCategory);
 }
 
+if ($filterAssigned > 0) {
+    $where[] = 'assigned_user_id = ' . (int) $filterAssigned;
+}
+if ($filterProject > 0) {
+    $where[] = 'project_id = ' . (int) $filterProject;
+}
 if ($filterTag > 0) {
     $joins .= ' LEFT JOIN ' . \rex::getTable('issue_tracker_issue_tags') . ' itt ON i.id = itt.issue_id';
     $where[] = 'itt.tag_id = ' . (int)$filterTag;

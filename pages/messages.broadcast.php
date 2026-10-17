@@ -39,4 +39,13 @@ if (rex_post('send_broadcast', 'int', 0) === 1) {
 
 // Fragment ausgeben
 $fragment = new rex_fragment();
-echo $fragment->parse('issue_tracker_broadcast.php');
+$sidebar = new rex_fragment();
+$sidebar->setVar('active', 'broadcast');
+?>
+<div class="it-mail it-mail--full it-mail--sel it-mail--messages it-mail--compose" data-it-mail>
+    <?= $sidebar->parse('issue_tracker_message_sidebar.php') ?>
+    <section class="it-rp-wrap it-rp-wrap--sheet">
+        <?= $fragment->parse('issue_tracker_broadcast.php') ?>
+    </section>
+</div>
+<?php
