@@ -14,6 +14,8 @@ $messages = $this->getVar('messages', []);
 $type = $this->getVar('type', 'inbox'); // inbox oder sent
 $selectedMessageId = (int) $this->getVar('selectedMessageId', 0);
 $paneHtml = (string) $this->getVar('paneHtml', '');
+$messageSearch = (string) $this->getVar('messageSearch', '');
+$screen = (string) $this->getVar('screen', 'list');
 $currentUser = rex::getUser();
 $uid = (int) $currentUser->getId();
 
@@ -57,30 +59,44 @@ if ($selectedMessageId > 0) {
         $selectedPartner = $sel->getSenderId() === $uid ? $sel->getRecipientId() : $sel->getSenderId();
     }
 }
-$page = 'issue_tracker/messages/' . ($isInbox ? 'inbox' : 'sent');
+$page = 'issue_tracker/issues/list';
+$box = $isInbox ? 'inbox' : 'sent';
+$unreadTotal = Message::getUnreadCount($uid);
 $title = $isInbox ? $package->i18n('issue_tracker_messages_inbox') : $package->i18n('issue_tracker_messages_sent');
 
 $sidebar = new rex_fragment();
-$sidebar->setVar('active', $isInbox ? 'inbox' : 'sent');
+$sidebar->setVar('mode', 'messages');
+$sidebar->setVar('box', $box);
+$sidebar->setVar('filterState', $this->getVar('filterState', null), false);
 ?>
-<div class="it-mail it-mail--messages<?= $selectedPartner > 0 ? ' it-mail--sel' : '' ?>" data-it-mail>
-    <?= $sidebar->parse('issue_tracker_message_sidebar.php') ?>
+<div class="it-mail it-mail--messages<?= $selectedPartner > 0 ? ' it-mail--sel' : '' ?><?= $screen === 'list' ? ' it-mail--list' : '' ?>" data-it-mail data-mode="messages">
+    <?= $sidebar->parse('issue_tracker_filter.php') ?>
     <section class="it-ml" aria-label="<?= rex_escape($title) ?>">
         <header class="it-ml-bar">
             <div class="it-ml-head">
                 <div class="it-ml-heading">
                     <h2 class="it-ml-title"><?= rex_escape($title) ?></h2>
-                    <span class="it-ml-total"><?= $package->i18n('issue_tracker_mail_conversations', count($conversations)) ?></span>
+                    <span class="it-ml-total"><?= $package->i18n('issue_tracker_mail_conversations', count($conversations)) ?><?php if ($isInbox && $unreadTotal > 0): ?> · <?= $package->i18n('issue_tracker_mail_unread_count', $unreadTotal) ?><?php endif; ?></span>
                 </div>
+                <a class="it-tb-back it-tb-back--list" href="<?= rex_url::backendPage($page) ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_mailboxes') ?></a>
                 <div class="it-ml-head-actions">
                     <a class="it-tb-btn it-tb-btn--accent" href="<?= rex_url::backendPage('issue_tracker/messages/compose') ?>" title="<?= rex_escape($package->i18n('issue_tracker_mail_new_message')) ?>"><i class="rex-icon fa-pencil-square-o" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_new_message') ?></span></a>
                 </div>
+            </div>
+            <div class="it-ml-tools">
+                <form class="it-search" method="get" action="<?= rex_url::backendController() ?>" role="search">
+                    <input type="hidden" name="page" value="issue_tracker/issues/list" />
+                    <input type="hidden" name="box" value="<?= $box ?>" />
+                    <i class="rex-icon fa-search it-search-icon" aria-hidden="true"></i>
+                    <input type="search" name="msearch" class="it-search-input" value="<?= rex_escape($messageSearch) ?>" placeholder="<?= rex_escape($package->i18n('issue_tracker_mail_search_messages')) ?>" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_search_messages')) ?>" />
+                </form>
             </div>
         </header>
         <?php if (empty($conversations)): ?>
         <div class="it-empty">
             <i class="rex-icon fa-envelope-o" aria-hidden="true"></i>
-            <?= $isInbox ? $package->i18n('issue_tracker_no_messages_inbox') : $package->i18n('issue_tracker_no_messages_sent') ?>
+            <?= $messageSearch !== '' ? $package->i18n('issue_tracker_mail_empty_search') : $package->i18n('issue_tracker_mail_empty_messages') ?>
+            <p><a class="btn btn-default btn-sm" href="<?= rex_url::backendPage('issue_tracker/messages/compose') ?>"><?= $package->i18n('issue_tracker_mail_new_message_write') ?></a></p>
         </div>
         <?php else: ?>
         <ul class="it-ml-items" data-it-list>
@@ -95,8 +111,7 @@ $sidebar->setVar('active', $isInbox ? 'inbox' : 'sent');
                 }
             ?>
             <li>
-                <a class="it-ml-row<?= $isSel ? ' is-selected' : '' ?><?= $hasUnread ? ' is-unread' : '' ?>" href="<?= rex_url::backendPage($page, ['message_id' => $message->getId()]) ?>"
-                   data-view-href="<?= rex_url::backendPage('issue_tracker/messages/view', ['message_id' => $message->getId()]) ?>"<?= $isSel ? ' aria-current="true"' : '' ?>>
+                <a class="it-ml-row<?= $isSel ? ' is-selected' : '' ?><?= $hasUnread ? ' is-unread' : '' ?>" href="<?= rex_url::backendPage($page, ['box' => $box, 'message_id' => $message->getId()]) ?>"<?= $isSel ? ' aria-current="true"' : '' ?>>
                     <span class="it-ml-mark">
                         <?php if ($hasUnread): ?>
                         <span class="it-dot it-dot--unread" title="<?= rex_escape($package->i18n('issue_tracker_unread')) ?>"></span><span class="sr-only"><?= $conv['unread_count'] ?> <?= $package->i18n('issue_tracker_unread') ?></span>

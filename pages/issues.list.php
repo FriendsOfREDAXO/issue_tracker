@@ -27,6 +27,25 @@ if (rex_request('export_pdf', 'int', 0) === 1) {
     exit;
 }
 
+// Auf-/zugeklappte Bereiche (Seitenleiste, Lesebereich) pro Benutzer merken – kleiner POST mit CSRF-Schutz
+if (rex_post('it_ui_state', 'int', 0) === 1) {
+    rex_response::cleanOutputBuffers();
+    if (!rex_csrf_token::factory('issue_tracker_ui_state')->isValid()) {
+        rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
+        rex_response::sendContent('csrf');
+        exit;
+    }
+    $key = rex_post('key', 'string', '');
+    if (preg_match('/^[a-z_]{1,40}$/', $key)) {
+        $state = rex_config::get('issue_tracker', 'sidebar_state_' . $currentUserId, []);
+        $state = is_array($state) ? $state : [];
+        $state[$key] = rex_post('open', 'int', 0) === 1;
+        rex_config::set('issue_tracker', 'sidebar_state_' . $currentUserId, $state);
+    }
+    rex_response::sendContent('ok');
+    exit;
+}
+
 // Ansicht (Postfach | Tabelle) pro Benutzer merken
 $viewModeKey = 'view_mode_' . $currentUserId;
 $requestedViewMode = rex_request('view_mode', 'string', '');
@@ -53,6 +72,7 @@ if (rex_post('save_filter', 'int', 0) === 1) {
             'filter_project' => rex_post('filter_project', 'int', 0),
             'filter_watched' => rex_post('filter_watched', 'int', 0),
             'filter_mentioned' => rex_post('filter_mentioned', 'int', 0),
+            'filter_overdue' => rex_post('filter_overdue', 'int', 0),
             'search' => rex_post('search', 'string', ''),
         ];
 
@@ -88,74 +108,148 @@ if (rex_request('set_default_filter', 'int', 0) > 0) {
 
 // Session-Key für Filter
 $sessionKey = 'issue_tracker_filter';
+$filterKeys = ['filter_status' => 'string', 'filter_category' => 'string', 'filter_tag' => 'int', 'filter_created_by' => 'int', 'filter_assigned' => 'int',
+    'filter_project' => 'int', 'filter_watched' => 'int', 'filter_mentioned' => 'int', 'filter_overdue' => 'int', 'search' => 'string'];
+// Zuletzt genutztes Postfach pro Benutzer (wird beim nächsten Öffnen wiederhergestellt)
+$lastBoxKey = 'last_box_' . $currentUserId;
 
 // Reset-Button
 if (rex_request('reset_filter', 'int', 0) === 1) {
     rex_set_session($sessionKey, null);
+    rex_config::remove('issue_tracker', $lastBoxKey);
     // Redirect ohne Parameter
-    header('Location: ' . rex_url::backendPage('issue_tracker/issues/list', [], false));
+    header('Location: ' . rex_url::backendPage('issue_tracker/issues/list', ['screen' => 'list'], false));
     exit;
 }
 
-// Filter aus Request oder Session laden
-$hasFilterParams = rex_request('filter_status', 'string', null) !== null
-                || rex_request('filter_category', 'string', null) !== null
-                || rex_request('filter_tag', 'int', null) !== null
-                || rex_request('filter_created_by', 'int', null) !== null
-                || rex_request('filter_assigned', 'int', null) !== null
-                || rex_request('filter_project', 'int', null) !== null
-                || rex_request('filter_watched', 'int', null) !== null
-                || rex_request('filter_mentioned', 'int', null) !== null
-                || rex_request('search', 'string', null) !== null;
+// Bereich: Themen (Standard) oder Nachrichten (box=inbox|sent)
+$box = rex_request('box', 'string', '');
+$box = in_array($box, ['inbox', 'sent'], true) ? $box : '';
 
+// Filter aus Request oder Session laden
+$hasFilterParams = false;
+foreach ($filterKeys as $key => $type) {
+    if (rex_request($key, $type, null) !== null) {
+        $hasFilterParams = true;
+    }
+}
+$isFreshVisit = !$hasFilterParams && $box === '' && $_POST === []
+    && rex_request('issue_id', 'int', 0) === 0 && rex_request('screen', 'string', '') === '' && rex_request('func', 'string', '') === ''
+    && rex_request('view_mode', 'string', '') === '' && rex_request('sort', 'string', '') === '' && rex_request('show', 'int', 0) === 0;
+$lastBox = rex_config::get('issue_tracker', $lastBoxKey, null);
+if ($isFreshVisit && is_array($lastBox)) {
+    if (in_array($lastBox['box'] ?? '', ['inbox', 'sent'], true)) {
+        $box = $lastBox['box'];
+    } elseif (rex_session($sessionKey, 'array', []) === [] && is_array($lastBox['filters'] ?? null)) {
+        rex_set_session($sessionKey, $lastBox['filters']);
+    }
+}
+
+$filterState = [];
 if ($hasFilterParams) {
     // Filter aus Request - in Session speichern
-    $filterStatus = rex_request('filter_status', 'string', '');
-    $filterCategory = rex_request('filter_category', 'string', '');
-    $filterTag = rex_request('filter_tag', 'int', 0);
-    $filterCreatedBy = rex_request('filter_created_by', 'int', 0);
-    $filterAssigned = rex_request('filter_assigned', 'int', 0);
-    $filterProject = rex_request('filter_project', 'int', 0);
-    $filterWatched = rex_request('filter_watched', 'int', 0);
-    $filterMentioned = rex_request('filter_mentioned', 'int', 0);
-    $searchTerm = rex_request('search', 'string', '');
-
-    rex_set_session($sessionKey, [
-        'filter_status' => $filterStatus,
-        'filter_category' => $filterCategory,
-        'filter_tag' => $filterTag,
-        'filter_created_by' => $filterCreatedBy,
-        'filter_assigned' => $filterAssigned,
-        'filter_project' => $filterProject,
-        'filter_watched' => $filterWatched,
-        'filter_mentioned' => $filterMentioned,
-        'search' => $searchTerm,
-    ]);
+    foreach ($filterKeys as $key => $type) {
+        $filterState[$key] = rex_request($key, $type, 'int' === $type ? 0 : '');
+    }
+    rex_set_session($sessionKey, $filterState);
 } else {
     // Filter aus Session laden
     $sessionFilter = rex_session($sessionKey, 'array', []);
-    $filterStatus = (string) ($sessionFilter['filter_status'] ?? '');
-    $filterCategory = (string) ($sessionFilter['filter_category'] ?? '');
-    $filterTag = (int) ($sessionFilter['filter_tag'] ?? 0);
-    $filterCreatedBy = (int) ($sessionFilter['filter_created_by'] ?? 0);
-    $filterAssigned = (int) ($sessionFilter['filter_assigned'] ?? 0);
-    $filterProject = (int) ($sessionFilter['filter_project'] ?? 0);
-    $filterWatched = (int) ($sessionFilter['filter_watched'] ?? 0);
-    $filterMentioned = (int) ($sessionFilter['filter_mentioned'] ?? 0);
-    $searchTerm = (string) ($sessionFilter['search'] ?? '');
+    foreach ($filterKeys as $key => $type) {
+        $filterState[$key] = 'int' === $type ? (int) ($sessionFilter[$key] ?? 0) : (string) ($sessionFilter[$key] ?? '');
+    }
+}
+if ($box !== '') {
+    rex_config::set('issue_tracker', $lastBoxKey, ['box' => $box]);
+} elseif ($hasFilterParams) {
+    rex_config::set('issue_tracker', $lastBoxKey, ['box' => '', 'filters' => $filterState]);
+}
+$filterStatus = $filterState['filter_status'];
+$filterCategory = $filterState['filter_category'];
+$filterTag = $filterState['filter_tag'];
+$filterCreatedBy = $filterState['filter_created_by'];
+$filterAssigned = $filterState['filter_assigned'];
+$filterProject = $filterState['filter_project'];
+$filterWatched = $filterState['filter_watched'];
+$filterMentioned = $filterState['filter_mentioned'];
+$filterOverdue = $filterState['filter_overdue'];
+$searchTerm = $filterState['search'];
+
+// Modus: Themen, Projekt-Ordner, Wissen (Status „Info“) oder Nachrichten
+$mode = 'issues';
+if ($box !== '') {
+    $mode = 'messages';
+} elseif ($filterProject > 0) {
+    $mode = 'project';
+} elseif ($filterStatus === 'info') {
+    $mode = 'knowledge';
 }
 
-$filterState = [
-    'filter_status' => $filterStatus,
-    'filter_category' => $filterCategory,
-    'filter_tag' => $filterTag,
-    'filter_created_by' => $filterCreatedBy,
-    'filter_assigned' => $filterAssigned,
-    'filter_project' => $filterProject,
-    'filter_watched' => $filterWatched,
-    'filter_mentioned' => $filterMentioned,
-    'search' => $searchTerm,
-];
+// Bildschirm auf schmalen Geräten: Postfächer → Liste → Detail (wie Mail auf dem iPhone)
+$screen = 'mailboxes';
+if ($box !== '' || $hasFilterParams || rex_request('screen', 'string', '') === 'list' || rex_request('show', 'int', 0) > 0 || rex_request('sort', 'string', '') !== '' || rex_request('view_mode', 'string', '') !== '') {
+    $screen = 'list';
+}
+
+// ---------- Nachrichten im selben Fenster ----------
+if ($mode === 'messages') {
+    $func = rex_request('func', 'string');
+    if ($func === 'delete' && rex_request('message_id', 'int', 0) > 0) {
+        $delMessage = \FriendsOfREDAXO\IssueTracker\Message::get(rex_request('message_id', 'int', 0));
+        if ($delMessage && $delMessage->hasAccess($currentUserId)) {
+            if ($delMessage->delete($currentUserId)) {
+                echo rex_view::success($package->i18n('issue_tracker_message_deleted'));
+            }
+        } else {
+            echo rex_view::error($package->i18n('issue_tracker_no_permission'));
+        }
+    }
+
+    $selectedMessageId = $func === 'delete' ? 0 : rex_request('message_id', 'int', 0);
+    $paneHtml = '';
+    if ($selectedMessageId > 0) {
+        $selMessage = \FriendsOfREDAXO\IssueTracker\Message::get($selectedMessageId);
+        if (!$selMessage) {
+            $paneHtml = rex_view::error($package->i18n('issue_tracker_message_not_found'));
+        } elseif (!$selMessage->hasAccess($currentUserId)) {
+            $paneHtml = rex_view::error($package->i18n('issue_tracker_no_permission'));
+        } else {
+            $partnerId = $selMessage->getSenderId() === $currentUserId ? $selMessage->getRecipientId() : $selMessage->getSenderId();
+            $conversation = \FriendsOfREDAXO\IssueTracker\Message::getConversation($currentUserId, $partnerId);
+            foreach ($conversation as $convMessage) {
+                if ($convMessage->getRecipientId() === $currentUserId && !$convMessage->isRead()) {
+                    $convMessage->markAsRead();
+                }
+            }
+            $paneFragment = new rex_fragment();
+            $paneFragment->setVar('message', $selMessage);
+            $paneFragment->setVar('conversation', $conversation);
+            $paneFragment->setVar('partnerId', $partnerId);
+            $paneFragment->setVar('embedded', true);
+            $paneFragment->setVar('box', $box);
+            $paneHtml = $paneFragment->parse('issue_tracker_message_view.php');
+        }
+    }
+
+    $messages = $box === 'inbox' ? \FriendsOfREDAXO\IssueTracker\Message::getInbox($currentUserId) : \FriendsOfREDAXO\IssueTracker\Message::getSent($currentUserId);
+    // Suche in Betreff und Text (vorhandene Daten, kein eigener Index)
+    $messageSearch = trim(rex_request('msearch', 'string', ''));
+    if ($messageSearch !== '') {
+        $needle = mb_strtolower($messageSearch);
+        $messages = array_values(array_filter($messages, static fn ($m) => str_contains(mb_strtolower($m->getSubject() . ' ' . $m->getMessage() . ' ' . $m->getSenderName() . ' ' . $m->getRecipientName()), $needle)));
+    }
+
+    $fragment = new rex_fragment();
+    $fragment->setVar('messages', $messages);
+    $fragment->setVar('type', $box);
+    $fragment->setVar('selectedMessageId', $selectedMessageId);
+    $fragment->setVar('paneHtml', $paneHtml, false);
+    $fragment->setVar('messageSearch', $messageSearch, false);
+    $fragment->setVar('filterState', $filterState, false);
+    $fragment->setVar('screen', $screen);
+    echo $fragment->parse('issue_tracker_message_list.php');
+    return;
+}
 
 // Löschaktion (Admin oder Issue-Manager)
 $func = rex_request('func', 'string', '');
@@ -175,13 +269,13 @@ if ($func === 'delete' && PermissionService::canDelete()) {
 $selectedIssueId = ($viewMode === 'mail' && $func !== 'delete') ? rex_request('issue_id', 'int', 0) : 0;
 $paneHtml = '';
 if ($selectedIssueId > 0) {
-    $renderPane = static function (): string {
+    $renderPane = static function (string $itMode): string {
         $itEmbedded = true;
         ob_start();
         include __DIR__ . '/issues.view.php';
         return (string) ob_get_clean();
     };
-    $paneHtml = $renderPane();
+    $paneHtml = $renderPane($mode);
 
     // Nur den Lesebereich ausliefern (Tastatur-/Klick-Navigation per it-mail.js)
     if (rex_request('it_pane', 'int', 0) === 1) {
@@ -222,11 +316,12 @@ foreach ($usersSql as $row) {
 }
 
 // Sortierung
-$sortColumn = rex_request('sort', 'string', 'created_at');
-$sortOrder = rex_request('order', 'string', 'desc');
+// Wissen: standardmäßig alphabetisch nach Titel
+$sortColumn = rex_request('sort', 'string', $mode === 'knowledge' ? 'title' : 'created_at');
+$sortOrder = rex_request('order', 'string', $mode === 'knowledge' && rex_request('sort', 'string', '') === '' ? 'asc' : 'desc');
 
 // Erlaubte Sortier-Spalten
-$allowedSortColumns = ['id', 'title', 'category', 'status', 'priority', 'assigned_user_id', 'due_date', 'created_at'];
+$allowedSortColumns = ['id', 'title', 'category', 'status', 'priority', 'assigned_user_id', 'due_date', 'created_at', 'updated_at'];
 if (!in_array($sortColumn, $allowedSortColumns)) {
     $sortColumn = 'created_at';
 }
@@ -281,6 +376,10 @@ if ($filterWatched === 1) {
 }
 
 // Filter: Nur Issues in denen der aktuelle User erwähnt wurde
+if ($filterOverdue === 1) {
+    $where[] = "i.due_date IS NOT NULL AND i.due_date < NOW() AND i.status != 'closed'";
+}
+
 if ($filterMentioned === 1) {
     $joins .= ' INNER JOIN ' . rex::getTable('issue_tracker_mentions') . ' im ON i.id = im.issue_id';
     $where[] = 'im.mentioned_user_id = ' . (int) PermissionService::getUserId();
@@ -350,6 +449,7 @@ foreach ($mentionSql as $row) {
 // Postfach-Seitenleiste
 $sidebar = new rex_fragment();
 $sidebar->setVar('filterState', $filterState, false);
+$sidebar->setVar('mode', $mode);
 $sidebar->setVar('statuses', $statuses, false);
 $sidebar->setVar('categories', $categories, false);
 $sidebar->setVar('allTags', $allTags);
@@ -367,6 +467,8 @@ $list->setVar('watchedIds', $watchedIds);
 $list->setVar('unreadMentionIds', $unreadMentionIds);
 $list->setVar('selectedIssueId', $selectedIssueId);
 $list->setVar('viewMode', $viewMode);
+$list->setVar('mode', $mode);
+$list->setVar('screen', $screen);
 $list->setVar('filterState', $filterState, false);
 $list->setVar('statuses', $statuses, false);
 $list->setVar('priorities', $priorities, false);
@@ -385,9 +487,9 @@ foreach ($mentionUsersSql as $row) {
     }
 }
 
-$rootClass = 'it-mail' . ($viewMode === 'table' ? ' it-mail--table' : '') . ($selectedIssueId > 0 ? ' it-mail--sel' : '');
+$rootClass = 'it-mail' . ($viewMode === 'table' ? ' it-mail--table' : '') . ($selectedIssueId > 0 ? ' it-mail--sel' : '') . ($screen === 'list' ? ' it-mail--list' : '');
 ?>
-<div class="<?= $rootClass ?>" data-it-mail data-mention-users="<?= rex_escape(json_encode($mentionUsers)) ?>"
+<div class="<?= $rootClass ?>" data-it-mail data-mode="<?= $mode ?>" data-mention-users="<?= rex_escape(json_encode($mentionUsers)) ?>"
      data-pane-url="<?= rex_escape(rex_url::backendPage('issue_tracker/issues/list', ['it_pane' => 1], false)) ?>"
      data-list-url="<?= rex_escape(rex_url::backendPage('issue_tracker/issues/list', [], false)) ?>"
      data-view-url="<?= rex_escape(rex_url::backendPage('issue_tracker/issues/view', [], false)) ?>">

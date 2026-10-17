@@ -11,6 +11,10 @@ use FriendsOfREDAXO\IssueTracker\UiHelper;
 $package = rex_addon::get('issue_tracker');
 $currentUser = rex::getUser();
 
+// „Meine Benachrichtigungen“ – erreichbar über das Zahnrad im Postfach, im selben Fenster angezeigt
+$itSidebar = new rex_fragment();
+$itSidebar->setVar('mode', 'preferences');
+echo '<div class="it-mail it-mail--full it-mail--sel it-mail--compose" data-it-mail data-mode="preferences">' . $itSidebar->parse('issue_tracker_filter.php') . '<section class="it-rp-wrap it-rp-wrap--sheet"><div class="it-sheet-pad">';
 echo UiHelper::settingsStart('preferences');
 
 // Flag für erfolgreiche E-Mail-Aktualisierung
@@ -146,3 +150,4 @@ $switchRow = static function (string $key) use ($values): string {
     </div>
 </form>
 <?= UiHelper::settingsEnd() ?>
+<?php echo '</div></section></div>';

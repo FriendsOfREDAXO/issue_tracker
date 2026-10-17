@@ -144,7 +144,7 @@ $privateField = UiHelper::field(
         <?= UiHelper::advanced('<div class="it-group">' . $statusField . $dueField . $privateField . '</div>', $advancedOpen, $t('issue_tracker_ui_f_project_advanced_hint')) ?>
 
         <div class="it-settings-actions">
-            <a href="<?= rex_url::backendPage('issue_tracker/projects/list') ?>" class="btn btn-default"><?= rex_escape($t('issue_tracker_ui_cancel')) ?></a>
+            <a href="<?= $isNew ? rex_url::backendPage('issue_tracker/issues/list') : rex_url::backendPage('issue_tracker/issues/list', ['filter_status' => '', 'filter_project' => $project->getId()]) ?>" class="btn btn-default"><?= rex_escape($t('issue_tracker_ui_cancel')) ?></a>
             <button type="submit" class="btn btn-save"><?= rex_escape($t($isNew ? 'issue_tracker_ui_btn_create_project' : 'issue_tracker_ui_btn_save')) ?></button>
         </div>
     </form>

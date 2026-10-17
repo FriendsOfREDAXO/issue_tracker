@@ -106,6 +106,7 @@
                     window.history.pushState({ itIssue: row.getAttribute('data-issue-id') }, '', row.href);
                 }
                 initPane(pane, true);
+                restoreSections(pane);
                 Array.prototype.forEach.call(pane.querySelectorAll('.it-compose'), initDrop);
                 labelToolbars(pane);
                 if (window.innerWidth < 1200) { root.scrollIntoView({ block: 'start' }); }
@@ -183,7 +184,43 @@
         });
     }
 
+    /* Auf-/zugeklappte Bereiche: sofort lokal merken, dauerhaft beim Benutzer speichern */
+    var restoringSections = false;
+    function lsGet() {
+        try { return JSON.parse(window.localStorage.getItem('itSections') || '{}') || {}; } catch (e) { return {}; }
+    }
+    function lsSet(obj) {
+        try { window.localStorage.setItem('itSections', JSON.stringify(obj)); } catch (e) { /* ohne Speicher weiter */ }
+    }
+    function restoreSections(scope) {
+        var local = lsGet();
+        restoringSections = true;
+        Array.prototype.forEach.call(scope.querySelectorAll('details[data-it-sec]'), function (d) {
+            var key = d.getAttribute('data-it-sec');
+            if (!Object.prototype.hasOwnProperty.call(local, key)) { return; }
+            var want = !!local[key];
+            if (!want && d.querySelector('.is-active')) { return; } // aktiven Eintrag sichtbar lassen
+            if (d.open !== want) { d.open = want; }
+        });
+        setTimeout(function () { restoringSections = false; }, 0);
+    }
+    function saveSection(d) {
+        var key = d.getAttribute('data-it-sec');
+        var local = lsGet();
+        local[key] = d.open;
+        lsSet(local);
+        var nav = document.querySelector('[data-it-state-url]');
+        if (!nav || !window.fetch) { return; }
+        var body = new FormData();
+        body.append('it_ui_state', '1');
+        body.append('key', key);
+        body.append('open', d.open ? '1' : '0');
+        body.append('_csrf_token', nav.getAttribute('data-it-state-token'));
+        fetch(nav.getAttribute('data-it-state-url'), { method: 'POST', body: body, credentials: 'same-origin' }).catch(function () {});
+    }
+
     function initAll() {
+        restoreSections(document);
         Array.prototype.forEach.call(document.querySelectorAll('[data-it-mail]'), initRoot);
         // Verfassen-Fenster: Dateiauswahl-Anzeige
         Array.prototype.forEach.call(document.querySelectorAll('.it-sheet'), function (sheet) { initPane(sheet, false); initDrop(sheet); });
@@ -217,6 +254,7 @@
             if (back && root && root.querySelector('.it-ml')) {
                 e.preventDefault();
                 root.classList.remove('it-mail--sel');
+                root.classList.add('it-mail--list');
                 markSelected(root, null);
                 if (window.history && window.history.pushState) { window.history.pushState({}, '', back.href); }
                 return;
@@ -258,6 +296,30 @@
             }
         });
 
+        // Nur vom Benutzer ausgelöstes Auf-/Zuklappen speichern (Browser melden „toggle“ auch beim Laden offener Bereiche)
+        var userToggled = null;
+        document.addEventListener('click', function (e) {
+            var sum = closest(e.target, 'summary');
+            if (sum && sum.parentNode && sum.parentNode.matches && sum.parentNode.matches('details[data-it-sec]')) { userToggled = sum.parentNode; }
+        }, true);
+        // Menüs der Seitenleiste neben dem Auslöser einblenden (die Leiste scrollt und würde sie abschneiden)
+        document.addEventListener('toggle', function (e) {
+            var m = e.target;
+            if (!m || !m.matches || !m.matches('.it-mbx details.it-menu') || !m.open) { return; }
+            var r = m.querySelector('summary').getBoundingClientRect();
+            var pop = m.querySelector('.it-menu-pop');
+            if (!pop) { return; }
+            pop.style.setProperty('--pop-top', Math.round(r.bottom + 4) + 'px');
+            pop.style.setProperty('--pop-left', Math.round(Math.min(r.left, window.innerWidth - 240)) + 'px');
+            m.classList.add('is-fixed');
+        }, true);
+        document.addEventListener('toggle', function (e) {
+            var d = e.target;
+            if (restoringSections || !d || d !== userToggled) { return; }
+            userToggled = null;
+            saveSection(d);
+        }, true);
+
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 Array.prototype.forEach.call(document.querySelectorAll('details.it-menu[open]'), function (d) {
@@ -268,7 +330,12 @@
                 return;
             }
             if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey || isTypingTarget(e.target)) { return; }
-            // „r“ = Antworten (wie in Mail)
+            // „e“ = Bearbeiten (im Wissen), „r“ = Antworten (Themen und Nachrichten)
+            if (e.key === 'e') {
+                var modeRoot = document.querySelector('[data-it-mail]');
+                var editLink = document.querySelector('[data-it-pane] [data-it-edit]');
+                if (modeRoot && modeRoot.getAttribute('data-mode') === 'knowledge' && editLink) { e.preventDefault(); window.location.href = editLink.href; return; }
+            }
             if (e.key === 'r') {
                 var replyLink = document.querySelector('[data-it-pane] [data-it-reply]');
                 if (replyLink) { e.preventDefault(); replyLink.click(); return; }

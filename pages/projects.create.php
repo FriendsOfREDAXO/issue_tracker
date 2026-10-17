@@ -61,11 +61,17 @@ if (rex_post('save', 'int', 0) === 1) {
             }
         }
         
-        rex_response::sendRedirect(rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId()], false));
+        rex_response::sendRedirect(rex_url::backendPage('issue_tracker/issues/list', ['filter_status' => '', 'filter_project' => $project->getId()], false));
     } else {
         echo rex_view::error($package->i18n('issue_tracker_project_save_error'));
     }
 }
+
+
+// Im gemeinsamen Postfach-Fenster anzeigen (Postfächer links, Formular rechts)
+$itSidebar = new rex_fragment();
+$itSidebar->setVar('mode', 'project_form');
+echo '<div class="it-mail it-mail--full it-mail--sel it-mail--compose" data-it-mail data-mode="project_form">' . $itSidebar->parse('issue_tracker_filter.php') . '<section class="it-rp-wrap it-rp-wrap--sheet"><div class="it-sheet-pad">';
 
 // Fragment einbinden
 $fragment = new rex_fragment();
@@ -75,3 +81,4 @@ $fragment->setVar('allUsers', $allUsers);
 $fragment->setVar('formErrors', $formErrors);
 $fragment->setVar('currentMembers', $postedMembers ?? []);
 echo $fragment->parse('issue_tracker_project_form.php');
+echo '</div></section></div>';

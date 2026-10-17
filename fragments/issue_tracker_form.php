@@ -57,7 +57,7 @@ if ($isNew && !$isRetry && $selectedCategory === '' && $categories !== []) {
 }
 $selectedPriority = $issue->getPriority() ?: 'normal';
 $moreHasValues = $advancedHasValues || !empty($selectedTags) || $selectedDue !== '' || $issue->getIsPrivate()
-    || (!$isNew && $issue->getStatus() !== 'open') || ($selectedCategory !== '' && $selectedCategory !== (string) reset($categories));
+    || ($issue->getStatus() !== '' && $issue->getStatus() !== 'open') || ($selectedCategory !== '' && $selectedCategory !== (string) reset($categories));
 $prioColors = ['low' => 'gray', 'normal' => 'blue', 'high' => 'orange', 'urgent' => 'red', 'critical' => 'red'];
 ?>
 <?php $itTbLabels = ['bold' => $package->i18n('issue_tracker_mail_tb_bold'), 'italic' => $package->i18n('issue_tracker_mail_tb_italic'), 'unordered-list' => $package->i18n('issue_tracker_mail_tb_list'), 'ordered-list' => $package->i18n('issue_tracker_mail_tb_olist'), 'link' => $package->i18n('issue_tracker_mail_tb_link'), 'image' => $package->i18n('issue_tracker_mail_tb_image'), 'preview' => $package->i18n('issue_tracker_mail_tb_preview'), 'rex-link' => $package->i18n('issue_tracker_mail_tb_page')]; ?>

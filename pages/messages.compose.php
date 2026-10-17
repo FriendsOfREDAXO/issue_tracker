@@ -69,7 +69,7 @@ if (rex_post('send', 'int', 0) === 1) {
         
         if ($message->save()) {
             // Zurück zur Konversationsansicht mit der neuen Nachricht
-            rex_response::sendRedirect(rex_url::backendPage('issue_tracker/messages/view', ['message_id' => $message->getId()], false));
+            rex_response::sendRedirect(rex_url::backendPage('issue_tracker/issues/list', ['box' => 'sent', 'message_id' => $message->getId()], false));
         } else {
             echo rex_view::error($package->i18n('issue_tracker_message_send_error'));
         }
@@ -86,10 +86,10 @@ $fragment->setVar('prefilledMessage', $prefilledMessage, false);
 $fragment->setVar('fieldErrors', $fieldErrors);
 
 $sidebar = new rex_fragment();
-$sidebar->setVar('active', 'compose');
+$sidebar->setVar('mode', 'compose');
 ?>
 <div class="it-mail it-mail--full it-mail--sel it-mail--messages it-mail--compose" data-it-mail>
-    <?= $sidebar->parse('issue_tracker_message_sidebar.php') ?>
+    <?= $sidebar->parse('issue_tracker_filter.php') ?>
     <section class="it-rp-wrap it-rp-wrap--sheet">
         <?= $fragment->parse('issue_tracker_message_form.php') ?>
     </section>

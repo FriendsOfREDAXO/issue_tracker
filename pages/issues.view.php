@@ -667,6 +667,9 @@ $fragment->setVar('watcherUsers', $watcherUsers, false);
 $fragment->setVar('availableWatcherUsers', $availableWatcherUsers, false);
 $fragment->setVar('totalTimeMinutes', $totalTimeMinutes);
 $fragment->setVar('embedded', $itEmbedded);
+// Modus der Oberfläche (aus der Liste übernommen oder aus dem Thema abgeleitet)
+$itMode = isset($itMode) && is_string($itMode) ? $itMode : ($issue->getStatus() === 'info' ? 'knowledge' : 'issues');
+$fragment->setVar('mode', $itMode);
 $fragment->setVar('selfUrl', $itSelfUrl, false);
 $fragment->setVar('quickToken', $itQuickToken);
 $fragment->setVar('canChangeStatus', PermissionService::isAdmin() || PermissionService::canEdit($issue));
@@ -678,8 +681,9 @@ if ($itEmbedded) {
 
 // Vollansicht (z. B. aus E-Mail-Links): Postfächer + Lesebereich in voller Breite
 $sidebar = new rex_fragment();
+$sidebar->setVar('mode', $itMode);
 ?>
-<div class="it-mail it-mail--full it-mail--sel" data-it-mail data-mention-users="<?= rex_escape(json_encode(array_values($allIssueTrackerUsers))) ?>">
+<div class="it-mail it-mail--full it-mail--sel" data-it-mail data-mode="<?= rex_escape($itMode) ?>" data-mention-users="<?= rex_escape(json_encode(array_values($allIssueTrackerUsers))) ?>">
     <?= $sidebar->parse('issue_tracker_filter.php') ?>
     <section class="it-rp-wrap" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_reading_pane')) ?>" data-it-pane>
         <?= $fragment->parse('issue_tracker_view.php') ?>

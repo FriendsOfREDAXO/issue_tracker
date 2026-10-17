@@ -2,6 +2,13 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [2.0.0-beta2] – 2026-10-17
+
+- **Alles in einem Mail-Fenster („Postfach“):** Themen, Nachrichten, Projekte und Wissen sind Postfächer in der Seitenleiste; das Dashboard entfällt. Reiter nur noch Postfach, Einstellungen, Hilfe. Alte Adressen (auch Links aus E-Mails) leiten auf das passende Postfach weiter.
+- **Oberfläche passt sich dem Bereich an:** „Neu“ legt an, was gerade passt (Thema, Thema im Projekt, Nachricht, Wissenseintrag); Werkzeugleiste, Listenzeilen, Suche, Sortierung, Kopfzeile und leere Postfächer je Bereich. Projekte mit Projektkarte (Fortschritt, Mitglieder, Bearbeiten).
+- **Zuklappbare Bereiche** in Seitenleiste, Lesefenster und Projektkarte; Zustand und zuletzt geöffnetes Postfach werden je Benutzer gemerkt.
+- Lupe im Suchfeld sitzt jetzt mittig.
+
 ## [2.0.0-beta1] – 2026-10-17
 
 Neues Aussehen in der Designsprache von Apple: Themen und Nachrichten funktionieren jetzt wie Mail auf dem Mac, alle anderen Seiten wie die macOS-Systemeinstellungen. Formulare sind aufgeräumt und für Nicht-Techniker verständlich. Alle Funktionen, Rechte und Links bleiben erhalten.

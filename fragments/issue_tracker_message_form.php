@@ -29,7 +29,7 @@ $err = static fn (string $k): bool => !empty($errors[$k]);
                 <?= $replyToMessage ? $package->i18n('issue_tracker_reply_to_message') : $package->i18n('issue_tracker_mail_new_message') ?>
             </h2>
             <div class="it-sheet-actions">
-                <a href="<?= rex_url::backendPage('issue_tracker/messages/inbox') ?>" class="btn btn-default"><?= $package->i18n('issue_tracker_cancel') ?></a>
+                <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['box' => 'inbox']) ?>" class="btn btn-default"><?= $package->i18n('issue_tracker_cancel') ?></a>
                 <button type="submit" class="btn btn-primary it-btn-primary"><?= $package->i18n('issue_tracker_mail_send_message') ?></button>
             </div>
         </div>
@@ -75,7 +75,7 @@ $err = static fn (string $k): bool => !empty($errors[$k]);
         <?php endif; ?>
 
         <div class="it-sheet-foot">
-            <a href="<?= rex_url::backendPage('issue_tracker/messages/inbox') ?>" class="btn btn-default"><?= $package->i18n('issue_tracker_cancel') ?></a>
+            <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['box' => 'inbox']) ?>" class="btn btn-default"><?= $package->i18n('issue_tracker_cancel') ?></a>
             <button type="submit" class="btn btn-primary it-btn-primary"><?= $package->i18n('issue_tracker_mail_send_message') ?></button>
         </div>
     </form>

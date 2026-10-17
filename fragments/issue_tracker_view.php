@@ -56,8 +56,13 @@ $canViewHistory = PermissionService::canViewHistory();
 $canModerate = $currentUser->isAdmin() || $issue->getCreatedBy() === $uid;
 
 $selfAction = rex_escape($selfUrl);
+$mode = (string) $this->getVar('mode', 'issues');
+$isKnowledge = $mode === 'knowledge';
+// Zusatzbereiche (Beobachter, Verlauf …) sind standardmäßig zu; Zustand pro Benutzer gemerkt
+$uiState = rex_config::get('issue_tracker', 'sidebar_state_' . (int) rex::getUser()->getId(), []);
+$uiOpen = static fn (string $key): string => is_array($uiState) && !empty($uiState[$key]) ? ' open' : '';
 $viewUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()], false);
-$listUrl = rex_url::backendPage('issue_tracker/issues/list');
+$listUrl = rex_url::backendPage('issue_tracker/issues/list', ['screen' => 'list']);
 
 // Checklisten im Lesebereich an die aktuelle Seite zurücksenden
 $render = static function (string $text, ?int $commentId = null) use ($issue, $embedded, $viewUrl, $selfUrl): string {
@@ -203,6 +208,7 @@ $relatedIssues = $issue->getDuplicates();
             <?php else: ?>
             <a class="it-tb-back it-tb-back--always" href="<?= $listUrl ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_back_to_list') ?></a>
             <?php endif; ?>
+            <?php if (!$isKnowledge): ?>
             <a class="it-tb-btn" href="#it-reply" data-it-reply title="<?= rex_escape($package->i18n('issue_tracker_mail_reply_title')) ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_reply_title') ?></span></a>
 
             <?php if ($canChangeStatus): ?>
@@ -250,13 +256,20 @@ $relatedIssues = $issue->getDuplicates();
                 <input type="hidden" name="toggle_watch" value="1" />
                 <button type="submit" class="it-tb-btn<?= $isWatching ? ' is-on' : '' ?>" title="<?= rex_escape($package->i18n($isWatching ? 'issue_tracker_unwatch' : 'issue_tracker_watch')) ?>" aria-pressed="<?= $isWatching ? 'true' : 'false' ?>"><i class="rex-icon <?= $isWatching ? 'fa-eye-slash' : 'fa-eye' ?>" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n($isWatching ? 'issue_tracker_unwatch' : 'issue_tracker_watch') ?></span></button>
             </form>
+            <?php endif; ?>
         </div>
 
         <div class="it-tb-group">
             <?php if ($canEdit): ?>
-            <a class="it-tb-btn" href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
+            <a class="it-tb-btn" data-it-edit href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
             <?php endif; ?>
-            <?php if ($canChangeStatus): ?>
+            <?php if ($canChangeStatus && $isKnowledge): ?>
+            <form method="post" action="<?= $selfAction ?>" class="it-tb-form" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_knowledge_remove_confirm')) ?>">
+                <input type="hidden" name="change_status" value="1" />
+                <input type="hidden" name="status" value="closed" />
+                <button type="submit" class="it-tb-btn it-tb-btn--text" title="<?= rex_escape($package->i18n('issue_tracker_mail_knowledge_remove_help')) ?>"><i class="rex-icon fa-book" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_knowledge_remove') ?></button>
+            </form>
+            <?php elseif ($canChangeStatus): ?>
             <form method="post" action="<?= $selfAction ?>" class="it-tb-form">
                 <input type="hidden" name="change_status" value="1" />
                 <?php if ($status !== 'closed'): ?>
@@ -268,7 +281,7 @@ $relatedIssues = $issue->getDuplicates();
                 <?php endif; ?>
             </form>
             <?php endif; ?>
-            <?php if (PermissionService::canDelete()): ?>
+            <?php if (PermissionService::canDelete() && !$isKnowledge): ?>
             <a class="it-tb-btn it-tb-btn--danger" href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()]) ?>"
                onclick="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_confirm')) ?>"
                title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></a>
@@ -297,7 +310,7 @@ $relatedIssues = $issue->getDuplicates();
                     <?= UiHelper::statusBadge($status) ?>
                     <?= UiHelper::badge($package->i18n('issue_tracker_priority_' . $issue->getPriority()), UiHelper::priorityVariant($issue->getPriority())) ?>
                     <?php if ($project): ?>
-                    <a class="it-chip it-chip--link" href="<?= rex_url::backendPage('issue_tracker/projects/view', ['project_id' => $project->getId()]) ?>"><span class="it-dot it-dot--custom it-dot--sm" style="<?= rex_escape($colorVar($project->getColor())) ?>" aria-hidden="true"></span><?php if ($project->getIsPrivate()): ?><i class="rex-icon fa-lock" aria-hidden="true"></i> <?php endif; ?><?= rex_escape($project->getName()) ?></a>
+                    <a class="it-chip it-chip--link" href="<?= rex_url::backendPage('issue_tracker/issues/list', ['filter_status' => '', 'filter_project' => $project->getId()]) ?>"><span class="it-dot it-dot--custom it-dot--sm" style="<?= rex_escape($colorVar($project->getColor())) ?>" aria-hidden="true"></span><?php if ($project->getIsPrivate()): ?><i class="rex-icon fa-lock" aria-hidden="true"></i> <?php endif; ?><?= rex_escape($project->getName()) ?></a>
                     <?php endif; ?>
                     <?php if ($issue->getCategory() !== ''): ?>
                     <span class="it-chip"><i class="rex-icon fa-folder-o" aria-hidden="true"></i> <?= rex_escape($issue->getCategory()) ?></span>
@@ -393,7 +406,7 @@ $relatedIssues = $issue->getDuplicates();
         </dl>
 
         <div class="it-rp-extras">
-            <details class="it-disclosure">
+            <details class="it-disclosure" data-it-sec="pane_watchers"<?= $uiOpen('pane_watchers') ?>>
                 <summary><i class="rex-icon fa-eye" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_watchers') ?> <span class="it-disclosure-count"><?= $watcherCount ?></span></summary>
                 <div class="it-disclosure-body">
                     <?php if ($watcherCount > 0): ?>
@@ -428,7 +441,7 @@ $relatedIssues = $issue->getDuplicates();
             </details>
 
             <?php if ($canChangeStatus && $assignedUser && !$isDone): ?>
-            <details class="it-disclosure">
+            <details class="it-disclosure" data-it-sec="pane_reminder"<?= $uiOpen('pane_reminder') ?>>
                 <summary><i class="rex-icon fa-bell" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_reminder_send') ?></summary>
                 <div class="it-disclosure-body">
                     <form method="post" action="<?= $selfAction ?>" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_reminder_confirm')) ?>" class="it-inline-form">
@@ -443,7 +456,7 @@ $relatedIssues = $issue->getDuplicates();
             <?php endif; ?>
 
             <?php if ($currentUser->isAdmin()): ?>
-            <details class="it-disclosure">
+            <details class="it-disclosure" data-it-sec="pane_related"<?= $uiOpen('pane_related') ?>>
                 <summary><i class="rex-icon fa-link" aria-hidden="true"></i> <?= $package->i18n($relatedTo === null ? 'issue_tracker_mark_as_related' : 'issue_tracker_related_info') ?></summary>
                 <div class="it-disclosure-body">
                     <?php if ($relatedTo === null): ?>
@@ -474,7 +487,7 @@ $relatedIssues = $issue->getDuplicates();
             <?php endif; ?>
 
             <?php if (!empty($history) && $canViewHistory): ?>
-            <details class="it-disclosure">
+            <details class="it-disclosure" data-it-sec="pane_history"<?= $uiOpen('pane_history') ?>>
                 <summary><i class="rex-icon fa-history" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_history') ?> <span class="it-disclosure-count"><?= count($history) ?></span></summary>
                 <ol class="it-history">
                     <?php foreach ($history as $entry): ?>
@@ -534,5 +547,5 @@ $relatedIssues = $issue->getDuplicates();
             </div>
         </section>
     </div>
-    <a class="it-rp-sticky" href="#it-reply" data-it-reply><i class="rex-icon fa-reply" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_reply_title') ?></a>
+    <?php if (!$isKnowledge): ?><a class="it-rp-sticky" href="#it-reply" data-it-reply><i class="rex-icon fa-reply" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_reply_title') ?></a><?php endif; ?>
 </article>

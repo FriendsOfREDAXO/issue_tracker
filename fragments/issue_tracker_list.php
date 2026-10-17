@@ -27,6 +27,9 @@ $categories = $this->getVar('categories', []);
 $allTags = $this->getVar('allTags', []);
 $users = $this->getVar('users', []);
 $userId = PermissionService::getUserId();
+$mode = (string) $this->getVar('mode', 'issues');
+$isKnowledge = $mode === 'knowledge';
+$isProject = $mode === 'project';
 
 // Titel des aktiven Postfachs
 $mailboxTitle = $package->i18n('issue_tracker_all_active');
@@ -38,9 +41,13 @@ if ((int) ($state['filter_mentioned'] ?? 0) === 1) {
     $mailboxTitle = $package->i18n('issue_tracker_mail_assigned_to_me');
 } elseif ((int) ($state['filter_created_by'] ?? 0) === $userId && $userId > 0) {
     $mailboxTitle = $package->i18n('issue_tracker_mail_created_by_me');
+} elseif ((int) ($state['filter_overdue'] ?? 0) === 1) {
+    $mailboxTitle = $package->i18n('issue_tracker_overdue');
 } elseif ((int) ($state['filter_project'] ?? 0) > 0) {
     $p = Project::get((int) $state['filter_project']);
     $mailboxTitle = $p ? $p->getName() : $mailboxTitle;
+} elseif ($isKnowledge) {
+    $mailboxTitle = $package->i18n('issue_tracker_knowledge') . (($state['filter_category'] ?? '') !== '' ? ' · ' . $state['filter_category'] : '');
 } elseif ((int) ($state['filter_tag'] ?? 0) > 0) {
     foreach ($allTags as $tag) {
         if ($tag->getId() === (int) $state['filter_tag']) {
@@ -104,13 +111,39 @@ $sortIcon = static function (string $column) use ($sortColumn, $sortOrder): stri
     return $sortOrder === 'ASC' ? '<i class="rex-icon fa-sort-asc" aria-hidden="true"></i>' : '<i class="rex-icon fa-sort-desc" aria-hidden="true"></i>';
 };
 
-$sortOptions = [
+$sortOptions = $isKnowledge ? [
+    'title' => $package->i18n('issue_tracker_title'),
+    'updated_at' => $package->i18n('issue_tracker_updated_at'),
+] : [
     'created_at' => $package->i18n('issue_tracker_mail_sort_date'),
     'priority' => $package->i18n('issue_tracker_priority'),
     'status' => $package->i18n('issue_tracker_status'),
     'due_date' => $package->i18n('issue_tracker_due_date'),
     'title' => $package->i18n('issue_tracker_title'),
 ];
+
+// Kontext je Modus: Projektkarte, Hinweis für Wissen, passende „Neu“-Aktion und Suchtext
+$projectCard = null;
+if ($isProject) {
+    $cardProject = Project::get((int) $state['filter_project']);
+    if ($cardProject && $cardProject->hasAccess($userId)) {
+        $projectCard = $cardProject;
+    }
+}
+$newHref = rex_url::backendPage('issue_tracker/issues/create');
+$newLabel = $package->i18n('issue_tracker_mail_new_issue');
+if ($isProject && $projectCard) {
+    $newHref = rex_url::backendPage('issue_tracker/issues/create', ['project_id' => $projectCard->getId()]);
+    $newLabel = $package->i18n('issue_tracker_mail_new_issue_in_project');
+} elseif ($isKnowledge && PermissionService::isAdminOrManager()) {
+    $newHref = rex_url::backendPage('issue_tracker/issues/create', array_filter(['status' => 'info', 'category' => (string) ($state['filter_category'] ?? '')]));
+    $newLabel = $package->i18n('issue_tracker_mail_new_knowledge');
+}
+$searchPlaceholder = $package->i18n($isKnowledge ? 'issue_tracker_mail_search_knowledge' : ($isProject ? 'issue_tracker_mail_search_project' : 'issue_tracker_mail_search_issues'));
+$emptyText = $package->i18n($isKnowledge ? 'issue_tracker_mail_empty_knowledge' : ($isProject ? 'issue_tracker_mail_empty_project' : 'issue_tracker_mail_empty_issues'));
+if (($state['search'] ?? '') !== '') {
+    $emptyText = $package->i18n('issue_tracker_mail_empty_search');
+}
 
 // Export: dieselben Filter wie die Liste (auch wenn sie aus der Sitzung kommen)
 $exportFilter = [];
@@ -133,6 +166,7 @@ foreach ($state as $k => $v) {
 ?>
 <section class="it-ml<?= $viewMode === 'table' ? ' it-ml--table' : '' ?>" aria-label="<?= rex_escape($mailboxTitle) ?>">
     <header class="it-ml-bar">
+        <a class="it-tb-back it-tb-back--list" href="<?= $listUrl() ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_mailboxes') ?></a>
         <div class="it-ml-head">
             <div class="it-ml-heading">
                 <h2 class="it-ml-title"><?= rex_escape($mailboxTitle) ?></h2>
@@ -143,8 +177,8 @@ foreach ($state as $k => $v) {
                     <a class="it-seg-btn<?= $viewMode === 'mail' ? ' is-active' : '' ?>" href="<?= $listUrl(['view_mode' => 'mail']) ?>"<?= $viewMode === 'mail' ? ' aria-current="true"' : '' ?>><?= $package->i18n('issue_tracker_mail_view_mailbox') ?></a>
                     <a class="it-seg-btn<?= $viewMode === 'table' ? ' is-active' : '' ?>" href="<?= $listUrl(['view_mode' => 'table']) ?>"<?= $viewMode === 'table' ? ' aria-current="true"' : '' ?>><?= $package->i18n('issue_tracker_mail_view_table') ?></a>
                 </div>
-                <a class="it-tb-btn it-tb-btn--accent" href="<?= rex_url::backendPage('issue_tracker/issues/create') ?>" title="<?= rex_escape($package->i18n('issue_tracker_mail_new_issue')) ?>">
-                    <i class="rex-icon fa-pencil-square-o" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_new_issue') ?></span>
+                <a class="it-tb-btn it-tb-btn--accent" href="<?= $newHref ?>" title="<?= rex_escape($newLabel) ?>">
+                    <i class="rex-icon fa-pencil-square-o" aria-hidden="true"></i><span class="sr-only"><?= rex_escape($newLabel) ?></span>
                 </a>
             </div>
         </div>
@@ -156,7 +190,7 @@ foreach ($state as $k => $v) {
                 <?php endforeach; ?>
                 <i class="rex-icon fa-search it-search-icon" aria-hidden="true"></i>
                 <input type="search" name="search" class="it-search-input" value="<?= rex_escape((string) ($state['search'] ?? '')) ?>"
-                       placeholder="<?= rex_escape($package->i18n('issue_tracker_search')) ?>" aria-label="<?= rex_escape($package->i18n('issue_tracker_search_placeholder')) ?>" />
+                       placeholder="<?= rex_escape($searchPlaceholder) ?>" aria-label="<?= rex_escape($searchPlaceholder) ?>" />
             </form>
 
             <details class="it-menu">
@@ -177,9 +211,12 @@ foreach ($state as $k => $v) {
                 <div class="it-menu-pop it-menu-pop--right it-menu-pop--form">
                     <form method="get" action="<?= rex_url::backendController() ?>">
                         <input type="hidden" name="page" value="issue_tracker/issues/list" />
-                        <?php foreach (['filter_tag', 'filter_assigned', 'filter_project', 'filter_watched', 'filter_mentioned', 'search'] as $key): ?>
+                        <?php foreach (['filter_tag', 'filter_assigned', 'filter_project', 'filter_watched', 'filter_mentioned', 'filter_overdue', 'search'] as $key): ?>
                         <input type="hidden" name="<?= $key ?>" value="<?= rex_escape((string) ($state[$key] ?? '')) ?>" />
                         <?php endforeach; ?>
+                        <?php if ($isKnowledge): ?>
+                        <input type="hidden" name="filter_status" value="info" />
+                        <?php else: ?>
                         <label class="it-menu-field"><span><?= $package->i18n('issue_tracker_status') ?></span>
                             <select name="filter_status" class="form-control">
                                 <option value=""><?= $package->i18n('issue_tracker_all_active') ?></option>
@@ -189,6 +226,7 @@ foreach ($state as $k => $v) {
                                 <?php endforeach; ?>
                             </select>
                         </label>
+                        <?php endif; ?>
                         <label class="it-menu-field"><span><?= $package->i18n('issue_tracker_category') ?></span>
                             <select name="filter_category" class="form-control">
                                 <option value=""><?= $package->i18n('issue_tracker_all') ?></option>
@@ -225,10 +263,61 @@ foreach ($state as $k => $v) {
         </div>
     </header>
 
+    <?php if ($projectCard):
+        $pStats = $projectCard->getStats();
+        $pMembers = $projectCard->getUsers();
+        $canEditProject = (rex::getUser()->isAdmin() || rex::getUser()->hasPerm('issue_tracker[issue_manager]')) && $projectCard->isOwner($userId);
+    ?>
+    <div class="it-pcard" style="<?= rex_escape($colorVar($projectCard->getColor())) ?>">
+        <div class="it-pcard-head">
+            <span class="it-dot it-dot--custom" aria-hidden="true"></span>
+            <strong class="it-pcard-name"><?= rex_escape($projectCard->getName()) ?></strong>
+            <?php if ($projectCard->getStatus() !== 'active'): ?><span class="it-badge"><?= $package->i18n('issue_tracker_project_status_' . $projectCard->getStatus()) ?></span><?php endif; ?>
+            <?php if ($canEditProject): ?>
+            <a class="it-tb-btn it-tb-btn--sm it-pcard-edit" href="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $projectCard->getId()]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
+            <?php endif; ?>
+        </div>
+        <?php if ($projectCard->getDescription() !== ''): ?>
+        <p class="it-pcard-desc"><?= rex_escape(mb_strimwidth($preview($projectCard->getDescription()), 0, 180, '…')) ?></p>
+        <?php endif; ?>
+        <div class="it-pcard-progress">
+            <progress class="it-progress" max="100" value="<?= (int) $pStats['progress'] ?>" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_progress')) ?>"></progress>
+            <span><?= $package->i18n('issue_tracker_mail_progress_text', (int) $pStats['progress'], (int) ($pStats['closed'] + $pStats['rejected']), (int) $pStats['total']) ?></span>
+        </div>
+        <?php
+        $uiState = rex_config::get('issue_tracker', 'sidebar_state_' . $userId, []);
+        $uiOpen = static fn (string $key): string => is_array($uiState) && !empty($uiState[$key]) ? ' open' : '';
+        ?>
+        <details class="it-pcard-more" data-it-sec="project_status"<?= $uiOpen('project_status') ?>>
+            <summary><?= $package->i18n('issue_tracker_status') ?> <span class="it-disclosure-count"><?= (int) $pStats['total'] ?></span></summary>
+            <ul class="it-pcard-status">
+                <?php foreach ($statuses as $stKey => $stLabel): if ((int) ($pStats[$stKey] ?? 0) === 0) { continue; } ?>
+                <li><a href="<?= $listUrl(['filter_status' => $stKey, 'filter_project' => $projectCard->getId()]) ?>"><span class="it-dot it-dot--<?= rex_escape($stKey) ?>" aria-hidden="true"></span> <?= $package->i18n('issue_tracker_status_' . $stKey) ?> <span class="it-mbx-count"><?= (int) $pStats[$stKey] ?></span></a></li>
+                <?php endforeach; ?>
+            </ul>
+        </details>
+        <?php if ($pMembers): ?>
+        <details class="it-pcard-more" data-it-sec="project_members"<?= $uiOpen('project_members') ?>>
+            <summary><?= $package->i18n('issue_tracker_mail_members') ?> <span class="it-disclosure-count"><?= count($pMembers) ?></span></summary>
+            <ul class="it-pcard-memberlist">
+                <?php foreach ($pMembers as $member): $mName = (string) (($member['name'] ?? '') !== '' ? $member['name'] : ($member['login'] ?? '')); ?>
+                <li><?= UiHelper::avatar((int) $member['user_id'], $mName, true) ?> <?= rex_escape($mName) ?> <span class="it-muted-text">· <?= $package->i18n('issue_tracker_role_' . $member['role']) ?></span></li>
+                <?php endforeach; ?>
+            </ul>
+        </details>
+        <?php endif; ?>
+    </div>
+    <?php elseif ($isKnowledge): ?>
+    <p class="it-ml-hint"><i class="rex-icon fa-lightbulb-o" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_knowledge_hint') ?></p>
+    <?php endif; ?>
+
     <?php if (empty($issues)): ?>
         <div class="it-empty">
-            <i class="rex-icon fa-inbox" aria-hidden="true"></i>
-            <?= $package->i18n('issue_tracker_no_issues') ?>
+            <i class="rex-icon <?= $isKnowledge ? 'fa-book' : 'fa-inbox' ?>" aria-hidden="true"></i>
+            <?= rex_escape($emptyText) ?>
+            <?php if (($state['search'] ?? '') === ''): ?>
+            <p><a class="btn btn-default btn-sm" href="<?= $newHref ?>"><?= rex_escape($newLabel) ?></a></p>
+            <?php endif; ?>
         </div>
     <?php elseif ($viewMode === 'mail'): ?>
         <ul class="it-ml-items" data-it-list>
@@ -251,7 +340,9 @@ foreach ($state as $k => $v) {
                 <a class="it-ml-row<?= $isSel ? ' is-selected' : '' ?><?= $unread ? ' is-unread' : '' ?>" href="<?= $listUrl($carry + ['issue_id' => $iid]) ?>"
                    data-issue-id="<?= $iid ?>" data-view-href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $iid]) ?>"<?= $isSel ? ' aria-current="true"' : '' ?>>
                     <span class="it-ml-mark">
-                        <?php if ($unread): ?>
+                        <?php if ($isKnowledge): ?>
+                        <i class="rex-icon fa-book it-ml-kicon" aria-hidden="true"></i>
+                        <?php elseif ($unread): ?>
                         <span class="it-dot it-dot--unread" title="<?= rex_escape($package->i18n('issue_tracker_mail_unread_mention')) ?>"></span><span class="sr-only"><?= $package->i18n('issue_tracker_mail_unread_mention') ?></span>
                         <?php else: ?>
                         <span class="it-dot it-dot--<?= rex_escape($issue->getStatus()) ?>" title="<?= rex_escape($package->i18n('issue_tracker_status_' . $issue->getStatus())) ?>"></span>
@@ -260,15 +351,21 @@ foreach ($state as $k => $v) {
                     <span class="it-ml-main">
                         <span class="it-ml-line1">
                             <span class="it-ml-subject"><?= rex_escape($issue->getTitle()) ?></span>
-                            <time class="it-ml-date" datetime="<?= $issue->getCreatedAt() ? $issue->getCreatedAt()->format('c') : '' ?>"><?= rex_escape(UiHelper::relDate($issue->getCreatedAt())) ?></time>
+                            <?php $rowDate = $isKnowledge ? ($issue->getUpdatedAt() ?? $issue->getCreatedAt()) : $issue->getCreatedAt(); ?>
+                            <time class="it-ml-date" datetime="<?= $rowDate ? $rowDate->format('c') : '' ?>"><?= rex_escape(UiHelper::relDate($rowDate)) ?></time>
                         </span>
+                        <?php if ($isKnowledge): ?>
+                        <span class="it-ml-line2"><span class="it-ml-who"><i class="rex-icon fa-folder-o" aria-hidden="true"></i> <?= rex_escape($issue->getCategory() !== '' ? $issue->getCategory() : $package->i18n('issue_tracker_mail_no_category')) ?></span></span>
+                        <?php else: ?>
                         <span class="it-ml-line2">
                             <span class="it-ml-who"><?= rex_escape($whoFrom) ?> <i class="rex-icon fa-long-arrow-right" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_to') ?></span> <?= rex_escape($whoTo) ?></span>
-                            <?php if ($project): ?><span class="it-ml-proj"><span class="it-dot it-dot--custom it-dot--sm" style="<?= rex_escape($colorVar($project->getColor())) ?>" aria-hidden="true"></span><?= rex_escape($project->getName()) ?></span><?php endif; ?>
+                            <?php if ($project && !$isProject): ?><span class="it-ml-proj"><span class="it-dot it-dot--custom it-dot--sm" style="<?= rex_escape($colorVar($project->getColor())) ?>" aria-hidden="true"></span><?= rex_escape($project->getName()) ?></span><?php endif; ?>
                         </span>
+                        <?php endif; ?>
                         <?php if ($text !== ''): ?>
                         <span class="it-ml-preview"><?= rex_escape($text) ?></span>
                         <?php endif; ?>
+                        <?php if (!$isKnowledge): ?>
                         <span class="it-ml-meta">
                             <span class="it-ml-id">#<?= $iid ?></span>
                             <span class="it-ml-status"><?= $package->i18n('issue_tracker_status_' . $issue->getStatus()) ?></span>
@@ -297,6 +394,7 @@ foreach ($state as $k => $v) {
                             <?php endforeach; ?>
                             <?php if (count($tags) > 2): ?><span class="it-chip">+<?= count($tags) - 2 ?></span><?php endif; ?>
                         </span>
+                        <?php endif; ?>
                     </span>
                 </a>
             </li>

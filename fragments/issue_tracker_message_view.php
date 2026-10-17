@@ -30,8 +30,8 @@ if ($sortOrder === 'desc') {
     $conversation = array_reverse($conversation);
 }
 
-$boxPage = 'issue_tracker/messages/' . ($box === 'sent' ? 'sent' : 'inbox');
-$selfPage = $embedded ? $boxPage : 'issue_tracker/messages/view';
+$box = $box === 'sent' ? 'sent' : 'inbox';
+$listPage = 'issue_tracker/issues/list';
 
 // Re: nur einmal hinzufügen - bestehende Re: Prefixe entfernen
 $replySubject = 'Re: ' . preg_replace('/^(Re:\s*)+/i', '', $message->getSubject());
@@ -39,21 +39,19 @@ $replySubject = 'Re: ' . preg_replace('/^(Re:\s*)+/i', '', $message->getSubject(
 <article class="it-rp issue-tracker-message-view">
     <div class="it-rp-toolbar" role="toolbar" aria-label="<?= rex_escape($package->i18n('issue_tracker_actions')) ?>">
         <div class="it-tb-group">
-            <a class="it-tb-back<?= $embedded ? '' : ' it-tb-back--always' ?>" href="<?= rex_url::backendPage($boxPage) ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $box === 'sent' ? $package->i18n('issue_tracker_messages_sent') : $package->i18n('issue_tracker_messages_inbox') ?></a>
+            <a class="it-tb-back" href="<?= rex_url::backendPage($listPage, ['box' => $box, 'screen' => 'list']) ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $box === 'sent' ? $package->i18n('issue_tracker_messages_sent') : $package->i18n('issue_tracker_messages_inbox') ?></a>
             <a class="it-tb-btn" href="#it-reply" data-it-reply title="<?= rex_escape($package->i18n('issue_tracker_reply')) ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_reply') ?></span></a>
             <a class="it-tb-btn" href="<?= rex_url::backendPage('issue_tracker/messages/compose', ['recipient_id' => $partnerId]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_new_message_to', $partnerName)) ?>"><i class="rex-icon fa-pencil-square-o" aria-hidden="true"></i><span class="sr-only"><?= rex_escape($package->i18n('issue_tracker_new_message_to', $partnerName)) ?></span></a>
         </div>
         <div class="it-tb-group">
-            <a class="it-tb-btn it-tb-btn--danger" href="<?= rex_url::backendPage($boxPage, ['func' => 'delete', 'message_id' => $message->getId()]) ?>"
+            <a class="it-tb-btn it-tb-btn--danger" href="<?= rex_url::backendPage($listPage, ['box' => $box, 'func' => 'delete', 'message_id' => $message->getId()]) ?>"
                onclick="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_delete_message_confirm')) ?>"
                title="<?= rex_escape($package->i18n('issue_tracker_mail_delete_conversation')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_delete_conversation') ?></span></a>
         </div>
         <div class="it-tb-group it-tb-group--end">
-            <a class="it-tb-btn" href="<?= rex_url::backendPage($selfPage, ['message_id' => $message->getId(), 'msg_sort' => $sortOrder === 'asc' ? 'desc' : 'asc']) ?>"
+            <a class="it-tb-btn" href="<?= rex_url::backendPage($listPage, ['box' => $box, 'message_id' => $message->getId(), 'msg_sort' => $sortOrder === 'asc' ? 'desc' : 'asc']) ?>"
                title="<?= rex_escape($package->i18n($sortOrder === 'asc' ? 'issue_tracker_mail_newest_first' : 'issue_tracker_mail_oldest_first')) ?>"><i class="rex-icon <?= $sortOrder === 'asc' ? 'fa-sort-amount-desc' : 'fa-sort-amount-asc' ?>" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n($sortOrder === 'asc' ? 'issue_tracker_mail_newest_first' : 'issue_tracker_mail_oldest_first') ?></span></a>
-            <?php if ($embedded): ?>
-            <a class="it-tb-btn" href="<?= rex_url::backendPage('issue_tracker/messages/view', ['message_id' => $message->getId()]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_mail_open_full')) ?>"><i class="rex-icon fa-expand" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_open_full') ?></span></a>
-            <?php endif; ?>
+
         </div>
     </div>
 
