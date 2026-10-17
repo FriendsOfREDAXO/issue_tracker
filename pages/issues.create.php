@@ -114,8 +114,7 @@ if (rex_post('save', 'int', 0) === 1) {
 
     // Pflichtfeld: Zugewiesener User oder gemeinsame Zuständigkeit (Alle)
     if ('all' !== $assignedUserSelection && !$issue->getAssignedUserId()) {
-        echo rex_view::error($package->i18n('issue_tracker_assigned_user_required'));
-        // Formular erneut anzeigen (weiter unten)
+        // Formular erneut anzeigen (weiter unten) – die Fehlermeldung steht im Formular direkt am Feld und in der Zusammenfassung
     } else {
     
     // Domain IDs (Multiple) und YForm Tabellen (Multiple)
