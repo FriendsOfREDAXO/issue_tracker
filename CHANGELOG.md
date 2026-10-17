@@ -2,7 +2,7 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
-## [2.0.0] – 2026-10-17
+## [2.0.0-beta1] – 2026-10-17
 
 Neues Aussehen in der Designsprache von Apple: Themen und Nachrichten funktionieren jetzt wie Mail auf dem Mac, alle anderen Seiten wie die macOS-Systemeinstellungen. Formulare sind aufgeräumt und für Nicht-Techniker verständlich. Alle Funktionen, Rechte und Links bleiben erhalten.
 
