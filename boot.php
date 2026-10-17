@@ -18,13 +18,13 @@ if (rex::isBackend() && rex::getUser()) {
     rex_perm::register('issue_tracker[issue_manager]', null, rex_perm::OPTIONS);
 }
 
-// Assets einbinden
-if (rex::isBackend() && rex::getUser()) {
+// Assets nur auf den Seiten des Issue Trackers einbinden
+if (rex::isBackend() && rex::getUser() && 'issue_tracker' === rex_be_controller::getCurrentPagePart(1)) {
     rex_view::addCssFile($this->getAssetsUrl('easymde.min.css'));
     rex_view::addCssFile($this->getAssetsUrl('issue_tracker.css'));
+    rex_view::addCssFile($this->getAssetsUrl('css/it-base.css'));
     rex_view::addJsFile($this->getAssetsUrl('easymde.min.js'));
     rex_view::addJsFile($this->getAssetsUrl('issue_tracker.js'));
-    
 }
 
 // Benutzerdefinierten Menü-Titel setzen
