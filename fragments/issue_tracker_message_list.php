@@ -80,6 +80,13 @@ $sidebar->setVar('filterState', $this->getVar('filterState', null), false);
                 </div>
                 <a class="it-tb-back it-tb-back--list" href="<?= rex_url::backendPage($page) ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_mailboxes') ?></a>
                 <div class="it-ml-head-actions">
+                    <?php if ($isInbox && $unreadTotal > 0): ?>
+                    <form method="post" action="<?= rex_url::backendPage($page, ['box' => $box]) ?>" class="it-tb-form" data-it-allread>
+                        <?= rex_csrf_token::factory('issue_tracker_messages')->getHiddenField() ?>
+                        <input type="hidden" name="msg_action" value="all_read" />
+                        <button type="submit" class="it-tb-btn it-tb-btn--text" title="<?= rex_escape($package->i18n('issue_tracker_mail_mark_all_read')) ?>"><i class="rex-icon fa-check-square-o" aria-hidden="true"></i><span class="it-hide-narrow"> <?= $package->i18n('issue_tracker_mail_mark_all_read_short') ?></span><span class="sr-only"><?= $package->i18n('issue_tracker_mail_mark_all_read') ?></span></button>
+                    </form>
+                    <?php endif; ?>
                     <a class="it-tb-btn it-tb-btn--accent" href="<?= rex_url::backendPage('issue_tracker/messages/compose') ?>" title="<?= rex_escape($package->i18n('issue_tracker_mail_new_message')) ?>"><i class="rex-icon fa-pencil-square-o" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_new_message') ?></span></a>
                 </div>
             </div>
@@ -105,7 +112,7 @@ $sidebar->setVar('filterState', $this->getVar('filterState', null), false);
                 $hasUnread = $conv['unread_count'] > 0;
                 $isSel = $selectedPartner > 0 && (int) $conv['partner_id'] === $selectedPartner;
                 $lastFromMe = $message->getSenderId() === $uid;
-                $preview = trim((string) preg_replace('/\s+/u', ' ', strip_tags($message->getMessage())));
+                $preview = trim((string) preg_replace(['/-{5,}[^\n]*-{5,}/u', '/^> ?/mu', '/\s+/u'], ['·', '', ' '], strip_tags($message->getMessage())));
                 if (mb_strlen($preview) > 200) {
                     $preview = mb_substr($preview, 0, 200) . '…';
                 }

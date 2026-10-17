@@ -48,6 +48,37 @@ foreach ($usersSql as $row) {
     $allUsers[(int) $usersSql->getValue('id')] = $usersSql->getValue('name') ?: $usersSql->getValue('login');
 }
 
+// Weiterleiten (wie in Mail): Original nur für Absender/Empfänger, eigene Notiz oben, Original zitiert
+$forwardMessage = null;
+$forwardToken = rex_csrf_token::factory('issue_tracker_message_forward');
+$forwardId = rex_request('forward', 'int', 0);
+$prefilledRecipients = [];
+if ($forwardId > 0) {
+    $forwardMessage = Message::get($forwardId);
+    if (!$forwardMessage || !$forwardMessage->hasAccess($currentUser->getId())) {
+        $forwardMessage = null;
+        echo rex_view::error($package->i18n('issue_tracker_no_permission'));
+    } else {
+        $prefilledSubject = $package->i18n('issue_tracker_mail_fwd_prefix') . ' ' . preg_replace('/^((Re|AW|WG|Fwd|Fw):\s*)+/i', '', $forwardMessage->getSubject());
+    }
+}
+if ($forwardMessage && rex_post('forward_send', 'int', 0) === 1) {
+    $prefilledRecipients = array_map('intval', rex_post('recipient_ids', 'array', []));
+    $prefilledSubject = rex_post('subject', 'string', $prefilledSubject);
+    $prefilledMessage = rex_post('message', 'string', '');
+    if (!$forwardToken->isValid()) {
+        echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
+    } elseif ($prefilledRecipients === [] || trim($prefilledSubject) === '') {
+        $fieldErrors = ['recipient' => $prefilledRecipients === [], 'subject' => trim($prefilledSubject) === ''];
+    } else {
+        $created = Message::forward($forwardMessage->getId(), (int) $currentUser->getId(), $prefilledRecipients, $prefilledMessage, $prefilledSubject);
+        if ($created !== []) {
+            rex_response::sendRedirect(rex_url::backendPage('issue_tracker/issues/list', ['box' => 'sent', 'message_id' => $created[0]->getId()], false));
+        }
+        $fieldErrors = ['recipient' => true];
+    }
+}
+
 // Nachricht senden
 if (rex_post('send', 'int', 0) === 1) {
     $recipientId = rex_post('recipient_id', 'int', 0);
@@ -84,6 +115,9 @@ $fragment->setVar('prefilledRecipient', $prefilledRecipient);
 $fragment->setVar('replyToMessage', $replyToMessage);
 $fragment->setVar('prefilledMessage', $prefilledMessage, false);
 $fragment->setVar('fieldErrors', $fieldErrors);
+$fragment->setVar('forwardMessage', $forwardMessage);
+$fragment->setVar('forwardToken', $forwardToken);
+$fragment->setVar('prefilledRecipients', $prefilledRecipients);
 
 $sidebar = new rex_fragment();
 $sidebar->setVar('mode', 'compose');

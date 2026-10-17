@@ -695,6 +695,18 @@ issue_tracker_mail_progress = Progress
 issue_tracker_mail_progress_text = {0} % done ({1} of {2})
 issue_tracker_mail_new = New
 issue_tracker_mail_projects_archived = Archived
+issue_tracker_mail_forward = Forward
+issue_tracker_mail_forward_title = Forward message
+issue_tracker_mail_forward_send = Forward
+issue_tracker_mail_fwd_prefix = Fwd:
+issue_tracker_mail_fwd_marker = Forwarded message
+issue_tracker_mail_fwd_to_help = Who should receive it? You can choose several people – type to search.
+issue_tracker_mail_fwd_note = Your note (optional)
+issue_tracker_mail_fwd_note_placeholder = For example: "FYI" or a short explanation why you forward this.
+issue_tracker_mail_mark_unread = Mark as unread
+issue_tracker_mail_mark_read = Mark as read
+issue_tracker_mail_mark_all_read = Mark all messages as read
+issue_tracker_mail_mark_all_read_short = All read
 
 # design (ui)
 issue_tracker_ui_yesterday = Yesterday

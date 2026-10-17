@@ -482,3 +482,10 @@ details.it-mbx-section[open] > summary .it-mbx-seccount { display: none; }
 @media (min-width: 1200px) {
     .it-mbx .it-menu.is-fixed > .it-menu-pop { position: fixed; top: var(--pop-top, 0); left: var(--pop-left, 0); right: auto; }
 }
+
+/* Weitergeleitete Nachricht: Original als Zitat */
+.it-quote { margin: 8px 0 0; padding: 8px 12px; border-left: 3px solid var(--it-border); border-radius: 0 8px 8px 0; background: var(--it-bg-soft); color: var(--it-text); font-size: 13px; }
+.it-quote-head { margin: 0 0 6px; color: var(--it-muted); font-size: 12px; font-weight: 600; }
+@media (max-width: 767px) {
+    .it-hide-narrow { display: none; }
+}

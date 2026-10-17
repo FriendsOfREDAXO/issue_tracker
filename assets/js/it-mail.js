@@ -336,6 +336,15 @@
                 var editLink = document.querySelector('[data-it-pane] [data-it-edit]');
                 if (modeRoot && modeRoot.getAttribute('data-mode') === 'knowledge' && editLink) { e.preventDefault(); window.location.href = editLink.href; return; }
             }
+            // „f“ = Weiterleiten, „u“ = gelesen/ungelesen umschalten (Nachrichten)
+            if (e.key === 'f') {
+                var fwd = document.querySelector('[data-it-pane] [data-it-forward]');
+                if (fwd) { e.preventDefault(); window.location.href = fwd.href; return; }
+            }
+            if (e.key === 'u') {
+                var unreadForm = document.querySelector('[data-it-pane] form[data-it-unread]');
+                if (unreadForm) { e.preventDefault(); if (unreadForm.requestSubmit) { unreadForm.requestSubmit(); } else { unreadForm.submit(); } return; }
+            }
             if (e.key === 'r') {
                 var replyLink = document.querySelector('[data-it-pane] [data-it-reply]');
                 if (replyLink) { e.preventDefault(); replyLink.click(); return; }

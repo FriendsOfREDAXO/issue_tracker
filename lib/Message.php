@@ -261,6 +261,114 @@ class Message
     }
 
     /**
+     * Markiert eine empfangene Nachricht wieder als ungelesen (nur der Empfänger darf das).
+     * Nutzt dasselbe Feld wie der Ungelesen-Zähler (is_read / read_at).
+     */
+    public static function markAsUnread(int $messageId, int $userId): bool
+    {
+        $message = self::get($messageId);
+        if (null === $message || $userId <= 0 || $message->recipientId !== $userId || $message->deletedByRecipient) {
+            return false;
+        }
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'UPDATE ' . rex::getTable('issue_tracker_messages') . ' SET is_read = 0, read_at = NULL WHERE id = ? AND recipient_id = ?',
+            [$messageId, $userId]
+        );
+        return true;
+    }
+
+    /**
+     * Markiert alle empfangenen Nachrichten eines Benutzers als gelesen.
+     *
+     * @return int Anzahl der geänderten Nachrichten
+     */
+    public static function markAllAsRead(int $userId): int
+    {
+        if ($userId <= 0) {
+            return 0;
+        }
+        $count = self::getUnreadCount($userId);
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'UPDATE ' . rex::getTable('issue_tracker_messages') . ' SET is_read = 1, read_at = ? WHERE recipient_id = ? AND is_read = 0 AND deleted_by_recipient = 0',
+            [date('Y-m-d H:i:s'), $userId]
+        );
+        return $count;
+    }
+
+    /**
+     * Baut den Text einer weitergeleiteten Nachricht: eigene Notiz oben, darunter das Original deutlich markiert.
+     */
+    public function buildForwardText(string $note): string
+    {
+        $head = \rex_i18n::msg('issue_tracker_mail_fwd_marker');
+        $lines = [
+            '---------- ' . $head . ' ----------',
+            \rex_i18n::msg('issue_tracker_from') . ': ' . $this->getSenderName(),
+            \rex_i18n::msg('issue_tracker_to') . ': ' . $this->getRecipientName(),
+            \rex_i18n::msg('issue_tracker_date') . ': ' . $this->createdAt->format('d.m.Y H:i'),
+            \rex_i18n::msg('issue_tracker_subject') . ': ' . $this->subject,
+            '',
+        ];
+        $quoted = implode("\n", array_map(static fn (string $l): string => '> ' . $l, preg_split('/\R/u', $this->message) ?: []));
+        $note = trim($note);
+        return ($note !== '' ? $note . "\n\n" : '') . implode("\n", $lines) . "\n" . $quoted;
+    }
+
+    /**
+     * Leitet eine Nachricht an einen oder mehrere Benutzer weiter.
+     * Nur Absender oder Empfänger der Originalnachricht dürfen weiterleiten.
+     * Jeder Empfänger erhält eine eigene Nachricht (mit E-Mail-Benachrichtigung wie bei neuen Nachrichten).
+     * Nachrichten haben keine Dateianhänge – es wird nur der Text übernommen.
+     *
+     * @param list<int> $recipientIds
+     * @return list<self> die angelegten Nachrichten (leer bei fehlender Berechtigung oder ungültigen Empfängern)
+     */
+    public static function forward(int $messageId, int $senderId, array $recipientIds, string $note, ?string $subject = null): array
+    {
+        $original = self::get($messageId);
+        if (null === $original || $senderId <= 0 || !$original->hasAccess($senderId)) {
+            return [];
+        }
+
+        $valid = [];
+        foreach (array_unique(array_map('intval', $recipientIds)) as $rid) {
+            if ($rid <= 0 || $rid === $senderId) {
+                continue;
+            }
+            $user = rex_user::get($rid);
+            if ($user && (int) $user->getValue('status') === 1) {
+                $valid[] = $rid;
+            }
+        }
+        if ($valid === []) {
+            return [];
+        }
+
+        $prefix = \rex_i18n::msg('issue_tracker_mail_fwd_prefix');
+        $subject = trim((string) $subject);
+        if ($subject === '') {
+            $subject = $prefix . ' ' . preg_replace('/^((Re|AW|WG|Fwd|Fw):\s*)+/i', '', $original->subject);
+        }
+        $text = $original->buildForwardText($note);
+
+        $created = [];
+        foreach ($valid as $rid) {
+            $message = new self();
+            $message->setSenderId($senderId);
+            $message->setRecipientId($rid);
+            $message->setSubject(mb_substr($subject, 0, 255));
+            $message->setMessage($text);
+            if ($message->save()) {
+                $created[] = $message;
+            }
+        }
+
+        return $created;
+    }
+
+    /**
      * Prüft, ob die Nachricht gelöscht werden kann (max. 1 Stunde nach Erstellung)
      */
     public function canBeDeleted(): bool

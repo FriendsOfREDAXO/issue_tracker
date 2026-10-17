@@ -697,6 +697,18 @@ issue_tracker_mail_progress = Fortschritt
 issue_tracker_mail_progress_text = {0} % erledigt ({1} von {2})
 issue_tracker_mail_new = Neu
 issue_tracker_mail_projects_archived = Archiviert
+issue_tracker_mail_forward = Weiterleiten
+issue_tracker_mail_forward_title = Nachricht weiterleiten
+issue_tracker_mail_forward_send = Weiterleiten
+issue_tracker_mail_fwd_prefix = WG:
+issue_tracker_mail_fwd_marker = Weitergeleitete Nachricht
+issue_tracker_mail_fwd_to_help = An wen soll die Nachricht gehen? Sie können mehrere Personen auswählen – tippen Sie, um zu suchen.
+issue_tracker_mail_fwd_note = Ihre Notiz (optional)
+issue_tracker_mail_fwd_note_placeholder = Zum Beispiel: „Zur Info“ oder eine kurze Erklärung, warum Sie das weiterleiten.
+issue_tracker_mail_mark_unread = Als ungelesen markieren
+issue_tracker_mail_mark_read = Als gelesen markieren
+issue_tracker_mail_mark_all_read = Alle Nachrichten als gelesen markieren
+issue_tracker_mail_mark_all_read_short = Alle gelesen
 
 # design (ui)
 issue_tracker_ui_yesterday = Gestern

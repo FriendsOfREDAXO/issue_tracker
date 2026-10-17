@@ -46,8 +46,9 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - ✅ **Nachrichtensystem**: Benutzer können sich gegenseitig private Nachrichten senden
 - ✅ **Posteingang & Gesendet**: Übersichtliche Trennung von empfangenen und gesendeten Nachrichten
 - ✅ **Konversationsansicht**: Nachrichten werden als Konversation mit demselben Partner gruppiert
+- ✅ **Weiterleiten, ungelesen markieren, alle als gelesen**: wie in Mail (Tasten F und U)
 - ✅ **Ungelesen-Badge**: Navigation zeigt Anzahl ungelesener Nachrichten
-- ✅ **Dashboard-Widget**: Ungelesene Nachrichten werden auf dem Dashboard angezeigt
+- ✅ **Postfach**: Ungelesene Nachrichten stehen mit Zahl in der Seitenleiste
 - ✅ **E-Mail-Benachrichtigung**: Optional werden Benutzer per E-Mail über neue Nachrichten informiert
 - ✅ **Volltext-Option**: Nachrichten können optional vollständig in der E-Mail enthalten sein
 - ✅ **Antwort-Funktion**: Direktes Antworten auf Nachrichten möglich

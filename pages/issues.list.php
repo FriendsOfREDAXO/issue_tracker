@@ -193,6 +193,29 @@ if ($box !== '' || $hasFilterParams || rex_request('screen', 'string', '') === '
 
 // ---------- Nachrichten im selben Fenster ----------
 if ($mode === 'messages') {
+    // Gelesen/ungelesen und „Alle als gelesen“ (POST mit CSRF-Schutz)
+    $msgAction = rex_post('msg_action', 'string', '');
+    if ($msgAction !== '') {
+        if (!rex_csrf_token::factory('issue_tracker_messages')->isValid()) {
+            echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
+        } elseif ($msgAction === 'all_read') {
+            \FriendsOfREDAXO\IssueTracker\Message::markAllAsRead($currentUserId);
+            rex_response::sendRedirect(rex_url::backendPage('issue_tracker/issues/list', ['box' => $box], false));
+        } elseif ($msgAction === 'toggle_read') {
+            $toggleMessage = \FriendsOfREDAXO\IssueTracker\Message::get(rex_post('message_id', 'int', 0));
+            if (!$toggleMessage || $toggleMessage->getRecipientId() !== $currentUserId) {
+                echo rex_view::error($package->i18n('issue_tracker_no_permission'));
+            } elseif ($toggleMessage->isRead()) {
+                \FriendsOfREDAXO\IssueTracker\Message::markAsUnread($toggleMessage->getId(), $currentUserId);
+                // Ohne Auswahl zurück, sonst würde das Öffnen sie gleich wieder als gelesen markieren
+                rex_response::sendRedirect(rex_url::backendPage('issue_tracker/issues/list', ['box' => $box, 'screen' => 'list'], false));
+            } else {
+                $toggleMessage->markAsRead();
+                rex_response::sendRedirect(rex_url::backendPage('issue_tracker/issues/list', ['box' => $box, 'message_id' => $toggleMessage->getId()], false));
+            }
+        }
+    }
+
     $func = rex_request('func', 'string');
     if ($func === 'delete' && rex_request('message_id', 'int', 0) > 0) {
         $delMessage = \FriendsOfREDAXO\IssueTracker\Message::get(rex_request('message_id', 'int', 0));

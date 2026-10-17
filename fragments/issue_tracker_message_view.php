@@ -33,6 +33,28 @@ if ($sortOrder === 'desc') {
 $box = $box === 'sent' ? 'sent' : 'inbox';
 $listPage = 'issue_tracker/issues/list';
 
+// Neueste empfangene Nachricht der Unterhaltung (für „Als ungelesen markieren“)
+$lastReceived = null;
+foreach ($conversation as $convMsg) {
+    if ($convMsg->getRecipientId() === $uid && (!$lastReceived || $convMsg->getCreatedAt() >= $lastReceived->getCreatedAt())) {
+        $lastReceived = $convMsg;
+    }
+}
+$msgToken = rex_csrf_token::factory('issue_tracker_messages');
+// Weitergeleitete Nachrichten: Original ab der Markierung als Zitat darstellen
+$renderBody = static function (string $text): string {
+    // Trennzeile sprachunabhängig erkennen ("---------- Weitergeleitete Nachricht ----------" / "Forwarded message" …)
+    if (!preg_match('/^-{10} [^\n]{1,60} -{10}$/mu', $text, $m, PREG_OFFSET_CAPTURE)) {
+        return nl2br(rex_escape($text));
+    }
+    $pos = (int) $m[0][1];
+    $note = trim(substr($text, 0, $pos));
+    $quote = substr($text, $pos + strlen($m[0][0]));
+    $quote = (string) preg_replace('/^> ?/m', '', $quote);
+    return ($note !== '' ? '<p>' . nl2br(rex_escape($note)) . '</p>' : '')
+        . '<blockquote class="it-quote"><p class="it-quote-head">' . rex_escape(rex_i18n::msg('issue_tracker_mail_fwd_marker')) . '</p>' . nl2br(rex_escape(trim($quote))) . '</blockquote>';
+};
+
 // Re: nur einmal hinzufügen - bestehende Re: Prefixe entfernen
 $replySubject = 'Re: ' . preg_replace('/^(Re:\s*)+/i', '', $message->getSubject());
 ?>
@@ -40,7 +62,16 @@ $replySubject = 'Re: ' . preg_replace('/^(Re:\s*)+/i', '', $message->getSubject(
     <div class="it-rp-toolbar" role="toolbar" aria-label="<?= rex_escape($package->i18n('issue_tracker_actions')) ?>">
         <div class="it-tb-group">
             <a class="it-tb-back" href="<?= rex_url::backendPage($listPage, ['box' => $box, 'screen' => 'list']) ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $box === 'sent' ? $package->i18n('issue_tracker_messages_sent') : $package->i18n('issue_tracker_messages_inbox') ?></a>
-            <a class="it-tb-btn" href="#it-reply" data-it-reply title="<?= rex_escape($package->i18n('issue_tracker_reply')) ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_reply') ?></span></a>
+            <a class="it-tb-btn" href="#it-reply" data-it-reply title="<?= rex_escape($package->i18n('issue_tracker_reply') . ' (R)') ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_reply') ?></span></a>
+            <a class="it-tb-btn" data-it-forward href="<?= rex_url::backendPage('issue_tracker/messages/compose', ['forward' => $message->getId()]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_mail_forward') . ' (F)') ?>"><i class="rex-icon fa-share" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_forward') ?></span></a>
+            <?php if ($lastReceived): $isUnreadNow = !$lastReceived->isRead(); ?>
+            <form method="post" action="<?= rex_url::backendPage($listPage, ['box' => $box]) ?>" class="it-tb-form" data-it-unread>
+                <?= $msgToken->getHiddenField() ?>
+                <input type="hidden" name="msg_action" value="toggle_read" />
+                <input type="hidden" name="message_id" value="<?= $lastReceived->getId() ?>" />
+                <button type="submit" class="it-tb-btn" title="<?= rex_escape($package->i18n($isUnreadNow ? 'issue_tracker_mail_mark_read' : 'issue_tracker_mail_mark_unread') . ' (U)') ?>"><i class="rex-icon <?= $isUnreadNow ? 'fa-envelope-open-o' : 'fa-envelope' ?>" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n($isUnreadNow ? 'issue_tracker_mail_mark_read' : 'issue_tracker_mail_mark_unread') ?></span></button>
+            </form>
+            <?php endif; ?>
             <a class="it-tb-btn" href="<?= rex_url::backendPage('issue_tracker/messages/compose', ['recipient_id' => $partnerId]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_new_message_to', $partnerName)) ?>"><i class="rex-icon fa-pencil-square-o" aria-hidden="true"></i><span class="sr-only"><?= rex_escape($package->i18n('issue_tracker_new_message_to', $partnerName)) ?></span></a>
         </div>
         <div class="it-tb-group">
@@ -81,7 +112,7 @@ $replySubject = 'Re: ' . preg_replace('/^(Re:\s*)+/i', '', $message->getSubject(
                         </span>
                     </div>
                 </header>
-                <div class="it-msg-body"><?= nl2br(rex_escape($msg->getMessage())) ?></div>
+                <div class="it-msg-body"><?= $renderBody($msg->getMessage()) ?></div>
             </article>
             <?php endforeach; ?>
         </section>

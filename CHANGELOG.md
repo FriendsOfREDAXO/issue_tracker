@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [2.0.0-beta3] – 2026-10-17
+
+- **Nachrichten weiterleiten** (Taste F): an eine oder mehrere Personen, Betreff „WG: …“, eigene Notiz oben, darunter das Original deutlich als Zitat (Von, An, Datum, Betreff, Text). Nur Absender oder Empfänger der Nachricht dürfen weiterleiten; Empfänger werden wie bei neuen Nachrichten benachrichtigt. Nachrichten haben keine Dateianhänge, daher wird nur der Text übernommen.
+- **Als ungelesen markieren** (Taste U, schaltet zwischen gelesen und ungelesen um) und **Alle als gelesen markieren** im Posteingang. Zähler in Seitenleiste und Reiter passen sich an.
+- Neue Methoden in `Message`: `forward()`, `markAsUnread()`, `markAllAsRead()`, `buildForwardText()`. Keine Datenbankänderung.
+
 ## [2.0.0-beta2] – 2026-10-17
 
 - **Alles in einem Mail-Fenster („Postfach“):** Themen, Nachrichten, Projekte und Wissen sind Postfächer in der Seitenleiste; das Dashboard entfällt. Reiter nur noch Postfach, Einstellungen, Hilfe. Alte Adressen (auch Links aus E-Mails) leiten auf das passende Postfach weiter.
