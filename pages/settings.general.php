@@ -16,6 +16,8 @@ if (!PermissionService::canManageSettings()) {
     return;
 }
 
+echo \FriendsOfREDAXO\IssueTracker\UiHelper::settingsStart('general');
+
 $func = rex_request('func', 'string', '');
 
 // Tag hinzufügen/bearbeiten
@@ -60,7 +62,26 @@ if ($func === 'delete_tag') {
 }
 
 // Einstellungen speichern
+// Eingaben prüfen, bevor gespeichert wird (bei Fehlern bleiben die Eingaben im Formular stehen)
+$formErrors = [];
 if (rex_post('save_settings', 'int', 0) === 1) {
+    $postedFromAddress = trim(rex_post('email_from_address', 'string', ''));
+    if ($postedFromAddress !== '' && !filter_var($postedFromAddress, FILTER_VALIDATE_EMAIL)) {
+        $formErrors['email-from-address'] = rex_i18n::rawMsg('issue_tracker_ui_error_email');
+    }
+    if (trim(rex_post('email_from_name', 'string', '')) === '') {
+        $formErrors['email-from-name'] = rex_i18n::rawMsg('issue_tracker_ui_error_from_name');
+    }
+    $postedCooldown = rex_post('reminder_cooldown_hours', 'string', '');
+    if (!ctype_digit($postedCooldown) || (int) $postedCooldown < 1 || (int) $postedCooldown > 720) {
+        $formErrors['reminder-cooldown'] = rex_i18n::rawMsg('issue_tracker_ui_error_cooldown');
+    }
+    if (!array_filter(rex_post('categories', 'array', []), 'strlen')) {
+        $formErrors['issue-tracker-categories'] = rex_i18n::rawMsg('issue_tracker_ui_error_categories');
+    }
+}
+
+if (rex_post('save_settings', 'int', 0) === 1 && !$formErrors) {
     // Menü-Titel
     rex_sql::factory()
         ->setTable(rex::getTable('issue_tracker_settings'))
@@ -163,4 +184,16 @@ $fragment->setVar('installationName', $installationName);
 $fragment->setVar('apiToken', $apiToken);
 $fragment->setVar('allTags', $allTags);
 $fragment->setVar('editTag', $editTag);
+$fragment->setVar('formErrors', $formErrors);
+if ($formErrors) {
+    // Eingegebene Werte wieder anzeigen
+    $fragment->setVar('menuTitle', rex_post('menu_title', 'string', ''));
+    $fragment->setVar('categories', array_values(array_filter(rex_post('categories', 'array', []), 'strlen')));
+    $fragment->setVar('emailEnabled', rex_post('email_enabled', 'int', 0));
+    $fragment->setVar('emailFromAddress', rex_post('email_from_address', 'string', ''));
+    $fragment->setVar('emailFromName', rex_post('email_from_name', 'string', ''));
+    $fragment->setVar('reminderCooldownHours', rex_post('reminder_cooldown_hours', 'string', ''));
+    $fragment->setVar('installationName', rex_post('installation_name', 'string', ''));
+}
 echo $fragment->parse('issue_tracker_settings.php');
+echo \FriendsOfREDAXO\IssueTracker\UiHelper::settingsEnd();

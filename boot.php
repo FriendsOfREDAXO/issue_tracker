@@ -18,13 +18,33 @@ if (rex::isBackend() && rex::getUser()) {
     rex_perm::register('issue_tracker[issue_manager]', null, rex_perm::OPTIONS);
 }
 
-// Assets einbinden
-if (rex::isBackend() && rex::getUser()) {
+// Assets nur auf den Seiten des Issue Trackers einbinden
+if (rex::isBackend() && rex::getUser() && 'issue_tracker' === rex_be_controller::getCurrentPagePart(1)) {
     rex_view::addCssFile($this->getAssetsUrl('easymde.min.css'));
     rex_view::addCssFile($this->getAssetsUrl('issue_tracker.css'));
+    rex_view::addCssFile($this->getAssetsUrl('css/it-base.css'));
+    rex_view::addCssFile($this->getAssetsUrl('css/it-ui.css'));
     rex_view::addJsFile($this->getAssetsUrl('easymde.min.js'));
     rex_view::addJsFile($this->getAssetsUrl('issue_tracker.js'));
-    
+    rex_view::addJsFile($this->getAssetsUrl('js/it-ui.js'));
+    rex_view::addCssFile($this->getAssetsUrl('css/it-mail.css'));
+    rex_view::addJsFile($this->getAssetsUrl('js/it-mail.js'));
+
+    // Schriftgröße des Benutzers (90–140 %) als Klasse am body
+    rex_extension::register('PAGE_BODY_ATTR', static function (rex_extension_point $ep) {
+        $attr = $ep->getSubject();
+        $userId = rex::requireUser()->getId();
+        $scale = (int) rex_config::get('issue_tracker', 'font_scale_' . $userId, 100);
+        if (in_array($scale, [90, 110, 120, 130, 140], true)) {
+            $attr['class'][] = 'it-scale-' . $scale;
+        }
+        // Gespeicherte Spaltenbreiten (nur eigene CSS-Variablen)
+        $cols = rex_config::get('issue_tracker', 'columns_' . $userId, []);
+        if (is_array($cols) && isset($cols['mbx'], $cols['ml'])) {
+            $attr['style'][] = '--it-col-mbx:' . (int) $cols['mbx'] . 'px;--it-col-ml:' . (int) $cols['ml'] . 'px;';
+        }
+        return $attr;
+    });
 }
 
 // Benutzerdefinierten Menü-Titel setzen
@@ -60,10 +80,14 @@ if (rex::isBackend() && rex::getUser() && isset($_SESSION['issue_tracker_token']
 // Ungelesene Nachrichten Badge in Navigation anzeigen
 if (rex::isBackend() && rex::getUser()) {
     rex_extension::register('PAGE_TITLE', static function (rex_extension_point $ep) {
+        // Das Badge sitzt in der Unternavigation des Issue Trackers – nur dort ausgeben (dort ist auch das Skript geladen)
+        if ('issue_tracker' !== rex_be_controller::getCurrentPagePart(1)) {
+            return;
+        }
         $unreadCount = \FriendsOfREDAXO\IssueTracker\Message::getUnreadCount(rex::getUser()->getId());
         if ($unreadCount > 0) {
             // Badge per zentraler JS-Funktion hinzufügen (CSS ist in issue_tracker.css)
-            $script = '<script>issueTrackerAddMessageBadge(' . $unreadCount . ');</script>';
+            $script = '<script nonce="' . rex_response::getNonce() . '">issueTrackerAddMessageBadge(' . (int) $unreadCount . ');</script>';
             $ep->setSubject($ep->getSubject() . $script);
         }
     });

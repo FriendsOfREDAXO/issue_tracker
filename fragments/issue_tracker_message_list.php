@@ -1,17 +1,23 @@
 <?php
 /**
- * Nachrichtenliste Fragment
- * 
+ * Nachrichten-Postfach wie Mail: Postfächer | Unterhaltungen | Lesebereich
+ *
  * @var rex_fragment $this
  */
 
 use FriendsOfREDAXO\IssueTracker\Message;
+use FriendsOfREDAXO\IssueTracker\UiHelper;
 
 $package = rex_addon::get('issue_tracker');
 
 $messages = $this->getVar('messages', []);
 $type = $this->getVar('type', 'inbox'); // inbox oder sent
+$selectedMessageId = (int) $this->getVar('selectedMessageId', 0);
+$paneHtml = (string) $this->getVar('paneHtml', '');
+$messageSearch = (string) $this->getVar('messageSearch', '');
+$screen = (string) $this->getVar('screen', 'list');
 $currentUser = rex::getUser();
+$uid = (int) $currentUser->getId();
 
 $isInbox = $type === 'inbox';
 
@@ -19,7 +25,7 @@ $isInbox = $type === 'inbox';
 $conversations = [];
 foreach ($messages as $message) {
     $partnerId = $isInbox ? $message->getSenderId() : $message->getRecipientId();
-    
+
     if (!isset($conversations[$partnerId])) {
         $conversations[$partnerId] = [
             'partner_id' => $partnerId,
@@ -29,13 +35,13 @@ foreach ($messages as $message) {
             'message_count' => 0,
         ];
     }
-    
+
     $conversations[$partnerId]['message_count']++;
-    
+
     if ($isInbox && !$message->isRead()) {
         $conversations[$partnerId]['unread_count']++;
     }
-    
+
     // Neueste Nachricht aktualisieren
     if ($message->getCreatedAt() > $conversations[$partnerId]['latest_message']->getCreatedAt()) {
         $conversations[$partnerId]['latest_message'] = $message;
@@ -43,104 +49,108 @@ foreach ($messages as $message) {
 }
 
 // Nach letzter Nachricht sortieren
-usort($conversations, fn($a, $b) => $b['latest_message']->getCreatedAt() <=> $a['latest_message']->getCreatedAt());
+usort($conversations, fn ($a, $b) => $b['latest_message']->getCreatedAt() <=> $a['latest_message']->getCreatedAt());
+
+// Gesprächspartner der ausgewählten Nachricht
+$selectedPartner = 0;
+if ($selectedMessageId > 0) {
+    $sel = Message::get($selectedMessageId);
+    if ($sel && $sel->hasAccess($uid)) {
+        $selectedPartner = $sel->getSenderId() === $uid ? $sel->getRecipientId() : $sel->getSenderId();
+    }
+}
+$page = 'issue_tracker/issues/list';
+$box = $isInbox ? 'inbox' : 'sent';
+$unreadTotal = Message::getUnreadCount($uid);
+$title = $isInbox ? $package->i18n('issue_tracker_messages_inbox') : $package->i18n('issue_tracker_messages_sent');
+
+$sidebar = new rex_fragment();
+$sidebar->setVar('mode', 'messages');
+$sidebar->setVar('box', $box);
+$sidebar->setVar('filterState', $this->getVar('filterState', null), false);
 ?>
-
-<div class="issue-tracker-messages">
-    <!-- Toolbar -->
-    <div class="row" style="margin-bottom: 20px;">
-        <div class="col-sm-12">
-            <a href="<?= rex_url::backendPage('issue_tracker/messages/compose') ?>" class="btn btn-primary">
-                <i class="rex-icon fa-plus"></i> <?= $package->i18n('issue_tracker_messages_compose') ?>
-            </a>
+<div class="it-mail it-mail--messages<?= $selectedPartner > 0 ? ' it-mail--sel' : '' ?><?= $screen === 'list' ? ' it-mail--list' : '' ?>" data-it-mail data-mode="messages">
+    <?= $sidebar->parse('issue_tracker_filter.php') ?>
+    <section class="it-ml" aria-label="<?= rex_escape($title) ?>">
+        <header class="it-ml-bar">
+            <div class="it-ml-head">
+                <div class="it-ml-heading">
+                    <h2 class="it-ml-title"><?= rex_escape($title) ?></h2>
+                    <span class="it-ml-total"><?= $package->i18n('issue_tracker_mail_conversations', count($conversations)) ?><?php if ($isInbox && $unreadTotal > 0): ?> · <?= $package->i18n('issue_tracker_mail_unread_count', $unreadTotal) ?><?php endif; ?></span>
+                </div>
+                <a class="it-tb-back it-tb-back--list" href="<?= rex_url::backendPage($page) ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_mailboxes') ?></a>
+                <div class="it-ml-head-actions">
+                    <?php if ($isInbox && $unreadTotal > 0): ?>
+                    <form method="post" action="<?= rex_url::backendPage($page, ['box' => $box]) ?>" class="it-tb-form" data-it-allread>
+                        <?= rex_csrf_token::factory('issue_tracker_messages')->getHiddenField() ?>
+                        <input type="hidden" name="msg_action" value="all_read" />
+                        <button type="submit" class="it-tb-btn it-tb-btn--text" title="<?= rex_escape($package->i18n('issue_tracker_mail_mark_all_read')) ?>"><i class="rex-icon fa-check-square-o" aria-hidden="true"></i><span class="it-hide-narrow"> <?= $package->i18n('issue_tracker_mail_mark_all_read_short') ?></span><span class="sr-only"><?= $package->i18n('issue_tracker_mail_mark_all_read') ?></span></button>
+                    </form>
+                    <?php endif; ?>
+                    <a class="it-tb-btn it-tb-btn--accent" href="<?= rex_url::backendPage('issue_tracker/messages/compose') ?>" title="<?= rex_escape($package->i18n('issue_tracker_mail_new_message')) ?>"><i class="rex-icon fa-pencil-square-o" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_new_message') ?></span></a>
+                </div>
+            </div>
+            <div class="it-ml-tools">
+                <form class="it-search" method="get" action="<?= rex_url::backendController() ?>" role="search">
+                    <input type="hidden" name="page" value="issue_tracker/issues/list" />
+                    <input type="hidden" name="box" value="<?= $box ?>" />
+                    <i class="rex-icon fa-search it-search-icon" aria-hidden="true"></i>
+                    <input type="search" name="msearch" class="it-search-input" value="<?= rex_escape($messageSearch) ?>" placeholder="<?= rex_escape($package->i18n('issue_tracker_mail_search_messages')) ?>" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_search_messages')) ?>" />
+                </form>
+            </div>
+        </header>
+        <?php if (empty($conversations)): ?>
+        <div class="it-empty">
+            <i class="rex-icon fa-envelope-o" aria-hidden="true"></i>
+            <?= $messageSearch !== '' ? $package->i18n('issue_tracker_mail_empty_search') : $package->i18n('issue_tracker_mail_empty_messages') ?>
+            <p><a class="btn btn-default btn-sm" href="<?= rex_url::backendPage('issue_tracker/messages/compose') ?>"><?= $package->i18n('issue_tracker_mail_new_message_write') ?></a></p>
         </div>
-    </div>
-
-    <?php if (empty($conversations)): ?>
-    <div class="panel panel-default">
-        <div class="panel-body text-center text-muted" style="padding: 40px;">
-            <i class="rex-icon fa-envelope-o" style="font-size: 48px;"></i>
-            <p style="margin-top: 15px;">
-                <?= $isInbox 
-                    ? $package->i18n('issue_tracker_no_messages_inbox') 
-                    : $package->i18n('issue_tracker_no_messages_sent') ?>
-            </p>
-        </div>
-    </div>
-    <?php else: ?>
-    <div class="panel panel-default">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th style="width: 30px;"></th>
-                    <th style="width: 180px;"><?= $isInbox ? $package->i18n('issue_tracker_from') : $package->i18n('issue_tracker_to') ?></th>
-                    <th><?= $package->i18n('issue_tracker_subject') ?></th>
-                    <th style="width: 200px;"><?= $package->i18n('issue_tracker_last_reply') ?></th>
-                    <th style="width: 100px;"><?= $package->i18n('issue_tracker_actions') ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($conversations as $conv): 
-                    $message = $conv['latest_message'];
-                    $hasUnread = $conv['unread_count'] > 0;
-                    $rowClass = $hasUnread ? 'font-weight: bold;' : '';
-                    
-                    // Wer hat die letzte Nachricht geschrieben?
-                    $lastReplySender = $message->getSenderId() === $currentUser->getId() 
-                        ? $package->i18n('issue_tracker_you') 
-                        : $message->getSenderName();
-                ?>
-                <tr style="<?= $rowClass ?>">
-                    <td>
+        <?php else: ?>
+        <ul class="it-ml-items" data-it-list>
+            <?php foreach ($conversations as $conv):
+                $message = $conv['latest_message'];
+                $hasUnread = $conv['unread_count'] > 0;
+                $isSel = $selectedPartner > 0 && (int) $conv['partner_id'] === $selectedPartner;
+                $lastFromMe = $message->getSenderId() === $uid;
+                $preview = trim((string) preg_replace(['/-{5,}[^\n]*-{5,}/u', '/^> ?/mu', '/\s+/u'], ['·', '', ' '], strip_tags($message->getMessage())));
+                if (mb_strlen($preview) > 200) {
+                    $preview = mb_substr($preview, 0, 200) . '…';
+                }
+            ?>
+            <li>
+                <a class="it-ml-row<?= $isSel ? ' is-selected' : '' ?><?= $hasUnread ? ' is-unread' : '' ?>" href="<?= rex_url::backendPage($page, ['box' => $box, 'message_id' => $message->getId()]) ?>"<?= $isSel ? ' aria-current="true"' : '' ?>>
+                    <span class="it-ml-mark">
                         <?php if ($hasUnread): ?>
-                        <span class="label label-primary" title="<?= $conv['unread_count'] ?> <?= $package->i18n('issue_tracker_unread') ?>">
-                            <?= $conv['unread_count'] ?>
+                        <span class="it-dot it-dot--unread" title="<?= rex_escape($package->i18n('issue_tracker_unread')) ?>"></span><span class="sr-only"><?= $conv['unread_count'] ?> <?= $package->i18n('issue_tracker_unread') ?></span>
+                        <?php endif; ?>
+                    </span>
+                    <span class="it-ml-main">
+                        <span class="it-ml-line1">
+                            <span class="it-ml-subject"><?= rex_escape($conv['partner_name']) ?></span>
+                            <time class="it-ml-date" datetime="<?= $message->getCreatedAt()->format('c') ?>"><?= rex_escape(UiHelper::relDate($message->getCreatedAt())) ?></time>
                         </span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <i class="rex-icon fa-user-o"></i>
-                        <?= rex_escape($conv['partner_name']) ?>
-                        <?php if ($conv['message_count'] > 1): ?>
-                        <small class="text-muted">(<?= $conv['message_count'] ?>)</small>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <a href="<?= rex_url::backendPage('issue_tracker/messages/view', ['message_id' => $message->getId()]) ?>">
-                            <?= rex_escape($message->getSubject()) ?>
-                        </a>
-                        <br>
-                        <small class="text-muted">
-                            <?= rex_escape(mb_substr(strip_tags($message->getMessage()), 0, 60)) ?>...
-                        </small>
-                    </td>
-                    <td>
-                        <small>
-                            <i class="rex-icon fa-reply"></i> <?= rex_escape($lastReplySender) ?>
-                            <br>
-                            <span class="text-muted"><?= $message->getCreatedAt()->format('d.m.Y H:i') ?></span>
-                        </small>
-                    </td>
-                    <td>
-                        <div class="btn-group btn-group-xs">
-                            <a href="<?= rex_url::backendPage('issue_tracker/messages/view', ['message_id' => $message->getId()]) ?>" 
-                               class="btn btn-default" title="<?= $package->i18n('issue_tracker_view') ?>">
-                                <i class="rex-icon fa-eye"></i>
-                            </a>
-                            <a href="<?= rex_url::backendPage('issue_tracker/messages/compose', ['reply_to' => $message->getId()]) ?>" 
-                               class="btn btn-default" title="<?= $package->i18n('issue_tracker_reply') ?>">
-                                <i class="rex-icon fa-reply"></i>
-                            </a>
-                            <a href="<?= rex_url::backendPage('issue_tracker/messages/compose', ['recipient_id' => $conv['partner_id']]) ?>" 
-                               class="btn btn-default" title="<?= $package->i18n('issue_tracker_new_message') ?>">
-                                <i class="rex-icon fa-plus"></i>
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-    <?php endif; ?>
+                        <span class="it-ml-line2"><span class="it-ml-who"><?= rex_escape($message->getSubject()) ?></span></span>
+                        <span class="it-ml-preview"><?php if ($lastFromMe): ?><?= $package->i18n('issue_tracker_you') ?>: <?php endif; ?><?= rex_escape($preview) ?></span>
+                        <span class="it-ml-meta">
+                            <span class="it-ml-icon" title="<?= rex_escape($package->i18n('issue_tracker_messages')) ?>"><i class="rex-icon fa-comments-o" aria-hidden="true"></i> <?= (int) $conv['message_count'] ?></span>
+                            <?php if ($hasUnread): ?><span class="it-badge it-badge--info"><?= (int) $conv['unread_count'] ?> <?= $package->i18n('issue_tracker_unread') ?></span><?php endif; ?>
+                        </span>
+                    </span>
+                </a>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+        <?php endif; ?>
+    </section>
+    <section class="it-rp-wrap" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_reading_pane')) ?>" data-it-pane>
+        <?php if ($paneHtml !== ''): ?>
+            <?= $paneHtml ?>
+        <?php else: ?>
+        <div class="it-rp-empty">
+            <i class="rex-icon fa-envelope-open-o" aria-hidden="true"></i>
+            <p><?= $package->i18n('issue_tracker_mail_no_message_selected') ?></p>
+            <small><?= $package->i18n('issue_tracker_mail_no_message_hint') ?></small>
+        </div>
+        <?php endif; ?>
+    </section>
 </div>

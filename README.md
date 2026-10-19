@@ -2,6 +2,8 @@
 
 Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht, Wünsche zu äußern, Probleme zu melden und Vorschläge zu machen. Mit integriertem Projektmanagement und privatem Nachrichtensystem.
 
+**Ab Version 2.0 so vertraut wie Mail auf dem Mac:** Links die Postfächer (Mir zugewiesen, Offen, Projekte, Tags …), in der Mitte die Themenliste mit Vorschau, rechts das Lesefenster mit dem Gesprächsverlauf. Mit ↑/↓ blättern, mit R antworten. Am Handy wie am iPhone. Wer lieber die klassische Tabelle mag, schaltet oben auf „Tabelle“ um. Formulare zeigen nur das Wichtige, alles Weitere liegt aufgeräumt unter „Weitere Angaben“. Hell und dunkel.
+
 ## Features
 
 ### Kernfunktionen
@@ -44,8 +46,9 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - ✅ **Nachrichtensystem**: Benutzer können sich gegenseitig private Nachrichten senden
 - ✅ **Posteingang & Gesendet**: Übersichtliche Trennung von empfangenen und gesendeten Nachrichten
 - ✅ **Konversationsansicht**: Nachrichten werden als Konversation mit demselben Partner gruppiert
+- ✅ **Weiterleiten, ungelesen markieren, alle als gelesen**: wie in Mail (Tasten F und U)
 - ✅ **Ungelesen-Badge**: Navigation zeigt Anzahl ungelesener Nachrichten
-- ✅ **Dashboard-Widget**: Ungelesene Nachrichten werden auf dem Dashboard angezeigt
+- ✅ **Postfach**: Ungelesene Nachrichten stehen mit Zahl in der Seitenleiste
 - ✅ **E-Mail-Benachrichtigung**: Optional werden Benutzer per E-Mail über neue Nachrichten informiert
 - ✅ **Volltext-Option**: Nachrichten können optional vollständig in der E-Mail enthalten sein
 - ✅ **Antwort-Funktion**: Direktes Antworten auf Nachrichten möglich

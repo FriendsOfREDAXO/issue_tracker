@@ -70,6 +70,16 @@ if (!$issue) {
     $issue->setCreatedBy($currentUser->getId());
     $isNew = true;
     
+    // Vorbelegung aus dem Postfach-Modus: Wissenseintrag (Status „Info“, nur Admin/Issue-Manager) und Kategorie
+    $statusFromRequest = rex_request('status', 'string', '');
+    if ($statusFromRequest !== '' && isset($statuses[$statusFromRequest]) && \FriendsOfREDAXO\IssueTracker\PermissionService::isAdminOrManager()) {
+        $issue->setStatus($statusFromRequest);
+    }
+    $categoryFromRequest = rex_request('category', 'string', '');
+    if ($categoryFromRequest !== '' && in_array($categoryFromRequest, $categories, true)) {
+        $issue->setCategory($categoryFromRequest);
+    }
+
     // Projekt-ID aus Request übernehmen wenn vorhanden
     $projectIdFromRequest = rex_request('project_id', 'int', 0);
     if ($projectIdFromRequest > 0) {
@@ -114,8 +124,7 @@ if (rex_post('save', 'int', 0) === 1) {
 
     // Pflichtfeld: Zugewiesener User oder gemeinsame Zuständigkeit (Alle)
     if ('all' !== $assignedUserSelection && !$issue->getAssignedUserId()) {
-        echo rex_view::error($package->i18n('issue_tracker_assigned_user_required'));
-        // Formular erneut anzeigen (weiter unten)
+        // Formular erneut anzeigen (weiter unten) – die Fehlermeldung steht im Formular direkt am Feld und in der Zusammenfassung
     } else {
     
     // Domain IDs (Multiple) und YForm Tabellen (Multiple)
@@ -243,7 +252,7 @@ if (rex_post('save', 'int', 0) === 1) {
         echo '<script>issueTrackerClearDraft();</script>';
         
         // Redirect zur Liste
-        header('Location: ' . rex_url::backendPage('issue_tracker/issues'));
+        header('Location: ' . rex_url::backendPage('issue_tracker/issues/list', ['issue_id' => $issue->getId()], false));
         exit;
     } else {
         echo rex_view::error($package->i18n('issue_tracker_issue_save_error'));

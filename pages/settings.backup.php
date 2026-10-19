@@ -8,6 +8,8 @@
 
 $package = rex_addon::get('issue_tracker');
 
+echo \FriendsOfREDAXO\IssueTracker\UiHelper::settingsStart('backup');
+
 // JSON Import
 if (rex_post('import', 'int', 0) === 1 && !empty($_FILES['import_file']['tmp_name'])) {
     $jsonContent = file_get_contents($_FILES['import_file']['tmp_name']);
@@ -354,94 +356,70 @@ if (rex_request('export', 'string', '') === 'json') {
     exit;
 }
 
+$t = static fn (string $key): string => rex_i18n::rawMsg($key);
+$tablesHtml = '<div class="it-codes">';
+foreach (['issues', 'comments', 'tags', 'issue_tags', 'attachments', 'history', 'notifications', 'saved_filters', 'email_tokens', 'settings', 'projects', 'project_users', 'messages'] as $table) {
+    $tablesHtml .= '<code>rex_issue_tracker_' . $table . '</code>';
+}
+$tablesHtml .= '</div>';
+$advancedHtml = '<div class="it-group">'
+    . \FriendsOfREDAXO\IssueTracker\UiHelper::field($t('issue_tracker_ui_bk_tables'), $tablesHtml, $t('issue_tracker_ui_bk_tables_help'), '', false, '', true)
+    . \FriendsOfREDAXO\IssueTracker\UiHelper::field($t('issue_tracker_ui_bk_files'), '<code>' . rex_escape(rex_path::addonData('issue_tracker', 'attachments')) . '</code>', $t('issue_tracker_ui_bk_files_help'), '', false, '', true)
+    . '</div>';
 ?>
 
-<div class="rex-page-section">
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h3 class="panel-title">
-                <i class="rex-icon fa-download"></i> <?= $package->i18n('issue_tracker_backup') ?>
-            </h3>
+<h3 class="it-group-title"><?= rex_escape($t('issue_tracker_ui_bk_export_title')) ?></h3>
+<div class="it-group">
+    <div class="it-row">
+        <div class="it-row-label">
+            <strong><?= rex_escape($t('issue_tracker_ui_bk_export')) ?></strong>
+            <small><?= rex_escape($t('issue_tracker_ui_bk_export_help')) ?></small>
         </div>
-        <div class="panel-body">
-            <p>
-                <?= $package->i18n('issue_tracker_backup_export_description') ?>
-            </p>
-            
-            <div class="alert alert-warning">
-                <strong><i class="rex-icon fa-exclamation-triangle"></i> <?= $package->i18n('issue_tracker_backup_export_note') ?></strong>
-                <ul>
-                    <li><?= $package->i18n('issue_tracker_backup_export_note_attachments') ?></li>
-                    <li><?= $package->i18n('issue_tracker_backup_export_note_userids') ?></li>
-                    <li><?= $package->i18n('issue_tracker_backup_export_note_tokens') ?></li>
-                </ul>
-            </div>
-            
-            <a href="<?= rex_url::currentBackendPage(['export' => 'json']) ?>" class="btn btn-primary">
-                <i class="rex-icon fa-download"></i> <?= $package->i18n('issue_tracker_backup_export_button') ?>
+        <div class="it-row-control">
+            <a href="<?= rex_url::currentBackendPage(['export' => 'json']) ?>" class="btn btn-save">
+                <i class="rex-icon fa-download" aria-hidden="true"></i> <?= rex_escape($t('issue_tracker_ui_bk_export_button')) ?>
             </a>
-            
-            <hr>
-            
-            <h4><?= $package->i18n('issue_tracker_backup_manual_db') ?></h4>
-            <p><?= $package->i18n('issue_tracker_backup_manual_tables') ?></p>
+        </div>
+    </div>
+    <div class="it-note">
+        <i class="rex-icon fa-info-circle" aria-hidden="true"></i>
+        <div>
+            <p><strong><?= rex_escape($t('issue_tracker_ui_bk_export_not_title')) ?></strong></p>
             <ul>
-                <li><code>rex_issue_tracker_issues</code></li>
-                <li><code>rex_issue_tracker_comments</code></li>
-                <li><code>rex_issue_tracker_tags</code></li>
-                <li><code>rex_issue_tracker_issue_tags</code></li>
-                <li><code>rex_issue_tracker_attachments</code></li>
-                <li><code>rex_issue_tracker_history</code></li>
-                <li><code>rex_issue_tracker_notifications</code></li>
-                <li><code>rex_issue_tracker_saved_filters</code></li>
-                <li><code>rex_issue_tracker_email_tokens</code></li>
-                <li><code>rex_issue_tracker_settings</code></li>
-                <li><code>rex_issue_tracker_projects</code></li>
-                <li><code>rex_issue_tracker_project_users</code></li>
-                <li><code>rex_issue_tracker_messages</code></li>
+                <li><?= rex_escape($t('issue_tracker_ui_bk_export_not_files')) ?></li>
+                <li><?= rex_escape($t('issue_tracker_ui_bk_export_not_settings')) ?></li>
+                <li><?= rex_escape($t('issue_tracker_ui_bk_export_users')) ?></li>
             </ul>
-            
-            <h4><?= $package->i18n('issue_tracker_backup_attachment_dir') ?></h4>
-            <p>
-                <?= $package->i18n('issue_tracker_backup_attachment_dir_info') ?><br>
-                <code><?= rex_path::addonData('issue_tracker', 'attachments') ?></code>
-            </p>
         </div>
     </div>
 </div>
 
-<div class="rex-page-section">
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h3 class="panel-title">
-                <i class="rex-icon fa-upload"></i> <?= $package->i18n('issue_tracker_backup_import') ?>
-            </h3>
-        </div>
-        <div class="panel-body">
-            <p>
-                <?= $package->i18n('issue_tracker_backup_import_description') ?>
-            </p>
-            
-            <div class="alert alert-danger">
-                <strong><i class="rex-icon fa-exclamation-triangle"></i> <?= $package->i18n('issue_tracker_backup_import_warning') ?></strong>
-                <ul>
-                    <li><?= $package->i18n('issue_tracker_backup_import_warning_newids') ?></li>
-                    <li><?= $package->i18n('issue_tracker_backup_import_warning_userids') ?></li>
-                    <li><?= $package->i18n('issue_tracker_backup_import_warning_attachments') ?></li>
-                    <li><?= $package->i18n('issue_tracker_backup_import_warning_duplicates') ?></li>
-                </ul>
-            </div>
-            
-            <form method="post" enctype="multipart/form-data">
-                <input type="hidden" name="import" value="1" />
-                <div class="form-group">
-                    <label><?= $package->i18n('issue_tracker_backup_import_file') ?></label>
-                    <input type="file" name="import_file" accept=".json" class="form-control" required />
-                </div>
-                <button type="submit" class="btn btn-warning">
-                    <i class="rex-icon fa-upload"></i> <?= $package->i18n('issue_tracker_backup_import_button') ?>
-                </button>
-            </form>
+<?= \FriendsOfREDAXO\IssueTracker\UiHelper::advanced($advancedHtml, false, $t('issue_tracker_ui_bk_advanced_hint')) ?>
+
+<h3 class="it-group-title it-danger-title"><?= rex_escape($t('issue_tracker_ui_bk_import_title')) ?></h3>
+<div class="it-group it-danger-zone">
+    <div class="it-note it-note--danger">
+        <i class="rex-icon fa-exclamation-triangle" aria-hidden="true"></i>
+        <div>
+            <p><strong><?= rex_escape($t('issue_tracker_ui_bk_import_warn_title')) ?></strong></p>
+            <ul>
+                <li><?= rex_escape($t('issue_tracker_ui_bk_import_warn_add')) ?></li>
+                <li><?= rex_escape($t('issue_tracker_ui_bk_import_warn_twice')) ?></li>
+                <li><?= rex_escape($t('issue_tracker_ui_bk_import_warn_users')) ?></li>
+                <li><?= rex_escape($t('issue_tracker_ui_bk_import_warn_files')) ?></li>
+            </ul>
         </div>
     </div>
+    <form method="post" enctype="multipart/form-data" data-confirm="<?= rex_escape($t('issue_tracker_ui_backup_import_confirm')) ?>">
+        <input type="hidden" name="import" value="1" />
+        <?= \FriendsOfREDAXO\IssueTracker\UiHelper::field(
+            $t('issue_tracker_ui_bk_import_file'),
+            '<input type="file" id="it-import-file" name="import_file" accept=".json" class="form-control it-file" required />'
+                . '<button type="submit" class="btn btn-default it-btn-danger"><i class="rex-icon fa-upload" aria-hidden="true"></i> ' . rex_escape($t('issue_tracker_ui_bk_import_button')) . '</button>',
+            $t('issue_tracker_ui_bk_import_file_help'),
+            'it-import-file',
+            true
+        ) ?>
+    </form>
 </div>
+<?= \FriendsOfREDAXO\IssueTracker\UiHelper::settingsEnd() ?>

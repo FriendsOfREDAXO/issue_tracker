@@ -1,5 +1,5 @@
 package: issue_tracker
-version: '1.8.0'
+version: '2.0.0-beta5'
 author: Thomas Skerbis
 supportpage: https://github.com/FriendsOfREDAXO/issue_tracker
 
@@ -17,29 +17,31 @@ page:
     icon: rex-icon fa-tasks
     block: system
     subpages:
-        dashboard:
-            title: 'translate:issue_tracker_dashboard'
-            icon: rex-icon fa-dashboard
         issues:
-            title: 'translate:issue_tracker_issues'
-            icon: rex-icon fa-ticket
+            title: 'translate:issue_tracker_mail_window'
+            icon: rex-icon fa-inbox
             subpages:
                 list:
-                    title: 'translate:issue_tracker_issues_list'
+                    title: 'translate:issue_tracker_mail_window'
+                    hidden: true
                 view:
                     title: 'translate:issue_tracker_issues_view'
                     hidden: true
                 create:
                     title: 'translate:issue_tracker_issues_create'
+                    hidden: true
                 edit:
                     title: 'translate:issue_tracker_issues_edit'
                     hidden: true
+        dashboard:
+            title: 'translate:issue_tracker_dashboard'
+            hidden: true
         knowledge:
             title: 'translate:issue_tracker_knowledge'
-            icon: rex-icon fa-book
+            hidden: true
         projects:
             title: 'translate:issue_tracker_projects'
-            icon: rex-icon fa-folder-open
+            hidden: true
             subpages:
                 list:
                     title: 'translate:issue_tracker_projects_list'
@@ -55,7 +57,7 @@ page:
                     perm: issue_manager
         messages:
             title: 'translate:issue_tracker_messages'
-            icon: rex-icon fa-envelope
+            hidden: true
             pjax: false
             subpages:
                 inbox:
@@ -77,7 +79,7 @@ page:
                     perm: admin
         preferences:
             title: 'translate:issue_tracker_preferences'
-            icon: rex-icon fa-user
+            hidden: true
             pjax: false
         settings:
             title: 'translate:issue_tracker_settings'

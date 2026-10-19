@@ -219,7 +219,7 @@
                         "guide"
                     ],
                     status: false,
-                    placeholder: "Beschreibung des Issues..."
+                    placeholder: (document.documentElement.lang || "de").indexOf("de") === 0 ? "Beschreiben Sie das Anliegen …" : "Describe the request …"
                 });
             }
 
@@ -628,7 +628,7 @@ function issueTrackerAddMessageBadge(unreadCount) {
     
     jQuery(document).ready(function($) {
         var badge = '<span class="issue-tracker-message-badge">(' + unreadCount + ')</span>';
-        $(".rex-page-nav > ul > li > a[href*='issue_tracker/messages']").each(function() {
+        $(".rex-page-nav > ul > li > a[href*='issue_tracker/issues']").each(function() {
             if ($(this).find(".issue-tracker-message-badge").length === 0) {
                 $(this).append(badge);
             }

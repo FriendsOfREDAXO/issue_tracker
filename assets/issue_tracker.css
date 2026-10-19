@@ -8,7 +8,7 @@
 .issue-tracker-dashboard .panel-body h3 {
     margin-top: 0;
     margin-bottom: 10px;
-    font-size: 32px;
+    font-size: calc(32px * var(--it-scale, 1));
     font-weight: bold;
 }
 
@@ -149,11 +149,11 @@
 /* Responsive */
 @media (max-width: 768px) {
     .issue-tracker-dashboard .panel-body h3 {
-        font-size: 24px;
+        font-size: calc(24px * var(--it-scale, 1));
     }
     
     .issue-tracker-list table {
-        font-size: 12px;
+        font-size: calc(12px * var(--it-scale, 1));
     }
 }
 
@@ -591,7 +591,7 @@
 .it-mention-dropdown li {
     padding: 7px 14px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: calc(13px * var(--it-scale, 1));
     white-space: nowrap;
     color: #333;
 }
@@ -604,7 +604,7 @@
 
 /* Tag-Hinzufügen-Select klein halten */
 .it-tag-add-select {
-    font-size: 11px;
+    font-size: calc(11px * var(--it-scale, 1));
     padding: 2px 4px;
     border: 1px dashed #aaa;
     border-radius: 3px;
@@ -686,7 +686,7 @@
 }
 
 .issue-attachment-icon-preview > i.rex-icon:first-child {
-    font-size: 48px;
+    font-size: calc(48px * var(--it-scale, 1));
     color: #999;
 }
 
@@ -700,7 +700,7 @@
 }
 
 .issue-attachment-play-overlay i {
-    font-size: 32px;
+    font-size: calc(32px * var(--it-scale, 1));
 }
 
 .issue-attachment-thumb .caption h5 {
@@ -711,7 +711,7 @@
 }
 
 .issue-attachment-thumb .caption .issue-attachment-size {
-    font-size: 12px;
+    font-size: calc(12px * var(--it-scale, 1));
     margin-bottom: 10px;
 }
 
@@ -721,11 +721,11 @@
 }
 
 .issue-attachment-thumb.is-compact .issue-attachment-icon-preview > i.rex-icon:first-child {
-    font-size: 32px;
+    font-size: calc(32px * var(--it-scale, 1));
 }
 
 .issue-attachment-thumb.is-compact .issue-attachment-play-overlay i {
-    font-size: 24px;
+    font-size: calc(24px * var(--it-scale, 1));
 }
 
 .rex-theme-dark .issue-attachment-icon-preview {
@@ -749,7 +749,7 @@
     background: rgba(255, 255, 255, 0.12);
     border: none;
     color: #fff;
-    font-size: 28px;
+    font-size: calc(28px * var(--it-scale, 1));
     line-height: 1;
     width: 48px;
     height: 48px;
@@ -772,7 +772,7 @@
 
 .it-lightbox-counter {
     color: #ddd;
-    font-size: 12px;
+    font-size: calc(12px * var(--it-scale, 1));
     margin-top: 6px;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
@@ -811,7 +811,7 @@
 }
 
 .issue-tracker-knowledge-group-title {
-    font-size: 15px;
+    font-size: calc(15px * var(--it-scale, 1));
     font-weight: 600;
     margin: 25px 0 12px;
     padding-bottom: 6px;
@@ -820,7 +820,7 @@
 
 .issue-tracker-knowledge-group-title .badge {
     background: #999;
-    font-size: 10px;
+    font-size: calc(10px * var(--it-scale, 1));
     vertical-align: middle;
 }
 
@@ -844,7 +844,7 @@
 }
 
 .issue-tracker-knowledge-card-excerpt {
-    font-size: 12px;
+    font-size: calc(12px * var(--it-scale, 1));
     line-height: 1.5;
     margin-bottom: 8px;
 }

@@ -2,6 +2,64 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [2.0.0-beta5] – 2026-10-19
+
+- **Spaltenbreite ziehen**: Die Trennlinien zwischen Postfächern, Liste und Lesebereich lassen sich ziehen (auch per Pfeiltasten), begrenzt auf sinnvolle Breiten; Doppelklick stellt die Standardbreite wieder her. Die Breite wird pro Benutzer gespeichert.
+- Überschriften im Postfach übernehmen keine Projekt-Schrift mehr für h1–h6 (z. B. Serifenschrift aus eigenen Backend-Stilen).
+
+## [2.0.0-beta4] – 2026-10-19
+
+- **Größere Schrift**: Texte auf REDAXO-Niveau (14–15 px statt 12–13 px), Nebenangaben mindestens 13 px; der Listentitel bricht um statt abgeschnitten zu werden.
+- **Schriftgröße einstellbar**: Im Zahnrad-Menü „Schriftgröße“ mit A− / 100 % / A+ (90–140 %). Die Wahl gilt pro Benutzer auf allen Seiten des Issue Trackers und auf jedem Gerät.
+
+## [2.0.0-beta3] – 2026-10-17
+
+- **Nachrichten weiterleiten** (Taste F): an eine oder mehrere Personen, Betreff „WG: …“, eigene Notiz oben, darunter das Original deutlich als Zitat (Von, An, Datum, Betreff, Text). Nur Absender oder Empfänger der Nachricht dürfen weiterleiten; Empfänger werden wie bei neuen Nachrichten benachrichtigt. Nachrichten haben keine Dateianhänge, daher wird nur der Text übernommen.
+- **Als ungelesen markieren** (Taste U, schaltet zwischen gelesen und ungelesen um) und **Alle als gelesen markieren** im Posteingang. Zähler in Seitenleiste und Reiter passen sich an.
+- Neue Methoden in `Message`: `forward()`, `markAsUnread()`, `markAllAsRead()`, `buildForwardText()`. Keine Datenbankänderung.
+
+## [2.0.0-beta2] – 2026-10-17
+
+- **Alles in einem Mail-Fenster („Postfach“):** Themen, Nachrichten, Projekte und Wissen sind Postfächer in der Seitenleiste; das Dashboard entfällt. Reiter nur noch Postfach, Einstellungen, Hilfe. Alte Adressen (auch Links aus E-Mails) leiten auf das passende Postfach weiter.
+- **Oberfläche passt sich dem Bereich an:** „Neu“ legt an, was gerade passt (Thema, Thema im Projekt, Nachricht, Wissenseintrag); Werkzeugleiste, Listenzeilen, Suche, Sortierung, Kopfzeile und leere Postfächer je Bereich. Projekte mit Projektkarte (Fortschritt, Mitglieder, Bearbeiten).
+- **Zuklappbare Bereiche** in Seitenleiste, Lesefenster und Projektkarte; Zustand und zuletzt geöffnetes Postfach werden je Benutzer gemerkt.
+- Lupe im Suchfeld sitzt jetzt mittig.
+
+## [2.0.0-beta1] – 2026-10-17
+
+Neues Aussehen in der Designsprache von Apple: Themen und Nachrichten funktionieren jetzt wie Mail auf dem Mac, alle anderen Seiten wie die macOS-Systemeinstellungen. Formulare sind aufgeräumt und für Nicht-Techniker verständlich. Alle Funktionen, Rechte und Links bleiben erhalten.
+
+### Themen und Nachrichten wie Mail
+- Drei Bereiche: links Postfächer (Alle aktiven, Mir zugewiesen, Von mir erstellt, Beobachtet, Erwähnt, Status, Projekte, Tags, Kategorien, gespeicherte Filter), in der Mitte die Liste mit Vorschau, rechts das Lesefenster mit Werkzeugleiste und Gesprächsverlauf.
+- Tastatur: ↑/↓ blättert, Enter öffnet die Vollansicht, R springt zur Antwort. Ohne JavaScript funktioniert alles weiterhin über normale Links.
+- Priorität und Zuständigkeit direkt aus dem Lesefenster ändern (mit Verlauf und Benachrichtigung).
+- Am Handy wie am iPhone: Liste, dann Detail mit „‹ Themen“.
+- Die bisherige Tabelle bleibt als Ansicht „Tabelle“ umschaltbar; die Wahl wird je Benutzer gemerkt.
+- Links aus Benachrichtigungs-Mails (`issues/view&issue_id=…`) funktionieren unverändert.
+- Nachrichten im selben Aufbau (Eingang, Gesendet, Neue Nachricht, Rundschreiben); Antworten direkt im Lesefenster.
+
+### Aufgeräumte Formulare
+- Neues Thema, Bearbeiten, Antworten, Nachrichten, Projekte und Einstellungen: Beschriftungen in Klartext mit kurzem Hinweis, nur das Wichtige sichtbar, seltene Angaben unter „Weitere Angaben“ bzw. „Erweitert“ (klappt automatisch auf, wenn dort etwas gesetzt ist).
+- Pflichtfelder sind als solche beschriftet; Fehler stehen direkt am Feld und oben zusammengefasst, Eingaben bleiben erhalten.
+- Priorität und Status als farbige Schaltflächen statt Auswahllisten; Projektfarbe als Farbfelder.
+- E-Mail-Vorlagen: Platzhalter als anklickbare Bausteine mit verständlichen Namen und Live-Vorschau.
+- Riskante Aktionen (Löschen, Zurücksetzen, Backup einspielen) stehen getrennt und fragen in Klartext nach.
+
+### Übrige Seiten
+- Übersicht mit Kacheln und „Zuletzt aktiv“, Projekte mit Farbe, Fortschritt und Mitgliedern, Wissensdatenbank, Einstellungen und persönliche Einstellungen mit Schaltern.
+- Dunkles Theme (Profil-Einstellung und Systemeinstellung), Kontrast mindestens 4,5:1 bei eigenen Elementen, ohne seitliches Scrollen am Handy.
+
+### Technik
+- Styles und Skripte werden nur noch auf den Seiten des Issue Trackers geladen; eigene Klassen mit Präfix `it-`, REDAXO-Stile werden nicht überschrieben.
+- CSV- und PDF-Export berücksichtigen jetzt auch die Filter „Zuständig“ und „Projekt“ und die in der Sitzung gespeicherten Filter.
+- Neue Filter-Parameter `filter_assigned` und `filter_project` (auch in gespeicherten Filtern).
+
+### Bugfixes
+- „Bei Erwähnungen benachrichtigen“ ließ sich nicht ausschalten.
+- Beim Speichern der E-Mail-Vorlagen wurden Zeilenumbrüche als CR/LF gespeichert.
+- Einige Werte wurden in Fragmenten doppelt escaped.
+- Das Nachrichten-Badge verursachte auf Seiten außerhalb des Issue Trackers einen JavaScript-Fehler.
+
 ## [1.8.0] – 2026-08-31
 
 ### Neue Funktionen

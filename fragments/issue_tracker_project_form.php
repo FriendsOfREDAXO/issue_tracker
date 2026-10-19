@@ -1,9 +1,11 @@
 <?php
 /**
- * Projektformular Fragment
- * 
+ * Projektformular Fragment – einfache Sprache, Hinweise unter jedem Feld, seltene Optionen unter „Erweitert“
+ *
  * @var rex_fragment $this
  */
+
+use FriendsOfREDAXO\IssueTracker\UiHelper;
 
 $package = rex_addon::get('issue_tracker');
 
@@ -11,134 +13,139 @@ $project = $this->getVar('project');
 $isNew = $this->getVar('isNew', true);
 $allUsers = $this->getVar('allUsers', []);
 $currentMembers = $this->getVar('currentMembers', []);
+$formErrors = $this->getVar('formErrors', []);
 
 $currentUser = rex::getUser();
+$t = static fn (string $key): string => rex_i18n::rawMsg($key);
 
 $projectStatuses = [
-    'active' => $package->i18n('issue_tracker_project_status_active'),
-    'completed' => $package->i18n('issue_tracker_project_status_completed'),
-    'archived' => $package->i18n('issue_tracker_project_status_archived'),
+    'active' => $t('issue_tracker_project_status_active'),
+    'completed' => $t('issue_tracker_project_status_completed'),
+    'archived' => $t('issue_tracker_project_status_archived'),
 ];
 
 $colors = [
-    '#007bff' => $package->i18n('issue_tracker_color_blue'),
-    '#28a745' => $package->i18n('issue_tracker_color_green'),
-    '#dc3545' => $package->i18n('issue_tracker_color_red'),
-    '#ffc107' => $package->i18n('issue_tracker_color_yellow'),
-    '#17a2b8' => $package->i18n('issue_tracker_color_cyan'),
-    '#6f42c1' => $package->i18n('issue_tracker_color_purple'),
-    '#fd7e14' => $package->i18n('issue_tracker_color_orange'),
-    '#20c997' => $package->i18n('issue_tracker_color_turquoise'),
-    '#6c757d' => $package->i18n('issue_tracker_color_gray'),
-    '#e83e8c' => $package->i18n('issue_tracker_color_pink'),
+    '#007bff' => $t('issue_tracker_color_blue'),
+    '#28a745' => $t('issue_tracker_color_green'),
+    '#dc3545' => $t('issue_tracker_color_red'),
+    '#ffc107' => $t('issue_tracker_color_yellow'),
+    '#17a2b8' => $t('issue_tracker_color_cyan'),
+    '#6f42c1' => $t('issue_tracker_color_purple'),
+    '#fd7e14' => $t('issue_tracker_color_orange'),
+    '#20c997' => $t('issue_tracker_color_turquoise'),
+    '#6c757d' => $t('issue_tracker_color_gray'),
+    '#e83e8c' => $t('issue_tracker_color_pink'),
 ];
+$currentColor = (string) $project->getColor();
+if ('' === $currentColor) {
+    $currentColor = '#007bff';
+}
+if (!isset($colors[$currentColor]) && preg_match('/^#[0-9a-f]{3,8}$/i', $currentColor)) {
+    // Eigene Farbe aus älteren Versionen erhalten
+    $colors = [$currentColor => $t('issue_tracker_ui_color_current')] + $colors;
+}
+
+$status = $project->getStatus() ?: 'active';
+$dueDate = $project->getDueDate();
+// „Erweitert“ öffnet sich, wenn dort etwas vom Standard abweicht
+$advancedOpen = 'active' !== $status || null !== $dueDate || $project->getIsPrivate();
+
+$title = $isNew ? $t('issue_tracker_project_create') : $t('issue_tracker_project_edit');
+$heading = !$isNew && '' !== trim($project->getName()) ? $project->getName() : $title;
+
+// Felder
+$nameField = UiHelper::field(
+    $t('issue_tracker_ui_f_project_name'),
+    '<input type="text" class="form-control" id="project-name" name="name" value="' . rex_escape($project->getName()) . '" required maxlength="255">',
+    $t('issue_tracker_ui_f_project_name_help'),
+    'project-name',
+    true,
+    $formErrors['project-name'] ?? ''
+);
+$descField = UiHelper::field(
+    $t('issue_tracker_ui_f_project_desc'),
+    '<textarea class="form-control" id="project-description" name="description" rows="4">' . rex_escape($project->getDescription()) . '</textarea>',
+    $t('issue_tracker_ui_f_project_desc_help'),
+    'project-description',
+    false,
+    '',
+    true
+);
+$swatches = '<div class="it-swatches" role="radiogroup" id="project-color" aria-label="' . rex_escape($t('issue_tracker_ui_f_project_color')) . '">';
+foreach ($colors as $colorCode => $colorName) {
+    $swatches .= '<label class="it-swatch" title="' . rex_escape($colorName) . '"><input type="radio" name="color" value="' . rex_escape($colorCode) . '" aria-label="' . rex_escape($colorName) . '"'
+        . ($currentColor === $colorCode ? ' checked' : '') . '><span style="' . UiHelper::colorVar($colorCode) . '"></span></label>';
+}
+$swatches .= '</div>';
+$colorField = UiHelper::field($t('issue_tracker_ui_f_project_color'), $swatches, $t('issue_tracker_ui_f_project_color_help'), 'project-color');
+
+$memberOptions = '';
+foreach ($allUsers as $userId => $userName) {
+    if ($userId == $currentUser->getId() && $isNew) {
+        continue; // Ersteller wird automatisch hinzugefügt
+    }
+    $memberOptions .= '<option value="' . (int) $userId . '"' . (in_array($userId, $currentMembers) ? ' selected' : '') . '>' . rex_escape($userName) . '</option>';
+}
+$membersField = UiHelper::field(
+    $t('issue_tracker_ui_f_project_members'),
+    '<select class="form-control selectpicker" id="project-members" name="members[]" multiple="multiple" data-live-search="true" data-actions-box="true" data-selected-text-format="count > 3" data-width="100%" title="'
+        . rex_escape($t('issue_tracker_ui_f_project_members_none')) . '">' . $memberOptions . '</select>',
+    $t($isNew ? 'issue_tracker_ui_f_project_members_help_new' : 'issue_tracker_ui_f_project_members_help'),
+    'project-members',
+    false,
+    '',
+    true
+);
+
+$statusField = UiHelper::field(
+    $t('issue_tracker_ui_f_project_status'),
+    UiHelper::segmentedRadio('status', $projectStatuses, $status, 'project-status', $t('issue_tracker_ui_f_project_status')),
+    $t('issue_tracker_ui_f_project_status_help'),
+    'project-status'
+);
+$dueField = UiHelper::field(
+    $t('issue_tracker_ui_f_project_due'),
+    '<input type="date" class="form-control" id="project-due-date" name="due_date" value="' . ($dueDate ? $dueDate->format('Y-m-d') : '') . '">',
+    $t('issue_tracker_ui_f_project_due_help'),
+    'project-due-date'
+);
+$privateField = UiHelper::field(
+    $t('issue_tracker_ui_f_project_private'),
+    UiHelper::switch('is_private', $project->getIsPrivate(), 'project-private'),
+    $t('issue_tracker_ui_f_project_private_help'),
+    'project-private'
+);
 ?>
 
 <div class="issue-tracker-project-form">
-    <form method="post" action="<?= rex_url::currentBackendPage() ?>">
+    <form method="post" action="<?= rex_url::currentBackendPage() ?>" novalidate>
         <input type="hidden" name="save" value="1" />
         <?php if (!$isNew): ?>
         <input type="hidden" name="project_id" value="<?= $project->getId() ?>" />
         <?php endif; ?>
 
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title">
-                    <?= $isNew ? $package->i18n('issue_tracker_project_create') : $package->i18n('issue_tracker_project_edit') ?>
-                </h3>
+        <div class="it-settings-head">
+            <span class="it-icon it-icon--lg it-icon--color" style="<?= UiHelper::colorVar($currentColor) ?>" aria-hidden="true"><i class="rex-icon fa-folder"></i></span>
+            <div>
+                <h2><?= rex_escape($heading) ?></h2>
+                <p><?= rex_escape($t($isNew ? 'issue_tracker_ui_project_form_intro' : 'issue_tracker_ui_project_form_intro_edit')) ?></p>
             </div>
-            <div class="panel-body">
-                <!-- Name -->
-                <div class="form-group">
-                    <label for="project-name"><?= $package->i18n('issue_tracker_project_name') ?> *</label>
-                    <input type="text" class="form-control" id="project-name" name="name" 
-                           value="<?= rex_escape($project->getName()) ?>" required maxlength="255">
-                </div>
+        </div>
 
-                <!-- Beschreibung -->
-                <div class="form-group">
-                    <label for="project-description"><?= $package->i18n('issue_tracker_description') ?></label>
-                    <textarea class="form-control" id="project-description" name="description" 
-                              rows="5"><?= rex_escape($project->getDescription()) ?></textarea>
-                    <p class="help-block"><?= $package->i18n('issue_tracker_markdown_supported') ?></p>
-                </div>
+        <?= UiHelper::errorSummary($formErrors) ?>
 
-                <div class="row">
-                    <!-- Status -->
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <label for="project-status"><?= $package->i18n('issue_tracker_status') ?></label>
-                            <select class="form-control selectpicker" id="project-status" name="status">
-                                <?php foreach ($projectStatuses as $statusKey => $statusLabel): ?>
-                                <option value="<?= rex_escape($statusKey) ?>" <?= $project->getStatus() === $statusKey ? 'selected' : '' ?>>
-                                    <?= $statusLabel ?>
-                                </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
+        <div class="it-group">
+            <?= $nameField ?>
+            <?= $descField ?>
+            <?= $colorField ?>
+            <?= $membersField ?>
+        </div>
 
-                    <!-- Farbe -->
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <label for="project-color"><?= $package->i18n('issue_tracker_project_color') ?></label>
-                            <select class="form-control selectpicker" id="project-color" name="color">
-                                <?php foreach ($colors as $colorCode => $colorName): ?>
-                                <option value="<?= $colorCode ?>" 
-                                        data-content="<span class='label' style='background-color: <?= $colorCode ?>'>&nbsp;&nbsp;&nbsp;</span> <?= $colorName ?>"
-                                        <?= $project->getColor() === $colorCode ? 'selected' : '' ?>>
-                                    <?= $colorName ?>
-                                </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
+        <?= UiHelper::advanced('<div class="it-group">' . $statusField . $dueField . $privateField . '</div>', $advancedOpen, $t('issue_tracker_ui_f_project_advanced_hint')) ?>
 
-                    <!-- Due Date -->
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <label for="project-due-date"><?= $package->i18n('issue_tracker_due_date') ?></label>
-                            <input type="date" class="form-control" id="project-due-date" name="due_date" 
-                                   value="<?= $project->getDueDate() ? $project->getDueDate()->format('Y-m-d') : '' ?>">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mitglieder -->
-                <div class="form-group">
-                    <label for="project-members"><?= $package->i18n('issue_tracker_project_members') ?></label>
-                    <select class="form-control selectpicker" id="project-members" name="members[]" multiple="multiple" data-live-search="true" 
-                            data-actions-box="true" data-selected-text-format="count > 2" title="<?= $package->i18n('issue_tracker_please_select') ?>">
-                        <?php foreach ($allUsers as $userId => $userName): 
-                            if ($userId == $currentUser->getId() && $isNew) continue; // Ersteller wird automatisch hinzugefügt
-                            $isSelected = in_array($userId, $currentMembers);
-                        ?>
-                        <option value="<?= $userId ?>" <?= $isSelected ? 'selected' : '' ?>><?= rex_escape($userName) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <p class="help-block"><?= $package->i18n('issue_tracker_project_members_help') ?></p>
-                </div>
-
-                <!-- Privat -->
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" name="is_private" value="1" <?= $project->getIsPrivate() ? 'checked' : '' ?>>
-                        <strong><?= $package->i18n('issue_tracker_project_private') ?></strong>
-                        <span class="help-block" style="margin: 0;"><?= $package->i18n('issue_tracker_project_private_help') ?></span>
-                    </label>
-                </div>
-
-                <!-- Buttons -->
-                <div class="form-group" style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="rex-icon fa-save"></i> <?= $package->i18n('issue_tracker_save') ?>
-                    </button>
-                    <a href="<?= rex_url::backendPage('issue_tracker/projects/list') ?>" class="btn btn-default">
-                        <i class="rex-icon fa-times"></i> <?= $package->i18n('issue_tracker_cancel') ?>
-                    </a>
-                </div>
-            </div>
+        <div class="it-settings-actions">
+            <a href="<?= $isNew ? rex_url::backendPage('issue_tracker/issues/list') : rex_url::backendPage('issue_tracker/issues/list', ['filter_status' => '', 'filter_project' => $project->getId()]) ?>" class="btn btn-default"><?= rex_escape($t('issue_tracker_ui_cancel')) ?></a>
+            <button type="submit" class="btn btn-save"><?= rex_escape($t($isNew ? 'issue_tracker_ui_btn_create_project' : 'issue_tracker_ui_btn_save')) ?></button>
         </div>
     </form>
 </div>
-

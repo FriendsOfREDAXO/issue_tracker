@@ -2,24 +2,33 @@
 
 /**
  * Benutzereinstellungen für E-Mail-Benachrichtigungen
- * 
+ *
  * @package issue_tracker
  */
+
+use FriendsOfREDAXO\IssueTracker\UiHelper;
 
 $package = rex_addon::get('issue_tracker');
 $currentUser = rex::getUser();
 
+// „Meine Benachrichtigungen“ – erreichbar über das Zahnrad im Postfach, im selben Fenster angezeigt
+$itSidebar = new rex_fragment();
+$itSidebar->setVar('mode', 'preferences');
+echo '<div class="it-mail it-mail--full it-mail--sel it-mail--compose" data-it-mail data-mode="preferences">' . $itSidebar->parse('issue_tracker_filter.php') . '<section class="it-rp-wrap it-rp-wrap--sheet"><div class="it-sheet-pad">';
+echo UiHelper::settingsStart('preferences');
+
 // Flag für erfolgreiche E-Mail-Aktualisierung
 $emailUpdated = false;
+$emailErrors = [];
 
 // E-Mail aktualisieren
 if (rex_post('update_email', 'boolean')) {
     $newEmail = rex_post('user_email', 'string', '');
-    
+
     if (empty($newEmail)) {
-        echo rex_view::error($package->i18n('issue_tracker_email_invalid'));
+        $emailErrors['it-user-email'] = rex_i18n::rawMsg('issue_tracker_ui_error_email_required');
     } elseif (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
-        echo rex_view::error($package->i18n('issue_tracker_email_invalid'));
+        $emailErrors['it-user-email'] = rex_i18n::rawMsg('issue_tracker_ui_error_email');
     } else {
         try {
             $sql = rex_sql::factory();
@@ -32,58 +41,11 @@ if (rex_post('update_email', 'boolean')) {
     }
 }
 
-// Prüfung ob E-Mail-Adresse gesetzt ist
-$userEmail = $currentUser->getValue('email');
-if (empty($userEmail) && !$emailUpdated) {
-    echo rex_view::warning($package->i18n('issue_tracker_no_email_warning'));
-    
-    // Formular für E-Mail-Eingabe
-    $formElements = [];
-    $n = [];
-    $n['label'] = '<label>' . $package->i18n('issue_tracker_email_address') . '</label>';
-    $n['field'] = '<input type="email" name="user_email" class="form-control" placeholder="' . $package->i18n('issue_tracker_email_address_placeholder') . '" required />';
-    $formElements[] = $n;
-    
-    $fragment = new rex_fragment();
-    $fragment->setVar('elements', $formElements, false);
-    $content = $fragment->parse('core/form/form.php');
-    
-    // Hinweis hinzufügen
-    $content .= '<div class="alert alert-info"><small>' . $package->i18n('issue_tracker_email_hint') . '</small></div>';
-    
-    $formElements = [];
-    $n = [];
-    $n['field'] = '<button type="submit" name="update_email" value="1" class="btn btn-primary">' . $package->i18n('issue_tracker_update_email') . '</button>';
-    $formElements[] = $n;
-    
-    $fragment = new rex_fragment();
-    $fragment->setVar('elements', $formElements, false);
-    $buttons = $fragment->parse('core/form/submit.php');
-    
-    $fragment = new rex_fragment();
-    $fragment->setVar('body', '<form method="post">' . $content . $buttons . '</form>', false);
-    echo $fragment->parse('core/page/section.php');
-} else if (!empty($userEmail)) {
-    // Info-Block mit aktueller E-Mail-Adresse anzeigen
-    $profileUrl = rex_url::backendPage('users/users', ['user_id' => $currentUser->getId(), 'function' => 'edit']);
-    $infoContent = '<div class="form-group">';
-    $infoContent .= '<label>' . $package->i18n('issue_tracker_email_current') . '</label>';
-    $infoContent .= '<div class="well well-sm" style="margin-bottom: 0;">';
-    $infoContent .= '<strong>' . rex_escape($userEmail) . '</strong>';
-    $infoContent .= ' <a href="' . $profileUrl . '" class="btn btn-xs btn-default">' . $package->i18n('issue_tracker_email_change_in_profile') . '</a>';
-    $infoContent .= '</div>';
-    $infoContent .= '</div>';
-    
-    $fragment = new rex_fragment();
-    $fragment->setVar('body', $infoContent, false);
-    echo $fragment->parse('core/page/section.php');
-}
-
 // Formular speichern
 if (rex_post('save_preferences', 'boolean')) {
     $sql = rex_sql::factory();
     $sql->setTable(rex::getTable('issue_tracker_notifications'));
-    
+
     $sql->setValue('user_id', $currentUser->getId());
     $sql->setValue('email_on_new', rex_post('email_on_new', 'int', 1));
     $sql->setValue('email_on_comment', rex_post('email_on_comment', 'int', 1));
@@ -92,7 +54,7 @@ if (rex_post('save_preferences', 'boolean')) {
     $sql->setValue('email_on_message', rex_post('email_on_message', 'int', 1));
     $sql->setValue('email_on_mention', rex_post('email_on_mention', 'int', 1));
     $sql->setValue('email_message_full_text', rex_post('email_message_full_text', 'int', 0));
-    
+
     try {
         $sql->insertOrUpdate();
         echo rex_view::success($package->i18n('issue_tracker_preferences_saved'));
@@ -101,109 +63,91 @@ if (rex_post('save_preferences', 'boolean')) {
     }
 }
 
-// Aktuelle Einstellungen laden
+// ---------- E-Mail-Adresse ----------
+$userEmail = $currentUser->getValue('email');
+if ($emailUpdated) {
+    $userEmail = rex_post('user_email', 'string', '');
+}
+
+echo '<h3 class="it-group-title">' . $package->i18n('issue_tracker_ui_pref_address') . '</h3>';
+if (empty($userEmail)) {
+    echo UiHelper::errorSummary($emailErrors);
+    if (!$emailErrors) {
+        echo rex_view::warning(rex_escape(rex_i18n::rawMsg('issue_tracker_ui_pref_no_email')));
+    }
+    echo '<form method="post" novalidate><div class="it-group">'
+        . UiHelper::field(
+            rex_i18n::rawMsg('issue_tracker_email_address'),
+            '<input type="email" id="it-user-email" name="user_email" class="form-control" value="' . rex_escape(rex_post('user_email', 'string', '')) . '" placeholder="' . $package->i18n('issue_tracker_email_address_placeholder') . '" required />'
+            . '<button type="submit" name="update_email" value="1" class="btn btn-save">' . rex_escape(rex_i18n::rawMsg('issue_tracker_ui_btn_save')) . '</button>',
+            rex_i18n::rawMsg('issue_tracker_ui_pref_address_help'),
+            'it-user-email',
+            true,
+            $emailErrors['it-user-email'] ?? ''
+        )
+        . '</div></form>';
+} else {
+    $profileUrl = rex_url::backendPage('users/users', ['user_id' => $currentUser->getId(), 'function' => 'edit']);
+    echo '<div class="it-group">'
+        . UiHelper::field(
+            rex_i18n::rawMsg('issue_tracker_ui_pref_address_current'),
+            '<a href="' . $profileUrl . '" class="btn btn-default btn-sm">' . $package->i18n('issue_tracker_email_change_in_profile') . '</a>',
+            $userEmail
+        )
+        . '</div>';
+}
+
+// ---------- Aktuelle Einstellungen laden ----------
 $sql = rex_sql::factory();
 $sql->setQuery('SELECT * FROM ' . rex::getTable('issue_tracker_notifications') . ' WHERE user_id = ?', [$currentUser->getId()]);
 
-$emailOnNew = 1;
-$emailOnComment = 1;
-$emailOnStatusChange = 1;
-$emailOnAssignment = 1;
-$emailOnMessage = 1;
-$emailOnMention = 1;
-$emailMessageFullText = 0;
-
+$values = [
+    'email_on_new' => 1,
+    'email_on_comment' => 1,
+    'email_on_status_change' => 1,
+    'email_on_assignment' => 1,
+    'email_on_message' => 1,
+    'email_on_mention' => 1,
+    'email_message_full_text' => 0,
+];
 if ($sql->getRows() > 0) {
-    $emailOnNew = $sql->getValue('email_on_new');
-    $emailOnComment = $sql->getValue('email_on_comment');
-    $emailOnStatusChange = $sql->getValue('email_on_status_change');
-    $emailOnAssignment = $sql->getValue('email_on_assignment');
-    $emailOnMessage = $sql->getValue('email_on_message') ?? 1;
-    $emailOnMention = $sql->getValue('email_on_mention') ?? 1;
-    $emailMessageFullText = $sql->getValue('email_message_full_text') ?? 0;
+    foreach ($values as $key => $default) {
+        $values[$key] = (int) ($sql->getValue($key) ?? $default);
+    }
 }
 
-// Formular
-$content = '';
-
-// Info-Hinweis zum Beteiligungsmodell
-$content .= '<div class="alert alert-info" style="margin-bottom: 20px;">';
-$content .= '<i class="rex-icon fa-info-circle"></i> ';
-$content .= '<strong>' . $package->i18n('issue_tracker_notification_info_title') . '</strong><br>';
-$content .= $package->i18n('issue_tracker_notification_info_text');
-$content .= '</div>';
-
-$formElements = [];
-
-$selectYesNo = static function (string $name, int $currentValue) use ($package): string {
-    $yes = $package->i18n('issue_tracker_yes');
-    $no = $package->i18n('issue_tracker_no');
-    return '<select name="' . $name . '" class="form-control selectpicker" data-width="200px" data-style="btn-default">' 
-        . '<option value="1"' . ($currentValue ? ' selected' : '') . ' data-content="<span class=\'label label-success\'><i class=\'rex-icon fa-check\'></i> ' . $yes . '</span>">' . $yes . '</option>'
-        . '<option value="0"' . (!$currentValue ? ' selected' : '') . ' data-content="<span class=\'label label-default\'><i class=\'rex-icon fa-times\'></i> ' . $no . '</span>">' . $no . '</option>'
-        . '</select>';
+$switchRow = static function (string $key) use ($values): string {
+    return UiHelper::field(
+        rex_i18n::rawMsg('issue_tracker_ui_pref_' . $key),
+        UiHelper::switch($key, (bool) $values[$key], 'it-pref-' . $key),
+        rex_i18n::rawMsg('issue_tracker_ui_pref_' . $key . '_help'),
+        'it-pref-' . $key
+    );
 };
 
-$n = [];
-$n['label'] = '<label>' . $package->i18n('issue_tracker_email_on_new') . '</label>';
-$n['field'] = $selectYesNo('email_on_new', (int) $emailOnNew) . '<p class="help-block">' . $package->i18n('issue_tracker_email_on_new_desc') . '</p>';
-$formElements[] = $n;
+// ---------- Formular ----------
+?>
+<form method="post">
+    <h3 class="it-group-title"><?= rex_escape(rex_i18n::rawMsg('issue_tracker_ui_pref_issues')) ?></h3>
+    <div class="it-group">
+        <?= $switchRow('email_on_new') ?>
+        <?= $switchRow('email_on_comment') ?>
+        <?= $switchRow('email_on_status_change') ?>
+        <?= $switchRow('email_on_assignment') ?>
+        <?= $switchRow('email_on_mention') ?>
+    </div>
+    <p class="it-group-note"><?= rex_escape(rex_i18n::rawMsg('issue_tracker_ui_pref_info')) ?></p>
 
-$n = [];
-$n['label'] = '<label>' . $package->i18n('issue_tracker_email_on_comment') . '</label>';
-$n['field'] = $selectYesNo('email_on_comment', (int) $emailOnComment) . '<p class="help-block">' . $package->i18n('issue_tracker_email_on_comment_desc') . '</p>';
-$formElements[] = $n;
+    <h3 class="it-group-title"><?= rex_escape(rex_i18n::rawMsg('issue_tracker_ui_pref_messages')) ?></h3>
+    <div class="it-group">
+        <?= $switchRow('email_on_message') ?>
+        <?= $switchRow('email_message_full_text') ?>
+    </div>
 
-$n = [];
-$n['label'] = '<label>' . $package->i18n('issue_tracker_email_on_status_change') . '</label>';
-$n['field'] = $selectYesNo('email_on_status_change', (int) $emailOnStatusChange) . '<p class="help-block">' . $package->i18n('issue_tracker_email_on_status_change_desc') . '</p>';
-$formElements[] = $n;
-
-$n = [];
-$n['label'] = '<label>' . $package->i18n('issue_tracker_email_on_assignment') . '</label>';
-$n['field'] = $selectYesNo('email_on_assignment', (int) $emailOnAssignment) . '<p class="help-block">' . $package->i18n('issue_tracker_email_on_assignment_desc') . '</p>';
-$formElements[] = $n;
-
-// Trennlinie für Nachrichten-Bereich
-$n = [];
-$n['label'] = '<label><strong>' . $package->i18n('issue_tracker_messages') . '</strong></label>';
-$n['field'] = '<hr style="margin: 5px 0;">';
-$formElements[] = $n;
-
-$n = [];
-$n['label'] = '<label>' . $package->i18n('issue_tracker_email_on_message') . '</label>';
-$n['field'] = $selectYesNo('email_on_message', (int) $emailOnMessage) . '<p class="help-block">' . $package->i18n('issue_tracker_email_on_message_desc') . '</p>';
-$formElements[] = $n;
-
-$n = [];
-$n['label'] = '<label>' . $package->i18n('issue_tracker_email_on_mention') . '</label>';
-$n['field'] = '<input type="checkbox" name="email_on_mention" value="1" ' . ($emailOnMention ? 'checked' : '') . ' /> ' . $package->i18n('issue_tracker_email_on_mention_desc');
-$formElements[] = $n;
-
-$n = [];
-$n['label'] = '<label>' . $package->i18n('issue_tracker_email_message_full_text') . '</label>';
-$n['field'] = $selectYesNo('email_message_full_text', (int) $emailMessageFullText) . '<p class="help-block">' . $package->i18n('issue_tracker_email_message_full_text_desc') . '</p>';
-$formElements[] = $n;
-
-$fragment = new rex_fragment();
-$fragment->setVar('elements', $formElements, false);
-$content .= $fragment->parse('core/form/form.php');
-
-// Submit-Button
-$formElements = [];
-$n = [];
-$n['field'] = '<button type="submit" name="save_preferences" value="1" class="btn btn-primary">' . $package->i18n('issue_tracker_save_preferences') . '</button>';
-$formElements[] = $n;
-
-$fragment = new rex_fragment();
-$fragment->setVar('elements', $formElements, false);
-$buttons = $fragment->parse('core/form/submit.php');
-
-// Panel
-$fragment = new rex_fragment();
-$fragment->setVar('title', $package->i18n('issue_tracker_email_notifications'));
-$fragment->setVar('body', $content, false);
-$fragment->setVar('buttons', $buttons, false);
-$content = $fragment->parse('core/page/section.php');
-
-echo '<form method="post">' . $content . '</form>';
+    <div class="it-settings-actions">
+        <a href="<?= rex_url::currentBackendPage() ?>" class="btn btn-default"><?= rex_escape(rex_i18n::rawMsg('issue_tracker_ui_cancel')) ?></a>
+        <button type="submit" name="save_preferences" value="1" class="btn btn-save"><?= rex_escape(rex_i18n::rawMsg('issue_tracker_ui_btn_save')) ?></button>
+    </div>
+</form>
+<?= UiHelper::settingsEnd() ?>
+<?php echo '</div></section></div>';
