@@ -2,7 +2,7 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
-## [2.0.0-beta5] – unveröffentlicht
+## [2.0.0-beta5] – 2026-10-19
 
 - **Spaltenbreite ziehen**: Die Trennlinien zwischen Postfächern, Liste und Lesebereich lassen sich ziehen (auch per Pfeiltasten), begrenzt auf sinnvolle Breiten; Doppelklick stellt die Standardbreite wieder her. Die Breite wird pro Benutzer gespeichert.
 - Überschriften im Postfach übernehmen keine Projekt-Schrift mehr für h1–h6 (z. B. Serifenschrift aus eigenen Backend-Stilen).
