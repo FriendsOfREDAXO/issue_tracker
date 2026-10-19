@@ -253,8 +253,106 @@
         });
     }
 
+    // Spaltenbreiten ziehen: Postfächer und Liste, begrenzt, pro Benutzer gespeichert
+    var COLS = { mbx: { min: 170, max: 340, def: 196 }, ml: { min: 260, max: 620, def: 310 } };
+    var READ_MIN = 380;
+    // Tatsächliche Breite der Spalte (gesetzt oder Standard aus dem CSS je Fensterbreite)
+    function colWidth(key) {
+        var el = document.querySelector(key === 'mbx' ? '[data-it-mail] .it-mbx' : '[data-it-mail] .it-ml');
+        var w = el ? Math.round(el.getBoundingClientRect().width) : 0;
+        return w > 0 ? w : COLS[key].def;
+    }
+    function setCol(key, px) {
+        document.body.style.setProperty('--it-col-' + key, Math.round(px) + 'px');
+    }
+    var saveColsTimer = null;
+    function saveCols() {
+        clearTimeout(saveColsTimer);
+        saveColsTimer = setTimeout(function () {
+            var nav = document.querySelector('[data-it-state-url]');
+            if (!nav || !window.fetch) { return; }
+            var body = new FormData();
+            body.append('it_ui_state', '1');
+            body.append('key', 'columns');
+            var set = document.body.style.getPropertyValue('--it-col-mbx') !== '' || document.body.style.getPropertyValue('--it-col-ml') !== '';
+            body.append('value', set ? colWidth('mbx') + ',' + colWidth('ml') : 'reset');
+            body.append('_csrf_token', nav.getAttribute('data-it-state-token'));
+            fetch(nav.getAttribute('data-it-state-url'), { method: 'POST', body: body, credentials: 'same-origin' }).catch(function () {});
+        }, 300);
+    }
+    function initColumns(root) {
+        if (root.getAttribute('data-it-cols-ready')) { return; }
+        root.setAttribute('data-it-cols-ready', '1');
+        var labelEl = document.querySelector('[data-it-cols-label]');
+        var label = labelEl ? labelEl.getAttribute('data-it-cols-label') : '';
+        var keys = root.classList.contains('it-mail--full') || root.classList.contains('it-mail--table') ? ['mbx'] : ['mbx', 'ml'];
+        keys.forEach(function (key) {
+            var h = document.createElement('div');
+            h.className = 'it-col-handle';
+            h.setAttribute('role', 'separator');
+            h.setAttribute('aria-orientation', 'vertical');
+            h.setAttribute('tabindex', '0');
+            h.setAttribute('aria-valuemin', String(COLS[key].min));
+            h.setAttribute('aria-valuemax', String(COLS[key].max));
+            if (label) { h.setAttribute('aria-label', label); h.title = label; }
+            root.appendChild(h);
+            var place = function () {
+                var left = colWidth('mbx') + (key === 'ml' ? colWidth('ml') : 0);
+                h.style.left = left + 'px';
+                h.setAttribute('aria-valuenow', String(colWidth(key)));
+            };
+            var clamp = function (px) {
+                var other = key === 'mbx' ? (keys.length > 1 ? colWidth('ml') : 0) : colWidth('mbx');
+                var max = Math.min(COLS[key].max, root.clientWidth - other - READ_MIN);
+                return Math.max(COLS[key].min, Math.min(max, px));
+            };
+            place();
+            h.addEventListener('pointerdown', function (e) {
+                if (e.button !== 0) { return; }
+                e.preventDefault();
+                h.setPointerCapture(e.pointerId);
+                var startX = e.clientX;
+                var start = colWidth(key);
+                h.classList.add('is-dragging');
+                root.classList.add('is-resizing');
+                // Beim ersten Ziehen beide Spalten festschreiben, damit die andere nicht auf den Standard springt
+                keys.forEach(function (k) { if (document.body.style.getPropertyValue('--it-col-' + k) === '') { setCol(k, colWidth(k)); } });
+                var move = function (ev) { setCol(key, clamp(start + ev.clientX - startX)); placeAll(); };
+                var up = function () {
+                    h.removeEventListener('pointermove', move);
+                    h.removeEventListener('pointerup', up);
+                    h.removeEventListener('pointercancel', up);
+                    h.classList.remove('is-dragging');
+                    root.classList.remove('is-resizing');
+                    saveCols();
+                };
+                h.addEventListener('pointermove', move);
+                h.addEventListener('pointerup', up);
+                h.addEventListener('pointercancel', up);
+            });
+            h.addEventListener('keydown', function (e) {
+                var step = e.shiftKey ? 48 : 16;
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    setCol(key, clamp(colWidth(key) + (e.key === 'ArrowRight' ? step : -step)));
+                } else if (e.key === 'Home' || e.key === 'End') {
+                    e.preventDefault();
+                    setCol(key, clamp(e.key === 'Home' ? COLS[key].min : COLS[key].max));
+                } else { return; }
+                placeAll();
+                saveCols();
+            });
+            // Doppelklick: Standardbreite (aus dem CSS)
+            h.addEventListener('dblclick', function () { document.body.style.removeProperty('--it-col-' + key); placeAll(); saveCols(); });
+            h._place = place;
+        });
+        function placeAll() { Array.prototype.forEach.call(root.querySelectorAll('.it-col-handle'), function (x) { if (x._place) { x._place(); } }); }
+        window.addEventListener('resize', placeAll);
+    }
+
     function initAll() {
         initFontSize(document);
+        Array.prototype.forEach.call(document.querySelectorAll('[data-it-mail]'), initColumns);
         restoreSections(document);
         Array.prototype.forEach.call(document.querySelectorAll('[data-it-mail]'), initRoot);
         // Verfassen-Fenster: Dateiauswahl-Anzeige

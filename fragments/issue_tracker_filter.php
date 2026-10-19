@@ -161,7 +161,7 @@ $section = static function (string $key, string $title, ?int $count, bool $defau
 };
 $stateToken = rex_csrf_token::factory('issue_tracker_ui_state');
 ?>
-<nav class="it-mbx" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_mailboxes')) ?>" data-it-state-url="<?= rex_escape(rex_url::backendPage('issue_tracker/issues/list', [], false)) ?>" data-it-state-token="<?= rex_escape($stateToken->getValue()) ?>">
+<nav class="it-mbx" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_mailboxes')) ?>" data-it-state-url="<?= rex_escape(rex_url::backendPage('issue_tracker/issues/list', [], false)) ?>" data-it-state-token="<?= rex_escape($stateToken->getValue()) ?>" data-it-cols-label="<?= rex_escape($package->i18n('issue_tracker_mail_col_resize')) ?>">
     <div class="it-mbx-head">
         <div class="it-newbtn">
             <a class="it-newbtn-main" href="<?= $primary[2] ?>" data-it-new="<?= $primaryKey ?>" title="<?= rex_escape($primary[0]) ?>"><i class="rex-icon <?= $primary[1] ?>" aria-hidden="true"></i> <span aria-hidden="true"><?= $package->i18n('issue_tracker_mail_new') ?></span><span class="sr-only"><?= rex_escape($primary[0]) ?></span></a>

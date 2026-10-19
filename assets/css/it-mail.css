@@ -293,9 +293,9 @@
 
 /* ---------- Breit (ab 1200 px): drei Spalten wie Mail ---------- */
 @media (min-width: 1200px) {
-    .it-mail { display: grid; grid-template-columns: 196px 310px minmax(0, 1fr); height: var(--it-mail-h, calc(100vh - 230px)); min-height: 540px; overflow: hidden; }
-    .it-mail--table { grid-template-columns: 196px minmax(0, 1fr); height: auto; min-height: 0; overflow: visible; }
-    .it-mail--full { grid-template-columns: 196px minmax(0, 1fr); }
+    .it-mail { display: grid; grid-template-columns: var(--it-col-mbx, 196px) var(--it-col-ml, 310px) minmax(0, 1fr); height: var(--it-mail-h, calc(100vh - 230px)); min-height: 540px; overflow: hidden; }
+    .it-mail--table { grid-template-columns: var(--it-col-mbx, 196px) minmax(0, 1fr); height: auto; min-height: 0; overflow: visible; }
+    .it-mail--full { grid-template-columns: var(--it-col-mbx, 196px) minmax(0, 1fr); }
     .it-ml { display: flex; }
 
     .it-mbx { overflow-x: hidden; overflow-y: auto; border-right: 1px solid var(--it-border); border-radius: var(--it-radius) 0 0 var(--it-radius); }
@@ -313,8 +313,8 @@
     .it-mail:not(.it-mail--full) .it-tb-back:not(.it-tb-back--always) { display: none; }
 }
 @media (min-width: 1440px) {
-    .it-mail { grid-template-columns: 216px 360px minmax(0, 1fr); }
-    .it-mail--table, .it-mail--full { grid-template-columns: 216px minmax(0, 1fr); }
+    .it-mail { grid-template-columns: var(--it-col-mbx, 216px) var(--it-col-ml, 360px) minmax(0, 1fr); }
+    .it-mail--table, .it-mail--full { grid-template-columns: var(--it-col-mbx, 216px) minmax(0, 1fr); }
 }
 
 /* ---------- Telefon ---------- */
@@ -420,7 +420,7 @@
 .it-msg--mine .it-msg-name { color: var(--it-link); }
 .it-msg.is-current { padding-left: 12px; box-shadow: inset 3px 0 0 var(--it-accent); }
 @media (min-width: 1200px) {
-    .it-mail--messages:not(.it-mail--full) { grid-template-columns: 196px 310px minmax(0, 1fr); }
+    .it-mail--messages:not(.it-mail--full) { grid-template-columns: var(--it-col-mbx, 196px) var(--it-col-ml, 310px) minmax(0, 1fr); }
     .it-mail--compose { height: auto; min-height: 540px; overflow: visible; }
     .it-mail--compose .it-rp-wrap { overflow: visible; }
 }
@@ -497,3 +497,17 @@ details.it-mbx-section[open] > summary .it-mbx-seccount { display: none; }
 .it-fontsize-btn:focus-visible { outline: 2px solid var(--it-accent); outline-offset: 1px; }
 .it-fontsize-btn--large { font-size: 17px; }
 .it-fontsize-value { font-weight: 400; font-variant-numeric: tabular-nums; }
+
+/* Überschriften im Postfach: Schrift der Umgebung, keine Projekt-Schrift für h1–h6 */
+.it-mail :is(h1, h2, h3, h4, h5, h6) { font-family: inherit; }
+
+/* Spaltenbreite ziehen (ab 1200 px) – Griffe setzt it-mail.js */
+.it-col-handle { display: none; }
+@media (min-width: 1200px) {
+    .it-col-handle { position: absolute; top: 0; bottom: 0; z-index: 8; display: block; width: 9px; margin-left: -5px; cursor: col-resize; touch-action: none; }
+    .it-col-handle::after { content: ""; position: absolute; top: 0; bottom: 0; left: 4px; width: 1px; background: transparent; transition: background-color .15s; }
+    .it-col-handle:hover::after, .it-col-handle.is-dragging::after { left: 3px; width: 3px; background: var(--it-accent); }
+    .it-col-handle:focus-visible { outline: none; }
+    .it-col-handle:focus-visible::after { left: 3px; width: 3px; background: var(--it-accent); }
+    .it-mail.is-resizing { cursor: col-resize; user-select: none; }
+}

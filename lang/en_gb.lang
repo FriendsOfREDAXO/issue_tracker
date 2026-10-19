@@ -879,3 +879,4 @@ issue_tracker_mail_font_size = Text size
 issue_tracker_mail_font_smaller = Smaller text
 issue_tracker_mail_font_larger = Larger text
 issue_tracker_mail_font_reset = Reset to 100 %
+issue_tracker_mail_col_resize = Change column width (drag or arrow keys, double-click: default)

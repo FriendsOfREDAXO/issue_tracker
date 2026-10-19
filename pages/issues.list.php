@@ -36,7 +36,19 @@ if (rex_post('it_ui_state', 'int', 0) === 1) {
         exit;
     }
     $key = rex_post('key', 'string', '');
-    if ('font_scale' === $key) {
+    if ('columns' === $key) {
+        // Spaltenbreiten Postfächer/Liste, begrenzt wie in it-mail.js
+        $value = rex_post('value', 'string', '');
+        $parts = array_map('intval', explode(',', $value));
+        if ('reset' === $value) {
+            rex_config::remove('issue_tracker', 'columns_' . $currentUserId);
+        } elseif (2 === count($parts)) {
+            rex_config::set('issue_tracker', 'columns_' . $currentUserId, [
+                'mbx' => max(170, min(340, $parts[0])),
+                'ml' => max(260, min(620, $parts[1])),
+            ]);
+        }
+    } elseif ('font_scale' === $key) {
         // Schriftgröße 90–140 % in 10er-Schritten
         $scale = rex_post('value', 'int', 100);
         if (in_array($scale, [90, 100, 110, 120, 130, 140], true)) {

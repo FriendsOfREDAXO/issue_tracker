@@ -881,3 +881,4 @@ issue_tracker_mail_font_size = Schriftgröße
 issue_tracker_mail_font_smaller = Schrift kleiner
 issue_tracker_mail_font_larger = Schrift größer
 issue_tracker_mail_font_reset = Auf 100 % zurücksetzen
+issue_tracker_mail_col_resize = Spaltenbreite ändern (ziehen oder Pfeiltasten, Doppelklick: Standard)

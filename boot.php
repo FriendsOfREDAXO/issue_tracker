@@ -32,13 +32,18 @@ if (rex::isBackend() && rex::getUser() && 'issue_tracker' === rex_be_controller:
 
     // Schriftgröße des Benutzers (90–140 %) als Klasse am body
     rex_extension::register('PAGE_BODY_ATTR', static function (rex_extension_point $ep) {
-        $scale = (int) rex_config::get('issue_tracker', 'font_scale_' . rex::requireUser()->getId(), 100);
+        $attr = $ep->getSubject();
+        $userId = rex::requireUser()->getId();
+        $scale = (int) rex_config::get('issue_tracker', 'font_scale_' . $userId, 100);
         if (in_array($scale, [90, 110, 120, 130, 140], true)) {
-            $attr = $ep->getSubject();
             $attr['class'][] = 'it-scale-' . $scale;
-            return $attr;
         }
-        return $ep->getSubject();
+        // Gespeicherte Spaltenbreiten (nur eigene CSS-Variablen)
+        $cols = rex_config::get('issue_tracker', 'columns_' . $userId, []);
+        if (is_array($cols) && isset($cols['mbx'], $cols['ml'])) {
+            $attr['style'][] = '--it-col-mbx:' . (int) $cols['mbx'] . 'px;--it-col-ml:' . (int) $cols['ml'] . 'px;';
+        }
+        return $attr;
     });
 }
 
