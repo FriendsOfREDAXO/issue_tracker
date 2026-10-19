@@ -875,3 +875,9 @@ issue_tracker_ui_pref_email_on_message = Neue persönliche Nachricht
 issue_tracker_ui_pref_email_on_message_help = Wenn Ihnen jemand im Issue Tracker eine Nachricht schreibt.
 issue_tracker_ui_pref_email_message_full_text = Ganze Nachricht in der E-Mail
 issue_tracker_ui_pref_email_message_full_text_help = Ausgeschaltet enthält die E-Mail nur einen Hinweis und Sie lesen die Nachricht im Backend.
+
+# Schriftgröße
+issue_tracker_mail_font_size = Schriftgröße
+issue_tracker_mail_font_smaller = Schrift kleiner
+issue_tracker_mail_font_larger = Schrift größer
+issue_tracker_mail_font_reset = Auf 100 % zurücksetzen

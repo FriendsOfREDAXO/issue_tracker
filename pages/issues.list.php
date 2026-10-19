@@ -36,7 +36,13 @@ if (rex_post('it_ui_state', 'int', 0) === 1) {
         exit;
     }
     $key = rex_post('key', 'string', '');
-    if (preg_match('/^[a-z_]{1,40}$/', $key)) {
+    if ('font_scale' === $key) {
+        // Schriftgröße 90–140 % in 10er-Schritten
+        $scale = rex_post('value', 'int', 100);
+        if (in_array($scale, [90, 100, 110, 120, 130, 140], true)) {
+            rex_config::set('issue_tracker', 'font_scale_' . $currentUserId, $scale);
+        }
+    } elseif (preg_match('/^[a-z_]{1,40}$/', $key)) {
         $state = rex_config::get('issue_tracker', 'sidebar_state_' . $currentUserId, []);
         $state = is_array($state) ? $state : [];
         $state[$key] = rex_post('open', 'int', 0) === 1;

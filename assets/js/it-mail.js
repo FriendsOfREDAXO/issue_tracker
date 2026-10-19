@@ -219,7 +219,42 @@
         fetch(nav.getAttribute('data-it-state-url'), { method: 'POST', body: body, credentials: 'same-origin' }).catch(function () {});
     }
 
+    // Schriftgröße (90–140 %) – Klasse am body, gespeichert pro Benutzer
+    var FONT_STEPS = [90, 100, 110, 120, 130, 140];
+    function currentFontScale() {
+        var m = document.body.className.match(/\bit-scale-(\d+)\b/);
+        return m ? parseInt(m[1], 10) : 100;
+    }
+    function initFontSize(root) {
+        Array.prototype.forEach.call(root.querySelectorAll('[data-it-fontsize]'), function (group) {
+            if (group.getAttribute('data-it-fontsize-ready')) { return; }
+            group.setAttribute('data-it-fontsize-ready', '1');
+            var value = group.querySelector('.it-fontsize-value');
+            var show = function () { if (value) { value.textContent = currentFontScale() + ' %'; } };
+            show();
+            group.addEventListener('click', function (e) {
+                var btn = e.target.closest('[data-it-fontsize-step]');
+                if (!btn) { return; }
+                var step = parseInt(btn.getAttribute('data-it-fontsize-step'), 10);
+                var idx = FONT_STEPS.indexOf(currentFontScale());
+                var next = step === 0 ? 100 : FONT_STEPS[Math.max(0, Math.min(FONT_STEPS.length - 1, (idx < 0 ? 1 : idx) + step))];
+                FONT_STEPS.forEach(function (s) { document.body.classList.remove('it-scale-' + s); });
+                if (next !== 100) { document.body.classList.add('it-scale-' + next); }
+                show();
+                var nav = document.querySelector('[data-it-state-url]');
+                if (!nav || !window.fetch) { return; }
+                var body = new FormData();
+                body.append('it_ui_state', '1');
+                body.append('key', 'font_scale');
+                body.append('value', String(next));
+                body.append('_csrf_token', nav.getAttribute('data-it-state-token'));
+                fetch(nav.getAttribute('data-it-state-url'), { method: 'POST', body: body, credentials: 'same-origin' }).catch(function () {});
+            });
+        });
+    }
+
     function initAll() {
+        initFontSize(document);
         restoreSections(document);
         Array.prototype.forEach.call(document.querySelectorAll('[data-it-mail]'), initRoot);
         // Verfassen-Fenster: Dateiauswahl-Anzeige

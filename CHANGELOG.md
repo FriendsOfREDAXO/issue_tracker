@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [2.0.0-beta4] – unveröffentlicht
+
+- **Größere Schrift**: Texte auf REDAXO-Niveau (14–15 px statt 12–13 px), Nebenangaben mindestens 13 px; der Listentitel bricht um statt abgeschnitten zu werden.
+- **Schriftgröße einstellbar**: Im Zahnrad-Menü „Schriftgröße“ mit A− / 100 % / A+ (90–140 %). Die Wahl gilt pro Benutzer auf allen Seiten des Issue Trackers und auf jedem Gerät.
+
 ## [2.0.0-beta3] – 2026-10-17
 
 - **Nachrichten weiterleiten** (Taste F): an eine oder mehrere Personen, Betreff „WG: …“, eigene Notiz oben, darunter das Original deutlich als Zitat (Von, An, Datum, Betreff, Text). Nur Absender oder Empfänger der Nachricht dürfen weiterleiten; Empfänger werden wie bei neuen Nachrichten benachrichtigt. Nachrichten haben keine Dateianhänge, daher wird nur der Text übernommen.

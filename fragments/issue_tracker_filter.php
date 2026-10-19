@@ -182,6 +182,12 @@ $stateToken = rex_csrf_token::factory('issue_tracker_ui_state');
                 <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/settings') ?>"><i class="rex-icon fa-wrench" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_settings') ?></a>
                 <?php endif; ?>
                 <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/help') ?>"><i class="rex-icon fa-question-circle" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_help') ?></a>
+                <div class="it-menu-label" id="it-fontsize-label"><?= $package->i18n('issue_tracker_mail_font_size') ?></div>
+                <div class="it-fontsize" role="group" aria-labelledby="it-fontsize-label" data-it-fontsize>
+                    <button type="button" class="it-fontsize-btn" data-it-fontsize-step="-1" title="<?= rex_escape($package->i18n('issue_tracker_mail_font_smaller')) ?>"><span aria-hidden="true">A−</span><span class="sr-only"><?= $package->i18n('issue_tracker_mail_font_smaller') ?></span></button>
+                    <button type="button" class="it-fontsize-btn it-fontsize-value" data-it-fontsize-step="0" title="<?= rex_escape($package->i18n('issue_tracker_mail_font_reset')) ?>" aria-live="polite">100 %</button>
+                    <button type="button" class="it-fontsize-btn it-fontsize-btn--large" data-it-fontsize-step="1" title="<?= rex_escape($package->i18n('issue_tracker_mail_font_larger')) ?>"><span aria-hidden="true">A+</span><span class="sr-only"><?= $package->i18n('issue_tracker_mail_font_larger') ?></span></button>
+                </div>
             </div>
         </details>
     </div>

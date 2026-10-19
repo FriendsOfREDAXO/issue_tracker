@@ -29,6 +29,17 @@ if (rex::isBackend() && rex::getUser() && 'issue_tracker' === rex_be_controller:
     rex_view::addJsFile($this->getAssetsUrl('js/it-ui.js'));
     rex_view::addCssFile($this->getAssetsUrl('css/it-mail.css'));
     rex_view::addJsFile($this->getAssetsUrl('js/it-mail.js'));
+
+    // Schriftgröße des Benutzers (90–140 %) als Klasse am body
+    rex_extension::register('PAGE_BODY_ATTR', static function (rex_extension_point $ep) {
+        $scale = (int) rex_config::get('issue_tracker', 'font_scale_' . rex::requireUser()->getId(), 100);
+        if (in_array($scale, [90, 110, 120, 130, 140], true)) {
+            $attr = $ep->getSubject();
+            $attr['class'][] = 'it-scale-' . $scale;
+            return $attr;
+        }
+        return $ep->getSubject();
+    });
 }
 
 // Benutzerdefinierten Menü-Titel setzen
