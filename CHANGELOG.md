@@ -2,7 +2,7 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
-## [2.0.0-beta4] – unveröffentlicht
+## [2.0.0-beta4] – 2026-10-19
 
 - **Größere Schrift**: Texte auf REDAXO-Niveau (14–15 px statt 12–13 px), Nebenangaben mindestens 13 px; der Listentitel bricht um statt abgeschnitten zu werden.
 - **Schriftgröße einstellbar**: Im Zahnrad-Menü „Schriftgröße“ mit A− / 100 % / A+ (90–140 %). Die Wahl gilt pro Benutzer auf allen Seiten des Issue Trackers und auf jedem Gerät.
