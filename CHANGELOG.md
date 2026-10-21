@@ -2,7 +2,7 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
-## [2.0.0-beta7] – unveröffentlicht
+## [2.0.0-beta7] – 2026-10-21
 
 - **Status als Pill**: In der Liste steht der Status als farbige Pill; beim Anlegen und Bearbeiten ist der Status ein eigener Chip in der Eigenschaften-Leiste.
 - **Vollbild-App (wie MediaPlace)**: Der Issue Tracker öffnet sich als eigene Ebene über dem Backend – mit eigener Kopfleiste (Symbol, „Issue Tracker“, aktueller Bereich, Postfach/Einstellungen/Hilfe und „Schließen“). Im Postfach ist das Fenster so hoch wie der Bildschirm: Postfächer, Liste und Lesebereich scrollen jeweils für sich, die Seite dahinter scrollt nie (kein Durchscrollen). Die Symbolleiste des Lesebereichs und der Listenkopf bleiben oben, „Antworten“ über die Symbolleiste (Taste R). Formulare, Einstellungen und Hilfe haben einen Scrollbereich. Bis 1199 px bleibt die schrittweise Navigation (Postfächer → Liste → Thema), die Kopfleiste mit „Schließen“ steht immer oben.
