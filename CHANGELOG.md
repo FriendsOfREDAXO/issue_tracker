@@ -2,7 +2,7 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
-## [2.0.0-beta8] – unveröffentlicht
+## [2.0.0-beta8] – 2026-10-22
 
 - **Vollbild-App ohne iframe**: Die Ebene liegt jetzt direkt in der Backend-Seite; Seitenwechsel im Issue Tracker laufen per PJAX nach REDAXO-Konvention. Anfragen mit `X-PJAX: true` und dem Container `#it-app` rendert REDAXO ohne Backend-Layout (`rex_be_controller`), der Server liefert nur den App-Rahmen samt Inhalt – keine Navigation, kein Seitenkopf, keine erneut ausgeführten Skripte. Nach jedem Wechsel wird wie bei REDAXOs eigenem PJAX `rex:ready` auf dem neuen Inhalt ausgelöst (Auswahllisten, Editoren, Formulare usw. werden darüber neu aufgebaut).
 - **Schneller**: Die Ebene erscheint beim Klick sofort mit einem Platzhalter (Kopfleiste und Spalten), der Inhalt folgt. Beim Zeigen auf den Menüpunkt oder die Knöpfe in der Kopfzeile werden Inhalt und Dateien der App vorab geladen, nach dem Laden einer Backend-Seite holt der Browser die Dateien im Leerlauf in den Cache (versionierte Adressen wie im REDAXO-Seitenkopf, ein gemeinsamer Cache mit den Seiten des Issue Trackers). Lokal gemessen (Median, Klick bis Inhalt sichtbar, beta7 → beta8): Öffnen 94 → 61 ms, mit Vorabladen 17 ms; Postfach wechseln 90 → 56 ms; Quick-Tag 40 → 7 ms. Lesebereich weiterhin nur als Teil nachgeladen. Kleine Aktionen zeigen das Ergebnis sofort (Tags in der Liste, Status-Menü, Beobachten, gelesen/ungelesen) und werden vom Server bestätigt bzw. bei Fehlern zurückgenommen. Statt eines Ladebildschirms erscheint bei längeren Wechseln (ab 150 ms) eine dezente Leiste oben im Fenster. Scrollpositionen von Seitenleiste und Liste sowie Spaltenbreiten bleiben bei Wechseln erhalten.
