@@ -70,6 +70,13 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - ✅ Broadcast-Nachrichten an alle Benutzer (nur Admins)
 - ✅ Individuelle Benachrichtigungseinstellungen pro Benutzer
 
+### Vollbild-App
+- Öffnet sich wie MediaPlace als eigene Ebene über dem Backend – mit eigener Kopfleiste und „Schließen“ (oder Esc), das zur vorherigen Seite zurückführt
+- Aufruf von jeder Backend-Seite: Menüpunkt sowie Knöpfe „Issue Tracker“ und „Neues Thema“ in der Kopfzeile
+- „Neues Thema“ übernimmt die aktuelle Backend-Seite („Gemeldet von Seite“); beim Bearbeiten eines Artikels ist er als betroffene Seite vorbelegt
+- Postfach in voller Fensterhöhe: Postfächer, Liste und Lesebereich scrollen einzeln, die Seite dahinter nie
+- Abschaltbar in den Einstellungen („Als Vollbild öffnen“); dann wie bisher innerhalb der REDAXO-Oberfläche
+
 ### Anpassungen
 - ✅ **Menü-Titel anpassbar**: Der Menüpunkt kann in den Einstellungen umbenannt werden (z.B. "Support", "Tickets", "Anfragen")
 - ✅ **Tag-Duplikate verhindern**: Doppelte Tag-Namen werden erkannt und abgelehnt

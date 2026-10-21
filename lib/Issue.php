@@ -44,6 +44,8 @@ class Issue
     private ?int $articleId = null;
     private ?int $clangId = null;
     private ?string $affectedUrl = null;
+    private ?string $sourceUrl = null;
+    private ?string $sourceTitle = null;
 
     /**
      * Lädt ein Issue aus der Datenbank.
@@ -157,6 +159,11 @@ class Issue
         if ($sql->hasValue('affected_url') && $sql->getValue('affected_url')) {
             $issue->affectedUrl = (string) $sql->getValue('affected_url');
         }
+        // Backend-Seite, von der aus das Thema gemeldet wurde
+        if ($sql->hasValue('source_url') && $sql->getValue('source_url')) {
+            $issue->sourceUrl = (string) $sql->getValue('source_url');
+            $issue->sourceTitle = $sql->hasValue('source_title') && $sql->getValue('source_title') ? (string) $sql->getValue('source_title') : null;
+        }
 
         return $issue;
     }
@@ -188,6 +195,8 @@ class Issue
         $sql->setValue('article_id', $this->articleId);
         $sql->setValue('clang_id', $this->articleId ? $this->clangId : null);
         $sql->setValue('affected_url', $this->affectedUrl);
+        $sql->setValue('source_url', $this->sourceUrl);
+        $sql->setValue('source_title', $this->sourceUrl ? $this->sourceTitle : null);
         $sql->setValue('closed_at', $this->closedAt ? $this->closedAt->format('Y-m-d H:i:s') : null);
         $sql->setValue('updated_at', date('Y-m-d H:i:s'));
 
@@ -550,6 +559,32 @@ class Issue
     {
         $url = null === $url ? '' : trim($url);
         $this->affectedUrl = '' === $url ? null : mb_substr($url, 0, 500);
+    }
+
+    /**
+     * Backend-Seite dieser Installation, von der aus das Thema gemeldet wurde (relativ, „index.php?page=…“).
+     */
+    public function getSourceUrl(): ?string
+    {
+        return $this->sourceUrl;
+    }
+
+    public function getSourceTitle(): ?string
+    {
+        return $this->sourceTitle;
+    }
+
+    /**
+     * Setzt die meldende Backend-Seite; nur gültige Backend-Adressen dieser Installation werden übernommen.
+     */
+    public function setSource(?string $url, ?string $title = null): void
+    {
+        $url = null === $url ? null : AppShell::normalizeBackendUrl($url);
+        $this->sourceUrl = $url;
+        $title = null === $title ? '' : trim((string) preg_replace('/\s+/u', ' ', strip_tags($title)));
+        // Browser-Titel „Seite · Website · REDAXO CMS“: nur den Seitennamen behalten
+        $title = trim(explode(' · ', $title)[0]);
+        $this->sourceTitle = null !== $url && '' !== $title ? mb_substr($title, 0, 255) : null;
     }
 
     /**

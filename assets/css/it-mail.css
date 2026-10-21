@@ -656,3 +656,8 @@ body.rex-theme-dark .it-toast-close:hover, body.rex-theme-dark .it-toast-close:f
    „Antworten“ ist in der Symbolleiste (Taste R) – kein schwebender Knopf. */
 .it-mail .it-ml-bar, .it-mail .it-rp-toolbar { position: static; }
 .it-mail .it-rp-sticky, .it-mail .it-rp-sticky.is-hidden { display: none; }
+
+/* Hinweis „Gemeldet von der Backend-Seite …“ beim Anlegen */
+.it-source-note { display: flex; align-items: center; gap: 8px; margin: 10px 14px 0; padding: 6px 6px 6px 12px; border-radius: 8px; background: var(--it-info-bg); color: var(--it-info); font-size: calc(14px * var(--it-scale, 1)); }
+.it-source-text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.it-source-note .it-tb-btn { color: var(--it-info); }

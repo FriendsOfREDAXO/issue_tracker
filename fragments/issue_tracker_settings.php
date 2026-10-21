@@ -78,6 +78,7 @@ $advancedHtml = '<h3 class="it-group-title">' . rex_escape($t('issue_tracker_ui_
             <?= UiHelper::field($t('issue_tracker_ui_f_menu_title'),
                 '<input type="text" class="form-control" id="menu-title" name="menu_title" value="' . rex_escape($menuTitle) . '" placeholder="' . rex_escape($t('issue_tracker_menu_title_placeholder')) . '">',
                 $t('issue_tracker_ui_f_menu_title_help'), 'menu-title') ?>
+            <?= UiHelper::field($t('issue_tracker_ui_f_fullscreen'), UiHelper::switch('fullscreen', (bool) ($this->getVar('fullscreen', true)), 'it-fullscreen'), $t('issue_tracker_ui_f_fullscreen_help'), 'it-fullscreen') ?>
             <?= UiHelper::field($t('issue_tracker_ui_f_categories'), $categoriesControl, $t('issue_tracker_ui_f_categories_help'), 'issue-tracker-categories', true, $formErrors['issue-tracker-categories'] ?? '', true) ?>
         </div>
 

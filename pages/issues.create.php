@@ -90,6 +90,16 @@ if (!$issue) {
             $issue->setProjectId($projectIdFromRequest);
         }
     }
+
+    // Gemeldet von einer Backend-Seite (Knopf „Neues Thema“ in der Kopfzeile): nur Backend-Adressen dieser Installation.
+    // Beim Bearbeiten eines Artikels wird dieser als betroffene Seite vorgeschlagen.
+    if (rex_post('save', 'int', 0) !== 1) {
+        $issue->setSource(rex_get('it_src', 'string', ''), rex_get('it_src_title', 'string', ''));
+        $sourceArticle = $issue->getSourceUrl() ? \FriendsOfREDAXO\IssueTracker\AppShell::articleFromBackendUrl($issue->getSourceUrl()) : null;
+        if ($sourceArticle && !$issue->getArticleId()) {
+            $issue->setAffectedArticle($sourceArticle[0], $sourceArticle[1]);
+        }
+    }
 }
 
 // Speichern
@@ -139,6 +149,9 @@ if (rex_post('save', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::
     $affectedUrl = trim(rex_post('affected_url', 'string', ''));
     $affectedUrlValid = Issue::isValidAffectedUrl($affectedUrl);
     $issue->setAffectedUrl($affectedUrlValid ? $affectedUrl : null);
+    if ($isNew) {
+        $issue->setSource(rex_post('source_url', 'string', ''), rex_post('source_title', 'string', ''));
+    }
 
     // Pflichtfeld: Zugewiesener User oder gemeinsame Zuständigkeit (Alle); Adresse muss gültig sein
     if (('all' !== $assignedUserSelection && !$issue->getAssignedUserId()) || !$affectedUrlValid) {

@@ -1,0 +1,31 @@
+/**
+ * Issue Tracker – Aufruf von jeder Backend-Seite: Knöpfe in der Kopfzeile und Ebene über der Seite.
+ * Nur eigene Selektoren (.it-…, eigene Klasse am <html>).
+ */
+html.it-ov-lock { overflow: hidden; overscroll-behavior: none; }
+
+.it-ov { position: fixed; inset: 0; z-index: 1035; background: #f4f6f8; }
+.it-ov[hidden] { display: none; }
+.it-ov-frame { display: block; width: 100%; height: 100%; border: 0; background: transparent; }
+.it-ov-loading { position: absolute; inset: 0; z-index: 1; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #f4f6f8; color: #324050; font-size: 15px; }
+.it-ov.is-loading .it-ov-loading { display: flex; }
+.it-ov.is-loading .it-ov-frame { visibility: hidden; }
+.it-ov-spinner { width: 28px; height: 28px; border: 3px solid #c9d1db; border-top-color: #2a6aa8; border-radius: 50%; animation: it-ov-spin .8s linear infinite; }
+.it-ov-close { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border: 1px solid #9ca5b2; border-radius: 8px; background: #fff; color: #324050; font-size: 14px; font-weight: 600; cursor: pointer; }
+.it-ov-close:focus-visible { outline: 2px solid #2a6aa8; outline-offset: 2px; }
+@keyframes it-ov-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .it-ov-spinner { animation: none; } }
+
+body.rex-theme-dark .it-ov, body.rex-theme-dark .it-ov-loading { background: #1b232c; color: rgba(255, 255, 255, .87); }
+body.rex-theme-dark .it-ov-close { background: #222c37; border-color: #4b5867; color: rgba(255, 255, 255, .87); }
+@media (prefers-color-scheme: dark) {
+    body:not(.rex-theme-light) .it-ov, body:not(.rex-theme-light) .it-ov-loading { background: #1b232c; color: rgba(255, 255, 255, .87); }
+    body:not(.rex-theme-light) .it-ov-close { background: #222c37; border-color: #4b5867; color: rgba(255, 255, 255, .87); }
+}
+
+/* Knöpfe in der Kopfzeile: Beschriftung erst bei genug Platz */
+.it-launch .rex-icon { margin-right: 4px; }
+@media (max-width: 1399px) {
+    .it-launch-label { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+    .it-launch .rex-icon { margin-right: 0; }
+}

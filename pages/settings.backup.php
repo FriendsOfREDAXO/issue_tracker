@@ -80,6 +80,9 @@ if (rex_post('import', 'int', 0) === 1 && !empty($_FILES['import_file']['tmp_nam
                 $sql->setValue('article_id', isset($issueData['article_id']) && (int) $issueData['article_id'] > 0 ? (int) $issueData['article_id'] : null);
                 $sql->setValue('clang_id', isset($issueData['clang_id']) && (int) $issueData['clang_id'] > 0 ? (int) $issueData['clang_id'] : null);
                 $sql->setValue('affected_url', isset($issueData['affected_url']) && '' !== (string) $issueData['affected_url'] ? mb_substr((string) $issueData['affected_url'], 0, 500) : null);
+                $importSource = isset($issueData['source_url']) ? \FriendsOfREDAXO\IssueTracker\AppShell::normalizeBackendUrl((string) $issueData['source_url']) : null;
+                $sql->setValue('source_url', $importSource);
+                $sql->setValue('source_title', null !== $importSource && isset($issueData['source_title']) ? mb_substr((string) $issueData['source_title'], 0, 255) : null);
                 
                 // Projekt-ID mappen (wenn vorhanden)
                 $oldProjectId = $issueData['project_id'] ?? null;
@@ -331,6 +334,8 @@ if (rex_request('export', 'string', '') === 'json') {
             'article_id' => $issueRow->getValue('article_id') ? (int) $issueRow->getValue('article_id') : null,
             'clang_id' => $issueRow->getValue('clang_id') ? (int) $issueRow->getValue('clang_id') : null,
             'affected_url' => $issueRow->getValue('affected_url'),
+            'source_url' => $issueRow->getValue('source_url'),
+            'source_title' => $issueRow->getValue('source_title'),
             'comments' => $comments,
             'tags' => $tags,
             'attachments' => $attachments,

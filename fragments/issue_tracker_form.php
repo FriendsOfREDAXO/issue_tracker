@@ -114,6 +114,18 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
         </div>
         <?php endif; ?>
 
+        <?php if ($isNew && $issue->getSourceUrl()):
+            // Gemeldet von einer Backend-Seite (Knopf „Neues Thema“ in der Kopfzeile)
+            $srcLabel = \FriendsOfREDAXO\IssueTracker\AppShell::sourceLabel((string) $issue->getSourceUrl(), (string) $issue->getSourceTitle()); ?>
+        <p class="it-source-note" data-it-source>
+            <i class="rex-icon fa-map-marker" aria-hidden="true"></i>
+            <span class="it-source-text"><?= rex_escape(rex_i18n::rawMsg('issue_tracker_source_note', $srcLabel)) ?></span>
+            <input type="hidden" name="source_url" value="<?= rex_escape((string) $issue->getSourceUrl()) ?>">
+            <input type="hidden" name="source_title" value="<?= rex_escape((string) $issue->getSourceTitle()) ?>">
+            <button type="button" class="it-tb-btn it-tb-btn--sm" data-it-source-remove title="<?= rex_escape(rex_i18n::rawMsg('issue_tracker_source_remove')) ?>"><i class="rex-icon fa-times" aria-hidden="true"></i><span class="sr-only"><?= rex_escape(rex_i18n::rawMsg('issue_tracker_source_remove')) ?></span></button>
+        </p>
+        <?php endif; ?>
+
         <!-- Eigenschaften-Leiste: wie die Chips im Lesebereich – Werte gelten sofort beim neuen Thema -->
         <div class="it-qbar-row<?= $assignError || $urlError ? ' has-error' : '' ?>">
             <div class="it-qbar" role="group" aria-label="<?= rex_escape($package->i18n('issue_tracker_qbar_label')) ?>"<?= $tagApiUrl !== '' ? ' data-it-tag-api="' . rex_escape($tagApiUrl) . '"' : '' ?> data-it-qbar-labels="<?= rex_escape(json_encode(['new' => $package->i18n('issue_tracker_quicktag_new', '{0}'), 'error' => $package->i18n('issue_tracker_quicktag_error'), 'assign' => $package->i18n('issue_tracker_mail_err_assign'), 'url' => rex_i18n::rawMsg('issue_tracker_affected_url_invalid')])) ?>">

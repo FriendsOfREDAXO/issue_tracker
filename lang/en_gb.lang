@@ -944,3 +944,20 @@ issue_tracker_mail_empty_recent_closed = No issue was closed in the last 7 days.
 issue_tracker_mail_empty_assigned = No open issue is assigned to you right now.
 issue_tracker_mail_empty_created = You have not created any open issue yet.
 issue_tracker_affected_clear = No page
+
+# Full-screen app (2.0.0-beta7)
+issue_tracker_app_title = Issue Tracker
+issue_tracker_app_close = Close
+issue_tracker_app_close_hint = Close the Issue Tracker and return to the previous page (Esc)
+issue_tracker_app_nav = Issue Tracker sections
+issue_tracker_app_subnav = Subsections: {0}
+issue_tracker_app_unread = {0} unread messages
+issue_tracker_app_open = Open Issue Tracker
+issue_tracker_app_new = New topic
+issue_tracker_app_new_hint = Report a new topic about this page
+issue_tracker_app_loading = Loading Issue Tracker …
+issue_tracker_ui_f_fullscreen = Open in full screen
+issue_tracker_ui_f_fullscreen_help = The Issue Tracker opens as its own layer above the backend (like an app) and can be opened from any backend page. When switched off, it appears inside the REDAXO interface as before.
+issue_tracker_source_page = Reported from page
+issue_tracker_source_note = Reported from the backend page “{0}”
+issue_tracker_source_remove = Do not include

@@ -29,6 +29,11 @@ if (rex::isBackend() && rex::getUser() && 'issue_tracker' === rex_be_controller:
     rex_view::addJsFile($this->getAssetsUrl('js/it-ui.js'));
     rex_view::addCssFile($this->getAssetsUrl('css/it-mail.css'));
     rex_view::addJsFile($this->getAssetsUrl('js/it-mail.js'));
+    // Vollbild-App (eigener Rahmen über dem Backend), abschaltbar in den Einstellungen
+    if (\FriendsOfREDAXO\IssueTracker\AppShell::isEnabled()) {
+        rex_view::addCssFile($this->getAssetsUrl('css/it-app.css'));
+        rex_view::addJsFile($this->getAssetsUrl('js/it-app.js'));
+    }
 
     // Schriftgröße des Benutzers (90–140 %) als Klasse am body
     rex_extension::register('PAGE_BODY_ATTR', static function (rex_extension_point $ep) {
@@ -38,12 +43,44 @@ if (rex::isBackend() && rex::getUser() && 'issue_tracker' === rex_be_controller:
         if (in_array($scale, [90, 110, 120, 130, 140], true)) {
             $attr['class'][] = 'it-scale-' . $scale;
         }
+        if (\FriendsOfREDAXO\IssueTracker\AppShell::isEnabled()) {
+            $attr['class'][] = 'it-app-mode';
+        }
         // Gespeicherte Spaltenbreiten (nur eigene CSS-Variablen)
         $cols = rex_config::get('issue_tracker', 'columns_' . $userId, []);
         if (is_array($cols) && isset($cols['mbx'], $cols['ml'])) {
             $attr['style'][] = '--it-col-mbx:' . (int) $cols['mbx'] . 'px;--it-col-ml:' . (int) $cols['ml'] . 'px;';
         }
         return $attr;
+    });
+}
+
+// Vollbild-App: von jeder Backend-Seite aus öffnen (Hauptmenü + Knopf in der Kopfzeile), als Ebene über der Seite.
+// Nur ein kleines Skript; die App selbst lädt in der Ebene. Nicht auf der Anmeldeseite, in Popups und im Issue Tracker selbst.
+if (rex::isBackend() && rex::getUser() && \FriendsOfREDAXO\IssueTracker\AppShell::isEnabled()) {
+    $itAddon = $this;
+    rex_extension::register('PAGES_PREPARED', static function (rex_extension_point $ep) {
+        $pages = $ep->getSubject();
+        if (isset($pages['issue_tracker']) && $pages['issue_tracker'] instanceof rex_be_page) {
+            // Klick im Hauptmenü öffnet die Ebene (it-launcher.js); ohne JavaScript führt der Link zur Seite
+            $pages['issue_tracker']->setLinkAttr('data-it-app-open', '1');
+        }
+        return $pages;
+    });
+    rex_extension::register('PAGE_CHECKED', static function () use ($itAddon) {
+        $current = rex_be_controller::getCurrentPageObject();
+        if (!$current || 'issue_tracker' === rex_be_controller::getCurrentPagePart(1) || 'login' === rex_be_controller::getCurrentPage()
+            || $current->isPopup() || !$current->hasLayout() || !$current->hasNavigation() || rex_request::isXmlHttpRequest()
+            || !\FriendsOfREDAXO\IssueTracker\AppShell::userCanOpen()) {
+            return;
+        }
+        rex_view::addCssFile($itAddon->getAssetsUrl('css/it-launcher.css'));
+        rex_view::addJsFile($itAddon->getAssetsUrl('js/it-launcher.js'));
+        rex_extension::register('META_NAVI', static function (rex_extension_point $ep) {
+            $items = $ep->getSubject();
+            array_unshift($items, \FriendsOfREDAXO\IssueTracker\AppShell::launcherItems());
+            return $items;
+        });
     });
 }
 

@@ -397,6 +397,12 @@ $relatedIssues = $issue->getDuplicates();
                 <?php endif; ?>
             </dd></div>
             <?php endif; ?>
+            <?php if ($issue->getSourceUrl()):
+                // Backend-Seite, von der aus gemeldet wurde (nur Adressen dieser Installation, beim Speichern geprüft)
+                $srcUrl = (string) $issue->getSourceUrl();
+                $srcLabel = \FriendsOfREDAXO\IssueTracker\AppShell::sourceLabel($srcUrl, (string) $issue->getSourceTitle()); ?>
+            <div class="it-rp-fact--wide"><dt><?= $package->i18n('issue_tracker_source_page') ?></dt><dd><a class="it-affected-link" href="<?= rex_escape($srcUrl) ?>" target="_top"><i class="rex-icon fa-map-marker" aria-hidden="true"></i> <?= rex_escape($srcLabel) ?></a></dd></div>
+            <?php endif; ?>
             <?php if ($issue->getAssignedAddon()): ?>
             <div><dt><?= $package->i18n('issue_tracker_addon') ?></dt><dd><?= rex_escape($issue->getAssignedAddon()) ?></dd></div>
             <?php endif; ?>

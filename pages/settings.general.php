@@ -90,6 +90,9 @@ if ($saveSettings && !$formErrors) {
         ->setValue('setting_value', rex_post('menu_title', 'string', ''))
         ->insertOrUpdate();
     
+    // Als Vollbild öffnen (eigene Ebene über dem Backend)
+    rex_config::set('issue_tracker', 'fullscreen', rex_post('fullscreen', 'int', 0) === 1);
+
     // Kategorien
     $categories = array_filter(rex_post('categories', 'array', []), 'strlen');
     rex_sql::factory()
@@ -186,6 +189,7 @@ $fragment->setVar('apiToken', $apiToken);
 $fragment->setVar('allTags', $allTags);
 $fragment->setVar('editTag', $editTag);
 $fragment->setVar('formErrors', $formErrors);
+$fragment->setVar('fullscreen', \FriendsOfREDAXO\IssueTracker\AppShell::isEnabled());
 if ($formErrors) {
     // Eingegebene Werte wieder anzeigen
     $fragment->setVar('menuTitle', rex_post('menu_title', 'string', ''));
@@ -195,6 +199,7 @@ if ($formErrors) {
     $fragment->setVar('emailFromName', rex_post('email_from_name', 'string', ''));
     $fragment->setVar('reminderCooldownHours', rex_post('reminder_cooldown_hours', 'string', ''));
     $fragment->setVar('installationName', rex_post('installation_name', 'string', ''));
+    $fragment->setVar('fullscreen', rex_post('fullscreen', 'int', 0) === 1);
 }
 echo $fragment->parse('issue_tracker_settings.php');
 echo \FriendsOfREDAXO\IssueTracker\UiHelper::settingsEnd();

@@ -77,8 +77,23 @@
         }
     }
 
+    /* Vollbild-App ab 1200 px: Spalten scrollen einzeln, die Seite nie */
+    function inAppColumns(root) {
+        return !!(root && closest(root, '[data-it-app]')) && window.innerWidth >= 1200;
+    }
+
     /* Zeile sichtbar machen: zuerst in der eigenen Liste scrollen, auf Wunsch auch die Seite */
     function revealRow(root, row, withPage) {
+        if (inAppColumns(root)) {
+            var col = closest(row, '.it-ml');
+            if (!col) { return; }
+            var bar = col.querySelector('.it-ml-bar');
+            var cr = col.getBoundingClientRect();
+            var rr0 = row.getBoundingClientRect();
+            var colTop = cr.top + (bar ? bar.offsetHeight : 0);
+            if (rr0.top < colTop) { col.scrollTop -= colTop - rr0.top + 4; } else if (rr0.bottom > cr.bottom) { col.scrollTop += rr0.bottom - cr.bottom + 4; }
+            return;
+        }
         var list = closest(row, '.it-ml-items');
         var rr;
         if (list && list.scrollHeight > list.clientHeight + 1) {
@@ -114,7 +129,7 @@
                 pane.innerHTML = html;
                 pane.removeAttribute('aria-busy');
                 // Das Fenster folgt dem Seitenfluss: liegt der Anfang des Lesebereichs über dem Fenster, dorthin zurück
-                if (window.innerWidth >= 1200 && !keepScroll) {
+                if (window.innerWidth >= 1200 && !keepScroll && !inAppColumns(root)) {
                     var paneTop = pane.getBoundingClientRect().top;
                     var top = stickyTop(root);
                     if (paneTop < top) { window.scrollTo(0, Math.max(0, window.pageYOffset + paneTop - top - 8)); }
@@ -906,7 +921,7 @@
     // Abstand für mitlaufende Leisten: Höhe des REDAXO-Kopfs, falls er fest steht (je nach Backend-Stil)
     function setStickyTop() {
         var top = 0;
-        var nav = document.querySelector('#rex-js-nav-top, .rex-nav-top');
+        var nav = document.querySelector('[data-it-app]') ? null : document.querySelector('#rex-js-nav-top, .rex-nav-top');
         if (nav) {
             var pos = getComputedStyle(nav).position;
             if (pos === 'fixed' || pos === 'sticky') { top = Math.max(0, Math.round(nav.getBoundingClientRect().bottom)); }
@@ -993,6 +1008,14 @@
                         if (live) { live.textContent = oldLive; }
                     }, 1800);
                 }, function () { window.location.href = abs; });
+                return;
+            }
+
+            // „Gemeldet von …“ beim Anlegen nicht übernehmen
+            var srcRemove = closest(e.target, '[data-it-source-remove]');
+            if (srcRemove) {
+                var srcNote = closest(srcRemove, '[data-it-source]');
+                if (srcNote && srcNote.parentNode) { srcNote.parentNode.removeChild(srcNote); }
                 return;
             }
 

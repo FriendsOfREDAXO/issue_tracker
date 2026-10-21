@@ -5,6 +5,7 @@ Dieses Handbuch erklärt die Verwendung des Issue Trackers für Redakteure und A
 ## Inhaltsverzeichnis
 
 1. [Übersicht](#übersicht)
+   - [Öffnen und Schließen](#öffnen-und-schließen)
 2. [Themen verwalten](#themen-verwalten)
 3. [Projekte](#projekte)
 4. [Private Nachrichten](#private-nachrichten)
@@ -25,6 +26,16 @@ Die Übersicht bietet einen Überblick über den aktuellen Stand:
 - **Ungelesene Nachrichten**: Private Nachrichten, die noch nicht gelesen wurden
 - **Aktuelle Themen**: Die 10 neuesten Themen
 - **Projekte**: Übersicht der Projekte mit Fortschrittsanzeige
+
+### Öffnen und Schließen
+
+Der Issue Tracker öffnet sich als eigene Ebene über dem Backend (Vollbild):
+
+- **Von jeder Backend-Seite aus**: über den Menüpunkt „Issue Tracker“ oder die Knöpfe „Issue Tracker“ und „Neues Thema“ oben in der Kopfzeile.
+- **Schließen**: Knopf „Schließen“ oben rechts oder die Taste Esc (wenn gerade kein Eingabefeld, Menü oder Fenster offen ist). Sie kehren genau zu der Seite zurück, auf der Sie waren.
+- **Neues Thema zur aktuellen Seite**: „Neues Thema“ merkt sich die Backend-Seite, auf der Sie gerade waren („Gemeldet von der Backend-Seite …“). Bearbeiten Sie gerade einen Artikel, ist er als betroffene Seite vorbelegt. Mit dem Kreuz neben dem Hinweis nehmen Sie die Seite wieder heraus.
+- **Im Postfach** scrollen Postfächer, Liste und Lesebereich jeweils für sich; die Symbolleiste des Lesebereichs bleibt oben.
+- Admins können die Vollbild-Darstellung unter Einstellungen → Allgemein („Als Vollbild öffnen“) ausschalten. Dann erscheint der Issue Tracker wie bisher innerhalb der REDAXO-Oberfläche.
 
 ---
 
@@ -208,6 +219,7 @@ Die Links in den E-Mail-Benachrichtigungen sind aus Sicherheitsgründen:
 ### Allgemeine Einstellungen
 
 - **Menü-Titel**: Passe den Namen des Menüpunkts an (z.B. "Support", "Tickets")
+- **Als Vollbild öffnen**: Issue Tracker als eigene Ebene über dem Backend (Standard) oder wie bisher innerhalb der REDAXO-Oberfläche
 - **Kategorien**: Füge Kategorien hinzu oder entferne sie
 - **E-Mail-Benachrichtigungen**: Aktiviere oder deaktiviere globale E-Mail-Funktion
 - **Absender-Name**: Name des E-Mail-Absenders
