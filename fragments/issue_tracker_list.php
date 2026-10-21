@@ -559,7 +559,7 @@ foreach ($state as $k => $v) {
                             <a href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>" class="it-tb-btn it-tb-btn--sm" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
                             <?php if (PermissionService::canDelete()): ?>
                             <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()) ?>" class="it-tb-btn it-tb-btn--sm it-tb-btn--danger"
-                               title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>" onclick="return confirm('<?= rex_escape($package->i18n('issue_tracker_delete_confirm')) ?>')"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></a>
+                               title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>" data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_confirm')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></a>
                             <?php endif; ?>
                         </td>
                     </tr>

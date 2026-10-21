@@ -1,32 +1,63 @@
 /**
- * Issue Tracker – Aufruf von jeder Backend-Seite: Knöpfe in der Kopfzeile und Ebene über der Seite.
- * Nur eigene Selektoren (.it-…, eigene Klasse am <html>).
+ * Issue Tracker – Aufruf von jeder Backend-Seite: Knöpfe in der Kopfzeile, Ebene mit Fenster, Platzhalter beim Öffnen,
+ * Fortschrittsleiste. Wird auch auf den Seiten des Issue Trackers geladen (Ebene beim direkten Aufruf).
+ * Nur eigene Selektoren (.it-…, eigene Klassen am <html>).
  */
 html.it-ov-lock { overflow: hidden; overscroll-behavior: none; }
 
-/* Fenster über der abgedunkelten Seite (wie MediaPlace); .is-max: ganze Fläche */
-.it-ov { position: fixed; inset: 0; z-index: 1035; display: flex; align-items: center; justify-content: center; background: rgba(16, 24, 40, .45); }
+/* Fenster über der abgedunkelten Seite (wie MediaPlace); html.it-ov-max: ganze Fläche */
+.it-ov { position: fixed; inset: 0; z-index: 1035; display: flex; align-items: center; justify-content: center; background: rgba(16, 24, 40, .45); overscroll-behavior: contain; }
 .it-ov[hidden] { display: none; }
 .it-ov-win { position: relative; width: 92vw; max-width: 1600px; height: 88vh; height: 88dvh; min-width: 480px; min-height: 320px; overflow: hidden; border-radius: 12px; background: #f4f6f8; box-shadow: 0 24px 64px rgba(16, 24, 40, .35); }
-.it-ov.is-max .it-ov-win { width: 100vw; max-width: none; height: 100vh; height: 100dvh; min-width: 0; min-height: 0; border-radius: 0; box-shadow: none; }
+html.it-ov-max .it-ov-win { width: 100vw; max-width: none; height: 100vh; height: 100dvh; min-width: 0; min-height: 0; border-radius: 0; box-shadow: none; }
 @media (max-width: 1199px) {
     .it-ov-win { width: 100vw; max-width: none; height: 100vh; height: 100dvh; min-width: 0; min-height: 0; border-radius: 0; }
 }
-.it-ov-frame { display: block; width: 100%; height: 100%; border: 0; background: transparent; }
-.it-ov-loading { position: absolute; inset: 0; z-index: 1; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #f4f6f8; color: #324050; font-size: 15px; }
-.it-ov.is-loading .it-ov-loading { display: flex; }
-.it-ov.is-loading .it-ov-frame { visibility: hidden; }
-.it-ov-spinner { width: 28px; height: 28px; border: 3px solid #c9d1db; border-top-color: #2a6aa8; border-radius: 50%; animation: it-ov-spin .8s linear infinite; }
-.it-ov-close { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border: 1px solid #9ca5b2; border-radius: 8px; background: #fff; color: #324050; font-size: 14px; font-weight: 600; cursor: pointer; }
-.it-ov-close:focus-visible { outline: 2px solid #2a6aa8; outline-offset: 2px; }
-@keyframes it-ov-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .it-ov-spinner { animation: none; } }
+.it-ov-host { position: absolute; inset: 0; display: flex; flex-direction: column; min-width: 0; }
 
-body.rex-theme-dark .it-ov-win, body.rex-theme-dark .it-ov-loading { background: #1b232c; color: rgba(255, 255, 255, .87); }
-body.rex-theme-dark .it-ov-close { background: #222c37; border-color: #4b5867; color: rgba(255, 255, 255, .87); }
+/* Fortschritt: dezente Leiste oben im Fenster (erst nach 150 ms, siehe it-app.js) */
+.it-ov-progress { position: absolute; top: 0; left: 0; z-index: 3; width: 0; height: 3px; background: #7fb6ec; opacity: 0; pointer-events: none; }
+.it-ov-progress.is-active { width: 80%; opacity: 1; transition: width 3s cubic-bezier(.08, .6, .25, 1); }
+.it-ov-progress.is-done { width: 100%; opacity: 0; transition: width .15s ease-out, opacity .2s ease-out .1s; }
+@media (prefers-reduced-motion: reduce) { .it-ov-progress.is-active, .it-ov-progress.is-done { transition: none; } }
+
+/* Platzhalter, bis der Inhalt da ist (Kopfleiste + Spalten wie in der App) */
+.it-sk { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; outline: none; color: #324050; }
+.it-sk-bar { display: flex; flex: 0 0 auto; align-items: center; gap: 10px; min-height: 52px; padding: 6px 10px 6px 14px; background: #324050; color: #fff; }
+.it-sk-icon { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; background: #2a6aa8; color: #fff; font-size: 15px; }
+.it-sk-title { font-size: 16px; font-weight: 600; }
+.it-sk-close { display: inline-flex; align-items: center; gap: 7px; height: 34px; margin-left: auto; padding: 0 12px; border: 1px solid rgba(255, 255, 255, .45); border-radius: 8px; background: transparent; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+.it-sk-close:hover, .it-sk-close:focus-visible { background: rgba(255, 255, 255, .12); }
+.it-sk-close:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.it-sk-cols { display: grid; flex: 1 1 auto; grid-template-columns: var(--it-col-mbx, 214px) var(--it-col-ml, 310px) minmax(0, 1fr); min-height: 0; }
+.it-sk-col { display: flex; flex-direction: column; gap: 14px; padding: 18px 16px; overflow: hidden; border-right: 1px solid #dde3ea; }
+.it-sk-col--mbx { background: #eef1f5; }
+.it-sk-col--rp { border-right: 0; background: #fff; }
+.it-sk-line { display: block; height: 12px; border-radius: 6px; background: #dde3ea; }
+.it-sk-line:nth-child(3n) { width: 70%; }
+.it-sk-line:nth-child(3n+2) { width: 85%; }
+.it-sk-col--ml .it-sk-line { height: 30px; }
+.it-sk-status { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+@media (max-width: 1199px) {
+    .it-sk-cols { grid-template-columns: minmax(0, 1fr); }
+    .it-sk-col--mbx, .it-sk-col--rp { display: none; }
+}
+
+body.rex-theme-dark .it-ov-win { background: #1b232c; color: rgba(255, 255, 255, .87); }
+body.rex-theme-dark .it-sk { color: rgba(255, 255, 255, .87); }
+body.rex-theme-dark .it-sk-bar { background: #151c24; }
+body.rex-theme-dark .it-sk-col { border-color: #2c3743; }
+body.rex-theme-dark .it-sk-col--mbx { background: #18202a; }
+body.rex-theme-dark .it-sk-col--rp { background: #1f2933; }
+body.rex-theme-dark .it-sk-line { background: #2c3743; }
 @media (prefers-color-scheme: dark) {
-    body:not(.rex-theme-light) .it-ov-win, body:not(.rex-theme-light) .it-ov-loading { background: #1b232c; color: rgba(255, 255, 255, .87); }
-    body:not(.rex-theme-light) .it-ov-close { background: #222c37; border-color: #4b5867; color: rgba(255, 255, 255, .87); }
+    body:not(.rex-theme-light) .it-ov-win { background: #1b232c; color: rgba(255, 255, 255, .87); }
+    body:not(.rex-theme-light) .it-sk { color: rgba(255, 255, 255, .87); }
+    body:not(.rex-theme-light) .it-sk-bar { background: #151c24; }
+    body:not(.rex-theme-light) .it-sk-col { border-color: #2c3743; }
+    body:not(.rex-theme-light) .it-sk-col--mbx { background: #18202a; }
+    body:not(.rex-theme-light) .it-sk-col--rp { background: #1f2933; }
+    body:not(.rex-theme-light) .it-sk-line { background: #2c3743; }
 }
 
 /* Knöpfe in der Kopfzeile: Beschriftung erst bei genug Platz */

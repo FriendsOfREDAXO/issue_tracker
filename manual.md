@@ -33,6 +33,8 @@ Der Issue Tracker öffnet sich als eigene Ebene über dem Backend (Vollbild):
 
 - **Von jeder Backend-Seite aus**: über den Menüpunkt „Issue Tracker“ oder die Knöpfe „Issue Tracker“ und „Neues Thema“ oben in der Kopfzeile.
 - **Schließen**: Knopf „Schließen“ oben rechts oder die Taste Esc (wenn gerade kein Eingabefeld, Menü oder Fenster offen ist). Sie kehren genau zu der Seite zurück, auf der Sie waren.
+- **Adresse und Zurück**: Solange der Issue Tracker offen ist, steht seine Adresse in der Adresszeile – Sie können sie kopieren, als Lesezeichen speichern oder die Seite neu laden. Die Zurück- und Vor-Taste des Browsers blättern innerhalb des Issue Trackers; Zurück vor die erste Ansicht schließt ihn wieder.
+- **Fenster oder Vollbild**: Der Knopf neben „Schließen“ vergrößert das Fenster auf die ganze Fläche und zurück; der Browser merkt sich die Wahl.
 - **Neues Thema zur aktuellen Seite**: „Neues Thema“ merkt sich die Backend-Seite, auf der Sie gerade waren („Gemeldet von der Backend-Seite …“). Bearbeiten Sie gerade einen Artikel, ist er als betroffene Seite vorbelegt. Mit dem Kreuz neben dem Hinweis nehmen Sie die Seite wieder heraus.
 - **Im Postfach** scrollen Postfächer, Liste und Lesebereich jeweils für sich; die Symbolleiste des Lesebereichs bleibt oben.
 - Admins können die Vollbild-Darstellung unter Einstellungen → Allgemein („Als Vollbild öffnen“) ausschalten. Dann erscheint der Issue Tracker wie bisher innerhalb der REDAXO-Oberfläche.

@@ -248,7 +248,7 @@ $savedFilterTokenField = rex_csrf_token::factory('issue_tracker_saved_filter')->
                         <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_edit') ?></a>
                         <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>#it-members"><i class="rex-icon fa-users" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_members') ?></a>
                         <?php if ($project->getStatus() !== 'archived'): ?>
-                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_archive_confirm')) ?>">
+                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_archive_confirm')) ?>">
                             <?= rex_csrf_token::factory('issue_tracker_project_archive')->getHiddenField() ?>
                             <input type="hidden" name="archive_project" value="1" />
                             <button type="submit" class="it-menu-item"><i class="rex-icon fa-archive" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_archive') ?></button>
@@ -284,7 +284,7 @@ $savedFilterTokenField = rex_csrf_token::factory('issue_tracker_saved_filter')->
                         <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_edit') ?></a>
                         <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>#it-members"><i class="rex-icon fa-users" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_members') ?></a>
                         <?php if ($project->getStatus() !== 'archived'): ?>
-                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_archive_confirm')) ?>">
+                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_archive_confirm')) ?>">
                             <?= rex_csrf_token::factory('issue_tracker_project_archive')->getHiddenField() ?>
                             <input type="hidden" name="archive_project" value="1" />
                             <button type="submit" class="it-menu-item"><i class="rex-icon fa-archive" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_archive') ?></button>
@@ -345,7 +345,7 @@ $savedFilterTokenField = rex_csrf_token::factory('issue_tracker_saved_filter')->
                             <button type="submit" class="it-menu-item"><i class="rex-icon fa-star" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_set_as_default') ?></button>
                         </form>
                         <?php endif; ?>
-                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/issues/list') ?>" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape(rex_i18n::rawMsg('issue_tracker_delete_filter_confirm', (string) $savedFilter['name'])) ?>">
+                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/issues/list') ?>" data-confirm="<?= rex_escape(rex_i18n::rawMsg('issue_tracker_delete_filter_confirm', (string) $savedFilter['name'])) ?>">
                             <?= $savedFilterTokenField ?>
                             <input type="hidden" name="delete_filter" value="<?= (int) $savedFilter['id'] ?>" />
                             <button type="submit" class="it-menu-item it-menu-item--danger"><i class="rex-icon fa-trash" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_delete') ?></button>

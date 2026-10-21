@@ -8,6 +8,24 @@
 
     var controller = null;
 
+    /* Vollbild-App (it-app.js) aktiv? Dann laufen Seitenwechsel per PJAX in der Ebene */
+    function app() {
+        return window.ITApp && window.ITApp.active() ? window.ITApp : null;
+    }
+    /* Zu einer Adresse wechseln: in der Ebene per PJAX, sonst normal */
+    function go(url) {
+        var a = app();
+        if (a) { a.navigate(url); } else { window.location.href = url; }
+    }
+    function progress(on) {
+        var a = app();
+        if (a) { a.progress(on); }
+    }
+    /* REDAXO-Konvention: nach dem Einsetzen von Inhalt rex:ready auf dem Container auslösen */
+    function ready(el) {
+        if (window.jQuery) { window.jQuery(el).trigger('rex:ready', [window.jQuery(el)]); }
+    }
+
     function closest(el, sel) {
         return el && el.closest ? el.closest(sel) : null;
     }
@@ -35,31 +53,12 @@
         });
     }
 
-    function initEditor(pane) {
-        var textarea = pane.querySelector('#new-comment-text');
-        if (!textarea || typeof window.EasyMDE === 'undefined') { return; }
-        if (textarea.nextSibling && textarea.nextSibling.classList && textarea.nextSibling.classList.contains('EasyMDEContainer')) { return; }
-        var editor = new window.EasyMDE({
-            element: textarea,
-            spellChecker: false,
-            toolbar: ['bold', 'italic', '|', 'quote', 'unordered-list', 'ordered-list', '|', 'link', 'code', '|', 'preview', 'guide'],
-            status: false,
-            placeholder: textarea.getAttribute('placeholder') || '',
-            minHeight: '120px'
-        });
-        if (window._itAttachMentionToEditor) { window._itAttachMentionToEditor(editor); }
-    }
-
-    function initPane(pane, fromFetch) {
+    function initPane(pane) {
         if (!pane) { return; }
-        if (fromFetch) {
-            initEditor(pane);
-            if (window.jQuery && window.jQuery.fn && window.jQuery.fn.selectpicker) {
-                window.jQuery(pane).find('.selectpicker').selectpicker();
-            }
-        }
         // Dateiauswahl: Anzahl anzeigen
         Array.prototype.forEach.call(pane.querySelectorAll('.it-file input[type="file"]'), function (input) {
+            if (input.getAttribute('data-it-file-ready')) { return; }
+            input.setAttribute('data-it-file-ready', '1');
             input.addEventListener('change', function () {
                 var label = input.parentNode.querySelector('span');
                 if (!label.getAttribute('data-label')) { label.setAttribute('data-label', label.textContent); }
@@ -70,12 +69,16 @@
         // Schwebenden „Antworten“-Knopf ausblenden, sobald das Antwortfeld sichtbar ist
         var sticky = pane.querySelector('.it-rp-sticky');
         var compose = pane.querySelector('#it-reply');
-        if (sticky && compose && 'IntersectionObserver' in window) {
-            new IntersectionObserver(function (entries) {
+        if (sticky && compose && !compose._itObserved && 'IntersectionObserver' in window) {
+            compose._itObserved = true;
+            var io = new IntersectionObserver(function (entries) {
                 entries.forEach(function (e) { sticky.classList.toggle('is-hidden', e.isIntersecting); });
-            }).observe(compose);
+            });
+            io.observe(compose);
+            observers.push(io);
         }
     }
+    var observers = [];
 
     /* Vollbild-App ab 1200 px: Spalten scrollen einzeln, die Seite nie */
     function inAppColumns(root) {
@@ -107,18 +110,24 @@
         if (rr.top < top) { window.scrollBy(0, rr.top - top - 8); } else if (rr.bottom > window.innerHeight) { window.scrollBy(0, rr.bottom - window.innerHeight + 8); }
     }
 
+    /* Lesebereich nachladen (nur dieser Teil kommt vom Server, ?it_pane=1) */
     function loadPane(root, row, push, keepScroll) {
         var pane = root.querySelector('[data-it-pane]');
         if (!pane || !root.getAttribute('data-pane-url')) {
-            window.location.href = row.href;
+            go(row.href);
             return;
         }
+        // Ungespeicherte Antwort im Lesebereich nicht stillschweigend verwerfen
+        if (!keepScroll && app() && !app().canLeave(pane)) { return; }
         markSelected(root, row);
         root.classList.add('it-mail--sel');
         if (controller) { controller.abort(); }
         controller = 'AbortController' in window ? new AbortController() : null;
         var url = row.href + (row.href.indexOf('?') === -1 ? '?' : '&') + 'it_pane=1';
         pane.setAttribute('aria-busy', 'true');
+        if (!keepScroll) { progress(true); }
+        var scrollBox = pane.querySelector('.it-rp-scroll');
+        var oldScroll = scrollBox ? scrollBox.scrollTop : 0;
         fetch(url, { credentials: 'same-origin', signal: controller ? controller.signal : undefined, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(function (res) {
                 if (!res.ok) { throw new Error('HTTP ' + res.status); }
@@ -126,27 +135,59 @@
             })
             .then(function (html) {
                 if (html.indexOf('it-rp') === -1 && html.indexOf('alert') === -1) { throw new Error('unexpected'); }
+                document.dispatchEvent(new CustomEvent('it:unload', { detail: { root: pane } }));
                 pane.innerHTML = html;
+                if (window.ITEditors) { window.ITEditors.destroy(null); }
                 pane.removeAttribute('aria-busy');
+                progress(false);
+                if (keepScroll) {
+                    var sb = pane.querySelector('.it-rp-scroll');
+                    if (sb) { sb.scrollTop = oldScroll; }
+                }
                 // Das Fenster folgt dem Seitenfluss: liegt der Anfang des Lesebereichs über dem Fenster, dorthin zurück
                 if (window.innerWidth >= 1200 && !keepScroll && !inAppColumns(root)) {
                     var paneTop = pane.getBoundingClientRect().top;
                     var top = stickyTop(root);
                     if (paneTop < top) { window.scrollTo(0, Math.max(0, window.pageYOffset + paneTop - top - 8)); }
                 }
-                if (push && window.history && window.history.pushState) {
+                if (push && app()) {
+                    app().push(row.href);
+                } else if (push && window.history && window.history.pushState) {
                     window.history.pushState({ itIssue: row.getAttribute('data-issue-id') }, '', row.href);
                 }
-                initPane(pane, true);
+                initPane(pane);
                 restoreSections(pane);
                 Array.prototype.forEach.call(pane.querySelectorAll('.it-compose'), initDrop);
+                // Editoren, Auswahllisten (REDAXO), Formulare: wie nach einem PJAX-Wechsel
+                ready(pane);
+                initForms(pane);
                 labelToolbars(pane);
-                if (window.innerWidth < 1200) { root.scrollIntoView({ block: 'start' }); }
+                if (window.innerWidth < 1200 && !keepScroll) { root.scrollIntoView({ block: 'start' }); }
             })
             .catch(function (err) {
                 if (err && err.name === 'AbortError') { return; }
-                window.location.href = row.href;
+                progress(false);
+                go(row.href);
             });
+    }
+
+    /* Zurück/Vor in der Ebene: nur den Lesebereich tauschen, wenn dieselbe Liste angezeigt wird */
+    function listKey(href) {
+        var u;
+        try { u = new URL(href, window.location.href); } catch (e) { return ''; }
+        ['issue_id', 'message_id', 'it_pane', 'screen'].forEach(function (k) { u.searchParams.delete(k); });
+        u.searchParams.sort();
+        return u.pathname + '?' + u.searchParams.toString();
+    }
+    function tryPane(url, prevUrl) {
+        var root = document.querySelector('[data-it-mail][data-pane-url]');
+        if (!root || !root.querySelector('[data-it-pane]') || listKey(url) !== listKey(prevUrl)) { return false; }
+        var id = new URL(url, window.location.href).searchParams.get('issue_id');
+        var row = id ? root.querySelector('.it-ml-row[data-issue-id="' + id.replace(/[^0-9]/g, '') + '"]') : null;
+        if (!row) { return false; }
+        loadPane(root, row, false);
+        revealRow(root, row, false);
+        return true;
     }
 
     /* „Weitere laden“: nächste Einträge anhängen – Auswahl, Fokus, Tastatur und Scrollposition bleiben erhalten */
@@ -202,14 +243,14 @@
                 }
             })
             .catch(function () {
-                window.location.href = url.href;
+                go(url.href);
             });
     }
 
     function initRoot(root) {
         if (root.getAttribute('data-it-ready')) { return; }
         root.setAttribute('data-it-ready', '1');
-        initPane(root.querySelector('[data-it-pane]'), false);
+        initPane(root.querySelector('[data-it-pane]'));
         var sel = root.querySelector('.it-ml-row.is-selected');
         if (sel) { revealRow(root, sel, false); }
     }
@@ -292,23 +333,26 @@
             if (!msg) { return; }
             // Nach einem Fehler beim Absenden sind die Eingaben noch nicht gespeichert
             var initial = form.querySelector('.it-form-summary') ? null : formState(form);
-            var leaving = false;
             var isDirty = function () { return initial === null || formState(form) !== initial; };
-            // Auf window lauschen: läuft nach den Prüfungen am Formular (z. B. Pflicht-Chip), die das Absenden abbrechen können
-            window.addEventListener('submit', function (e) { if (e.target === form && !e.defaultPrevented) { leaving = true; } });
+            form._itLeaving = false;
+            // Für die Warnung beim Verlassen (Seite, PJAX-Wechsel, Schließen der Ebene)
+            form._itDirty = function () { return !form._itLeaving && document.documentElement.contains(form) && isDirty(); };
             Array.prototype.forEach.call(form.querySelectorAll('[data-it-cancel]'), function (a) {
                 a.addEventListener('click', function (e) {
-                    if (!isDirty()) { leaving = true; return; }
-                    if (window.confirm(msg)) { leaving = true; } else { e.preventDefault(); }
+                    if (!isDirty()) { form._itLeaving = true; return; }
+                    if (window.confirm(msg)) { form._itLeaving = true; } else { e.preventDefault(); e.stopImmediatePropagation(); }
                 });
             });
-            window.addEventListener('beforeunload', function (e) {
-                if (leaving || !document.body.contains(form) || !isDirty()) { return; }
-                e.preventDefault();
-                e.returnValue = msg;
-                return msg;
-            });
         });
+    }
+
+    /* Meldung des ersten Formulars mit ungespeicherten Änderungen (optional nur in scope, ohne except) */
+    function dirtyMessage(scope, except) {
+        var forms = (scope || document).querySelectorAll('form[data-it-form][data-it-unsaved]');
+        for (var i = 0; i < forms.length; i++) {
+            if (forms[i] !== except && forms[i]._itDirty && forms[i]._itDirty()) { return forms[i].getAttribute('data-it-unsaved'); }
+        }
+        return '';
     }
 
     /* Auf-/zugeklappte Bereiche: sofort lokal merken, dauerhaft beim Benutzer speichern */
@@ -474,7 +518,7 @@
             h._place = place;
         });
         function placeAll() { Array.prototype.forEach.call(root.querySelectorAll('.it-col-handle'), function (x) { if (x._place) { x._place(); } }); }
-        window.addEventListener('resize', placeAll);
+        root._itPlaceAll = placeAll;
     }
 
     /* ---------- Gemeinsame Helfer für Tag-Auswahl ---------- */
@@ -649,7 +693,12 @@
                 // Linkmap-Popup schreibt ohne Ereignis ins Feld: solange das Menü offen ist, nachsehen
                 if (type === 'page') {
                     clearInterval(chip._itPoll);
-                    if (chip.open) { chip._itPoll = setInterval(function () { update(chip); }, 400); }
+                    if (chip.open) {
+                        chip._itPoll = setInterval(function () {
+                            if (!document.documentElement.contains(chip)) { clearInterval(chip._itPoll); return; }
+                            update(chip);
+                        }, 400);
+                    }
                 }
                 if (!chip.open) { update(chip); return; }
                 update(chip);
@@ -676,11 +725,9 @@
             });
         }
 
-        // Linkmap (Popup) schreibt die Auswahl direkt ins Feld – danach anzeigen
-        if (window.jQuery) {
-            window.jQuery(window).on('rex:selectLink', function () { setTimeout(function () { chips.forEach(update); }, 50); });
-        }
-        window.addEventListener('focus', function () { chips.forEach(function (c) { if (c.getAttribute('data-it-qchip') === 'page') { update(c); } }); });
+        // Linkmap (Popup) schreibt die Auswahl direkt ins Feld – danach anzeigen (Ereignisse einmal global gebunden, s. u.)
+        bar._itUpdatePage = function () { chips.forEach(function (c) { if (c.getAttribute('data-it-qchip') === 'page') { update(c); } }); };
+        bar._itUpdateAll = function () { chips.forEach(update); };
 
         // Adresse der betroffenen Seite: gleiche Regel wie auf dem Server (https://… oder Pfad ab „/“), Hinweis direkt am Feld
         var urlInput = bar.querySelector('input[name="affected_url"]');
@@ -833,20 +880,37 @@
             // Zeigt der Lesebereich dasselbe Thema, still neu laden (Tags im Kopf aktuell halten)
             var paneIssue = root ? root.querySelector('[data-it-pane] .it-rp[data-issue-id="' + issueId + '"]') : null;
             var row = root ? root.querySelector('.it-ml-row[data-issue-id="' + issueId + '"]') : null;
-            if (paneIssue && row) { loadPane(root, row, false, true); }
+            var paneEl = root ? root.querySelector('[data-it-pane]') : null;
+            if (paneIssue && row && !dirtyMessage(paneEl)) { loadPane(root, row, false, true); }
         }
         function fail(input) {
             if (input) { input.checked = !input.checked; }
             msg.textContent = labels.error || '';
             msg.classList.add('is-error');
         }
+        // Sofort anzeigen (optimistisch), dann speichern; bei Fehler zurücknehmen
+        function localTags() {
+            var on = Array.prototype.map.call(pop.querySelectorAll('.it-qtag-list input:checked'), function (c) { return String(c.value); });
+            return allTags.filter(function (t) { return on.indexOf(String(t.id)) !== -1; });
+        }
+        var pending = 0;
         pop.addEventListener('change', function (e) {
             var input = e.target;
             if (!input.matches('input[type="checkbox"]')) { return; }
-            input.disabled = true;
+            var before = (btn.getAttribute('data-tag-ids') || '').split(',').filter(Boolean);
+            renderRowTags(issueId, localTags());
+            msg.textContent = '';
+            pending++;
             postApi(api, { action: 'toggle', issue_id: issueId, tag_id: input.value, on: input.checked ? '1' : '0' })
-                .then(done, function () { fail(input); })
-                .then(function () { input.disabled = false; input.focus(); });
+                .then(function (json) {
+                    pending--;
+                    // Erst nach der letzten Antwort den Serverstand übernehmen (schnelles Mehrfachklicken)
+                    if (pending === 0) { done(json); }
+                }, function () {
+                    pending--;
+                    fail(input);
+                    renderRowTags(issueId, allTags.filter(function (t) { return before.indexOf(String(t.id)) !== -1; }));
+                });
         });
         function create() {
             var name = search.value.trim();
@@ -895,8 +959,6 @@
         });
         if (search.hidden) { pop.querySelector('[data-it-qtag-close]').focus(); } else { search.focus(); }
     }
-    window.addEventListener('resize', function () { placeQtag(); });
-    window.addEventListener('scroll', function () { placeQtag(); }, true);
 
     /* Rückmeldung einblenden und nach einigen Sekunden ausblenden (nicht solange Maus oder Fokus darauf liegen) */
     function initToasts(scope) {
@@ -929,25 +991,71 @@
         Array.prototype.forEach.call(document.querySelectorAll('[data-it-mail]'), function (m) { m.style.setProperty('--it-sticky-top', top + 'px'); });
     }
 
-    function initAll() {
+    /* Initialisierung je Inhalt: beim Laden und nach jedem PJAX-Wechsel (rex:ready mit Container). Mehrfachaufrufe sind harmlos. */
+    function initAll(e, container) {
+        var scope = container && container[0] ? container[0] : document;
         setStickyTop();
-        window.addEventListener('resize', setStickyTop);
-        initToasts(document);
-        initFontSize(document);
-        Array.prototype.forEach.call(document.querySelectorAll('[data-it-mail]'), initColumns);
-        restoreSections(document);
-        Array.prototype.forEach.call(document.querySelectorAll('[data-it-mail]'), initRoot);
+        initToasts(scope);
+        initFontSize(scope);
+        Array.prototype.forEach.call(scope.querySelectorAll('[data-it-mail]'), initColumns);
+        restoreSections(scope);
+        Array.prototype.forEach.call(scope.querySelectorAll('[data-it-mail]'), initRoot);
         // Verfassen-Fenster: Dateiauswahl-Anzeige
-        Array.prototype.forEach.call(document.querySelectorAll('.it-sheet'), function (sheet) { initPane(sheet, false); initDrop(sheet); });
-        Array.prototype.forEach.call(document.querySelectorAll('.it-compose'), initDrop);
-        initForms(document);
-        Array.prototype.forEach.call(document.querySelectorAll('.it-qbar'), initQbar);
+        Array.prototype.forEach.call(scope.querySelectorAll('.it-sheet'), function (sheet) { initPane(sheet); initDrop(sheet); });
+        Array.prototype.forEach.call(scope.querySelectorAll('.it-compose'), initDrop);
+        initForms(scope);
+        Array.prototype.forEach.call(scope.querySelectorAll('.it-qbar'), initQbar);
         // EasyMDE wird von issue_tracker.js beim selben Ereignis aufgebaut – danach beschriften
-        setTimeout(function () { labelToolbars(document); }, 250);
+        labelToolbars(scope);
+        clearTimeout(labelTimer);
+        labelTimer = setTimeout(function () { labelToolbars(document); }, 250);
     }
+    var labelTimer = null;
+
+    /* Aufräumen, bevor die Vollbild-App Inhalt austauscht oder schließt */
+    function unload(e) {
+        var root = e && e.detail ? e.detail.root : null;
+        if (qtag && (!root || root.contains(qtag.btn))) { closeQtag(false); }
+        if (controller && root && root.querySelector && root.querySelector('[data-it-pane]')) { controller.abort(); controller = null; }
+        observers = observers.filter(function (io) {
+            io.disconnect();
+            return false;
+        });
+        Array.prototype.forEach.call(document.querySelectorAll('.it-qbar [data-it-qchip]'), function (c) { clearInterval(c._itPoll); });
+    }
+
+    window.ITMail = { tryPane: tryPane, dirtyMessage: dirtyMessage };
 
     if (!window.__itMailBound) {
         window.__itMailBound = true;
+
+        // Einmal global gebunden: Fenstergröße, Scrollen, Linkmap, Warnung beim Verlassen, Aufräumen
+        window.addEventListener('resize', function () {
+            placeQtag();
+            setStickyTop();
+            Array.prototype.forEach.call(document.querySelectorAll('[data-it-mail]'), function (r) { if (r._itPlaceAll) { r._itPlaceAll(); } });
+        });
+        window.addEventListener('scroll', function () { placeQtag(); }, true);
+        if (window.jQuery) {
+            window.jQuery(window).on('rex:selectLink', function () {
+                setTimeout(function () { Array.prototype.forEach.call(document.querySelectorAll('.it-qbar'), function (b) { if (b._itUpdateAll) { b._itUpdateAll(); } }); }, 50);
+            });
+        }
+        window.addEventListener('focus', function () {
+            Array.prototype.forEach.call(document.querySelectorAll('.it-qbar'), function (b) { if (b._itUpdatePage) { b._itUpdatePage(); } });
+        });
+        // Absenden: Warnung für dieses Formular abschalten (auf window: nach den Prüfungen am Formular, die abbrechen können)
+        window.addEventListener('submit', function (e) {
+            if (!e.defaultPrevented && e.target && e.target.matches && e.target.matches('form[data-it-form]')) { e.target._itLeaving = true; }
+        });
+        window.addEventListener('beforeunload', function (e) {
+            var msg = dirtyMessage(document, null);
+            if (!msg) { return; }
+            e.preventDefault();
+            e.returnValue = msg;
+            return msg;
+        });
+        document.addEventListener('it:unload', unload);
 
         document.addEventListener('click', function (e) {
             // Menüs: nur eines offen, Klick daneben schließt
@@ -987,7 +1095,7 @@
                 root.classList.remove('it-mail--sel');
                 root.classList.add('it-mail--list');
                 markSelected(root, null);
-                if (window.history && window.history.pushState) { window.history.pushState({}, '', back.href); }
+                if (app()) { app().push(back.href); } else if (window.history && window.history.pushState) { window.history.pushState({}, '', back.href); }
                 return;
             }
 
@@ -1007,7 +1115,7 @@
                         copy.classList.remove('is-on');
                         if (live) { live.textContent = oldLive; }
                     }, 1800);
-                }, function () { window.location.href = abs; });
+                }, function () { go(abs); });
                 return;
             }
 
@@ -1089,12 +1197,12 @@
             if (e.key === 'e') {
                 var modeRoot = document.querySelector('[data-it-mail]');
                 var editLink = document.querySelector('[data-it-pane] [data-it-edit]');
-                if (modeRoot && modeRoot.getAttribute('data-mode') === 'knowledge' && editLink) { e.preventDefault(); window.location.href = editLink.href; return; }
+                if (modeRoot && modeRoot.getAttribute('data-mode') === 'knowledge' && editLink) { e.preventDefault(); go(editLink.href); return; }
             }
             // „f“ = Weiterleiten, „u“ = gelesen/ungelesen umschalten (Nachrichten)
             if (e.key === 'f') {
                 var fwd = document.querySelector('[data-it-pane] [data-it-forward]');
-                if (fwd) { e.preventDefault(); window.location.href = fwd.href; return; }
+                if (fwd) { e.preventDefault(); go(fwd.href); return; }
             }
             if (e.key === 'u') {
                 var unreadForm = document.querySelector('[data-it-pane] form[data-it-unread]');
@@ -1134,11 +1242,13 @@
                 loadPane(root, row, true);
             } else if (e.key === 'Enter' && current && (active === current || active === document.body || !active)) {
                 e.preventDefault();
-                window.location.href = current.getAttribute('data-view-href') || current.href;
+                go(current.getAttribute('data-view-href') || current.href);
             }
         });
 
+        // Ohne Vollbild-App (klassische Darstellung): Zurück/Vor lädt die Seite neu; in der App übernimmt it-app.js
         window.addEventListener('popstate', function () {
+            if (app()) { return; }
             if (document.querySelector('[data-it-mail][data-pane-url]')) { window.location.reload(); }
         });
 

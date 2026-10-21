@@ -584,7 +584,7 @@ class Attachment
 
         if (null !== $deleteUrl) {
             $confirmMsg = \rex_escape($package->i18n('issue_tracker_delete_attachment_confirm'));
-            $actions .= ' <a href="' . $deleteUrl . '" class="btn btn-xs btn-danger" onclick="return confirm(\'' . $confirmMsg . '\')">'
+            $actions .= ' <a href="' . $deleteUrl . '" class="btn btn-xs btn-danger" data-confirm="' . $confirmMsg . '">'
                 . '<i class="rex-icon fa-trash"></i></a>';
         }
 

@@ -128,7 +128,7 @@ $renderComment = static function ($comment, bool $isReply) use (&$renderComment,
             </div>
             <div class="it-msg-actions">
                 <?php if (!$isReply): ?>
-                <button type="button" class="it-tb-btn it-tb-btn--sm" onclick="toggleReplyForm(<?= $cid ?>)" title="<?= rex_escape($package->i18n('issue_tracker_reply')) ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_reply') ?></span></button>
+                <button type="button" class="it-tb-btn it-tb-btn--sm" data-it-toggle-reply="<?= $cid ?>" title="<?= rex_escape($package->i18n('issue_tracker_reply')) ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_reply') ?></span></button>
                 <?php endif; ?>
                 <?php if (!$isReply && $canModerate): ?>
                 <form method="post" action="<?= $selfAction ?>">
@@ -141,10 +141,10 @@ $renderComment = static function ($comment, bool $isReply) use (&$renderComment,
                 </form>
                 <?php endif; ?>
                 <?php if (!$isReply && $canEditComment): ?>
-                <button type="button" class="it-tb-btn it-tb-btn--sm" onclick="toggleEditForm(<?= $cid ?>)" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></button>
+                <button type="button" class="it-tb-btn it-tb-btn--sm" data-it-toggle-edit="<?= $cid ?>" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></button>
                 <?php endif; ?>
                 <?php if (!$isReply && $currentUser->isAdmin()): ?>
-                <form method="post" action="<?= $selfAction ?>" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_comment_confirm')) ?>">
+                <form method="post" action="<?= $selfAction ?>" data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_comment_confirm')) ?>">
                     <input type="hidden" name="delete_comment" value="<?= $cid ?>" />
                     <button type="submit" class="it-tb-btn it-tb-btn--sm it-tb-btn--danger" title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></button>
                 </form>
@@ -158,7 +158,7 @@ $renderComment = static function ($comment, bool $isReply) use (&$renderComment,
                 <input type="hidden" name="edit_comment" value="<?= $cid ?>" />
                 <textarea name="comment_text" class="form-control" rows="4" aria-label="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><?= rex_escape($comment->getComment()) ?></textarea>
                 <div class="it-form-actions">
-                    <button type="button" class="btn btn-default btn-sm" onclick="toggleEditForm(<?= $cid ?>)"><?= $package->i18n('issue_tracker_cancel') ?></button>
+                    <button type="button" class="btn btn-default btn-sm" data-it-toggle-edit="<?= $cid ?>"><?= $package->i18n('issue_tracker_cancel') ?></button>
                     <button type="submit" class="btn btn-primary it-btn-primary btn-sm"><?= $package->i18n('issue_tracker_save') ?></button>
                 </div>
             </form>
@@ -176,7 +176,7 @@ $renderComment = static function ($comment, bool $isReply) use (&$renderComment,
                 <input type="hidden" name="parent_comment_id" value="<?= $cid ?>" />
                 <textarea name="comment" class="form-control" rows="3" placeholder="<?= rex_escape($package->i18n('issue_tracker_reply_placeholder')) ?>" aria-label="<?= rex_escape($package->i18n('issue_tracker_reply')) ?>"></textarea>
                 <div class="it-form-actions">
-                    <button type="button" class="btn btn-default btn-sm" onclick="toggleReplyForm(<?= $cid ?>)"><?= $package->i18n('issue_tracker_cancel') ?></button>
+                    <button type="button" class="btn btn-default btn-sm" data-it-toggle-reply="<?= $cid ?>"><?= $package->i18n('issue_tracker_cancel') ?></button>
                     <button type="submit" class="btn btn-primary it-btn-primary btn-sm"><i class="rex-icon fa-reply" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_send_reply') ?></button>
                 </div>
             </form>
@@ -264,7 +264,7 @@ $relatedIssues = $issue->getDuplicates();
             <a class="it-tb-btn" data-it-edit href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>"<?= $isKnowledge ? ' aria-keyshortcuts="E"' : '' ?> title="<?= rex_escape($package->i18n('issue_tracker_edit') . ($isKnowledge ? ' (E)' : '')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
             <?php endif; ?>
             <?php if ($canChangeStatus && $isKnowledge): ?>
-            <form method="post" action="<?= $selfAction ?>" class="it-tb-form" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_knowledge_remove_confirm')) ?>">
+            <form method="post" action="<?= $selfAction ?>" class="it-tb-form" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_knowledge_remove_confirm')) ?>">
                 <input type="hidden" name="change_status" value="1" />
                 <input type="hidden" name="status" value="closed" />
                 <button type="submit" class="it-tb-btn it-tb-btn--text" title="<?= rex_escape($package->i18n('issue_tracker_mail_knowledge_remove_help')) ?>"><i class="rex-icon fa-book" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_knowledge_remove') ?></button>
@@ -283,7 +283,7 @@ $relatedIssues = $issue->getDuplicates();
             <?php endif; ?>
             <?php if (PermissionService::canDelete() && !$isKnowledge): ?>
             <a class="it-tb-btn it-tb-btn--danger" href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()) ?>"
-               onclick="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_confirm')) ?>"
+               data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_confirm')) ?>"
                title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></a>
             <?php endif; ?>
         </div>
@@ -335,7 +335,7 @@ $relatedIssues = $issue->getDuplicates();
                         $addableTags = array_filter($allTags, static fn ($t) => !in_array($t->getId(), $currentTagIds, true));
                         if (!empty($addableTags)): ?>
                     <form method="post" action="<?= $selfAction ?>" class="it-chip-form">
-                        <select name="add_tag" onchange="this.form.submit()" class="it-chip-select" aria-label="<?= rex_escape($package->i18n('issue_tracker_tags')) ?>">
+                        <select name="add_tag" data-it-autosubmit class="it-chip-select" aria-label="<?= rex_escape($package->i18n('issue_tracker_tags')) ?>">
                             <option value="">+ Tag</option>
                             <?php foreach ($addableTags as $aTag): ?>
                             <option value="<?= $aTag->getId() ?>"><?= rex_escape($aTag->getName()) ?></option>
@@ -401,7 +401,7 @@ $relatedIssues = $issue->getDuplicates();
                 // Backend-Seite, von der aus gemeldet wurde (nur Adressen dieser Installation, beim Speichern geprüft)
                 $srcUrl = (string) $issue->getSourceUrl();
                 $srcLabel = \FriendsOfREDAXO\IssueTracker\AppShell::sourceLabel($srcUrl, (string) $issue->getSourceTitle()); ?>
-            <div class="it-rp-fact--wide"><dt><?= $package->i18n('issue_tracker_source_page') ?></dt><dd><a class="it-affected-link" href="<?= rex_escape($srcUrl) ?>" target="_top"><i class="rex-icon fa-map-marker" aria-hidden="true"></i> <?= rex_escape($srcLabel) ?></a></dd></div>
+            <div class="it-rp-fact--wide"><dt><?= $package->i18n('issue_tracker_source_page') ?></dt><dd><a class="it-affected-link" href="<?= rex_escape($srcUrl) ?>"><i class="rex-icon fa-map-marker" aria-hidden="true"></i> <?= rex_escape($srcLabel) ?></a></dd></div>
             <?php endif; ?>
             <?php if ($issue->getAssignedAddon()): ?>
             <div><dt><?= $package->i18n('issue_tracker_addon') ?></dt><dd><?= rex_escape($issue->getAssignedAddon()) ?></dd></div>
@@ -485,7 +485,7 @@ $relatedIssues = $issue->getDuplicates();
             <details class="it-disclosure" data-it-sec="pane_reminder"<?= $uiOpen('pane_reminder') ?>>
                 <summary><i class="rex-icon fa-bell" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_reminder_send') ?></summary>
                 <div class="it-disclosure-body">
-                    <form method="post" action="<?= $selfAction ?>" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_reminder_confirm')) ?>" class="it-inline-form">
+                    <form method="post" action="<?= $selfAction ?>" data-confirm="<?= rex_escape($package->i18n('issue_tracker_reminder_confirm')) ?>" class="it-inline-form">
                         <input type="hidden" name="send_reminder" value="1" />
                         <button type="submit" class="btn btn-default btn-sm" <?= $canSendReminder ? '' : 'disabled' ?>><i class="rex-icon fa-bell" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_reminder_send') ?></button>
                         <?php if ($lastReminderAt): ?>

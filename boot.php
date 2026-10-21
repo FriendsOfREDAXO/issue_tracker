@@ -19,20 +19,22 @@ if (rex::isBackend() && rex::getUser()) {
 }
 
 // Assets nur auf den Seiten des Issue Trackers einbinden
+// (dieselben Adressen wie beim Nachladen in der Ebene, siehe AppShell::assetUrl – ein gemeinsamer Browser-Cache)
 if (rex::isBackend() && rex::getUser() && 'issue_tracker' === rex_be_controller::getCurrentPagePart(1)) {
-    rex_view::addCssFile($this->getAssetsUrl('easymde.min.css'));
-    rex_view::addCssFile($this->getAssetsUrl('issue_tracker.css'));
-    rex_view::addCssFile($this->getAssetsUrl('css/it-base.css'));
-    rex_view::addCssFile($this->getAssetsUrl('css/it-ui.css'));
-    rex_view::addJsFile($this->getAssetsUrl('easymde.min.js'));
-    rex_view::addJsFile($this->getAssetsUrl('issue_tracker.js'));
-    rex_view::addJsFile($this->getAssetsUrl('js/it-ui.js'));
-    rex_view::addCssFile($this->getAssetsUrl('css/it-mail.css'));
-    rex_view::addJsFile($this->getAssetsUrl('js/it-mail.js'));
-    // Vollbild-App (eigener Rahmen über dem Backend), abschaltbar in den Einstellungen
-    if (\FriendsOfREDAXO\IssueTracker\AppShell::isEnabled()) {
-        rex_view::addCssFile($this->getAssetsUrl('css/it-app.css'));
-        rex_view::addJsFile($this->getAssetsUrl('js/it-app.js'));
+    $itApp = \FriendsOfREDAXO\IssueTracker\AppShell::isEnabled();
+    foreach (\FriendsOfREDAXO\IssueTracker\AppShell::cssFiles() as $itFile) {
+        if ($itApp || 'css/it-app.css' !== $itFile) {
+            rex_view::addCssFile($this->getAssetsUrl($itFile));
+        }
+    }
+    foreach (\FriendsOfREDAXO\IssueTracker\AppShell::jsFiles() as $itFile) {
+        if ($itApp || 'js/it-app.js' !== $itFile) {
+            rex_view::addJsFile($this->getAssetsUrl($itFile), [rex_view::JS_IMMUTABLE => true]);
+        }
+    }
+    // Vollbild-App: Ebene und Fenster (gleiche Datei wie auf den übrigen Backend-Seiten)
+    if ($itApp) {
+        rex_view::addCssFile($this->getAssetsUrl('css/it-launcher.css'));
     }
 
     // Schriftgröße des Benutzers (90–140 %) als Klasse am body
@@ -42,9 +44,6 @@ if (rex::isBackend() && rex::getUser() && 'issue_tracker' === rex_be_controller:
         $scale = (int) rex_config::get('issue_tracker', 'font_scale_' . $userId, 100);
         if (in_array($scale, [90, 110, 120, 130, 140], true)) {
             $attr['class'][] = 'it-scale-' . $scale;
-        }
-        if (\FriendsOfREDAXO\IssueTracker\AppShell::isEnabled()) {
-            $attr['class'][] = 'it-app-mode';
         }
         // Gespeicherte Spaltenbreiten (nur eigene CSS-Variablen)
         $cols = rex_config::get('issue_tracker', 'columns_' . $userId, []);
@@ -56,7 +55,8 @@ if (rex::isBackend() && rex::getUser() && 'issue_tracker' === rex_be_controller:
 }
 
 // Vollbild-App: von jeder Backend-Seite aus öffnen (Hauptmenü + Knopf in der Kopfzeile), als Ebene über der Seite.
-// Nur ein kleines Skript; die App selbst lädt in der Ebene. Nicht auf der Anmeldeseite, in Popups und im Issue Tracker selbst.
+// Nur ein kleines Skript; Dateien und Inhalt der App lädt es erst beim Öffnen (bzw. vorab beim Zeigen auf den Knopf).
+// Nicht auf der Anmeldeseite, in Popups, bei PJAX-Anfragen und im Issue Tracker selbst.
 if (rex::isBackend() && rex::getUser() && \FriendsOfREDAXO\IssueTracker\AppShell::isEnabled()) {
     $itAddon = $this;
     rex_extension::register('PAGES_PREPARED', static function (rex_extension_point $ep) {
@@ -70,12 +70,12 @@ if (rex::isBackend() && rex::getUser() && \FriendsOfREDAXO\IssueTracker\AppShell
     rex_extension::register('PAGE_CHECKED', static function () use ($itAddon) {
         $current = rex_be_controller::getCurrentPageObject();
         if (!$current || 'issue_tracker' === rex_be_controller::getCurrentPagePart(1) || 'login' === rex_be_controller::getCurrentPage()
-            || $current->isPopup() || !$current->hasLayout() || !$current->hasNavigation() || rex_request::isXmlHttpRequest()
+            || $current->isPopup() || !$current->hasLayout() || !$current->hasNavigation() || rex_request::isXmlHttpRequest() || rex_request::isPJAXRequest()
             || !\FriendsOfREDAXO\IssueTracker\AppShell::userCanOpen()) {
             return;
         }
         rex_view::addCssFile($itAddon->getAssetsUrl('css/it-launcher.css'));
-        rex_view::addJsFile($itAddon->getAssetsUrl('js/it-launcher.js'));
+        rex_view::addJsFile($itAddon->getAssetsUrl('js/it-launcher.js'), [rex_view::JS_IMMUTABLE => true]);
         rex_extension::register('META_NAVI', static function (rex_extension_point $ep) {
             $items = $ep->getSubject();
             array_unshift($items, \FriendsOfREDAXO\IssueTracker\AppShell::launcherItems());
@@ -123,9 +123,8 @@ if (rex::isBackend() && rex::getUser()) {
         }
         $unreadCount = \FriendsOfREDAXO\IssueTracker\Message::getUnreadCount(rex::getUser()->getId());
         if ($unreadCount > 0) {
-            // Badge per zentraler JS-Funktion hinzufügen (CSS ist in issue_tracker.css)
-            $script = '<script nonce="' . rex_response::getNonce() . '">issueTrackerAddMessageBadge(' . (int) $unreadCount . ');</script>';
-            $ep->setSubject($ep->getSubject() . $script);
+            // Badge setzt issue_tracker.js (kein Inline-Skript; CSS ist in issue_tracker.css)
+            $ep->setSubject($ep->getSubject() . '<span hidden data-it-unread-badge="' . (int) $unreadCount . '"></span>');
         }
     });
 }

@@ -162,7 +162,7 @@ $roleLabels = ['owner' => $package->i18n('issue_tracker_role_owner'), 'member' =
                 <span class="it-badge"><?= rex_escape($roleLabels[$member['role']] ?? $member['role']) ?></span>
                 <?php if ((int) $member['user_id'] !== (int) $currentUser->getId()): ?>
                 <a class="it-tb-btn it-tb-btn--sm it-tb-btn--danger" href="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $project->getId(), 'func' => 'remove_user', 'user_id' => $member['user_id']] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()) ?>#it-members"
-                   onclick="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_user_remove_confirm')) ?>"
+                   data-confirm="<?= rex_escape($package->i18n('issue_tracker_user_remove_confirm')) ?>"
                    title="<?= rex_escape($package->i18n('issue_tracker_ui_remove_member')) ?>"><i class="rex-icon fa-times" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_ui_remove_member') ?>: <?= rex_escape($memberName) ?></span></a>
                 <?php endif; ?>
             </div>

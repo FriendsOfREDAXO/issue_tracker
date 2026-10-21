@@ -60,7 +60,7 @@ $package = rex_addon::get('issue_tracker');
 
         <div class="it-sheet-foot">
             <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['box' => 'inbox']) ?>" class="btn btn-default" data-it-cancel><?= $package->i18n('issue_tracker_cancel') ?></a>
-            <button type="submit" class="btn btn-primary it-btn-primary" onclick="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_broadcast_confirm')) ?>"><?= $package->i18n('issue_tracker_mail_broadcast_send') ?></button>
+            <button type="submit" class="btn btn-primary it-btn-primary" data-confirm="<?= rex_escape($package->i18n('issue_tracker_broadcast_confirm')) ?>"><?= $package->i18n('issue_tracker_mail_broadcast_send') ?></button>
         </div>
     </form>
 </div>

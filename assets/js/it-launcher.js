@@ -1,139 +1,220 @@
 /**
  * Issue Tracker – Aufruf von jeder Backend-Seite (Hauptmenü, Knöpfe in der Kopfzeile).
- * Öffnet den Issue Tracker als Ebene über der aktuellen Seite; „Schließen“/Esc kehrt ohne Neuladen zurück.
- * „Neues Thema“ übernimmt Adresse und Titel der aktuellen Seite (geprüft wird serverseitig).
+ *
+ * Klein gehalten: zeigt die Ebene sofort mit einem Platzhalter (Kopfleiste + drei Spalten), lädt Inhalt und
+ * Dateien der App parallel nach und übergibt dann an it-app.js (PJAX in der Ebene, ohne iframe).
+ * Schneller Start: beim Zeigen auf den Knopf (bzw. Fokus, Antippen) werden Inhalt und Dateien vorab geladen,
+ * nach dem Laden der Seite werden die Dateien im Leerlauf in den Browser-Cache geholt.
+ * „Neues Thema“ übernimmt die Adresse der aktuellen Seite (geprüft wird serverseitig).
  */
 (function () {
     'use strict';
 
-    if (window.top !== window.self || window.ITLauncher) { return; }
+    if (window.ITLaunch) { return; }
 
     var html = document.documentElement;
+    var KEY_RETURN = 'issue_tracker_app_return';
+    var cfg = null;
+    var assets = null;      // Promise: Dateien der App geladen
+    var pre = {};           // vorab geladene Antworten je Adresse
     var ov = null;
-    var frame = null;
     var opener = null;
-    var labels = { title: 'Issue Tracker', close: 'Schließen', loading: '' };
+    var waiting = false;    // Ebene offen, App noch nicht übernommen
 
-    function readLabels() {
-        var el = document.querySelector('[data-it-labels]');
-        if (!el) { return; }
-        try {
-            var l = JSON.parse(el.getAttribute('data-it-labels'));
-            Object.keys(l).forEach(function (k) { labels[k] = l[k]; });
-        } catch (e) { /* Standardtexte */ }
+    function config() {
+        if (cfg) { return cfg; }
+        var el = document.querySelector('[data-it-launch]');
+        cfg = { labels: { title: 'Issue Tracker', close: 'Schließen', loading: '' }, css: [], js: [] };
+        if (el) {
+            try {
+                var c = JSON.parse(el.getAttribute('data-it-launch'));
+                Object.keys(c).forEach(function (k) { cfg[k] = c[k]; });
+            } catch (e) { /* Standard */ }
+        }
+        return cfg;
     }
 
+    /* Dateien der App einmal einbinden (CSS vollständig geladen, JS in fester Reihenfolge) */
+    function loadAssets() {
+        if (assets) { return assets; }
+        if (window.ITApp) { assets = Promise.resolve(); return assets; }
+        var c = config();
+        var head = document.head;
+        var waits = c.css.map(function (href) {
+            if (document.querySelector('link[rel="stylesheet"][href="' + href + '"]')) { return Promise.resolve(); }
+            return new Promise(function (resolve) {
+                var l = document.createElement('link');
+                l.rel = 'stylesheet';
+                l.href = href;
+                l.onload = l.onerror = resolve;
+                head.appendChild(l);
+            });
+        });
+        waits.push(new Promise(function (resolve, reject) {
+            var last = null;
+            c.js.forEach(function (src) {
+                var s = document.createElement('script');
+                s.src = src;
+                s.async = false; // parallel laden, in Reihenfolge ausführen
+                s.onerror = reject;
+                head.appendChild(s);
+                last = s;
+            });
+            if (!last) { resolve(); return; }
+            last.onload = resolve;
+        }));
+        assets = Promise.all(waits);
+        assets.catch(function () { assets = null; });
+        return assets;
+    }
+
+    /* PJAX-Anfrage wie in it-app.js: REDAXO liefert für den Container „#it-app“ nur den Seiteninhalt */
+    function fetchApp(url) {
+        return fetch(url, { credentials: 'same-origin', headers: { 'X-PJAX': 'true', 'X-PJAX-Container': '#it-app' } })
+            .then(function (r) {
+                return r.text().then(function (t) { return { html: t, url: r.url, status: r.status }; });
+            });
+    }
+
+    function targetUrl(a) {
+        if (!a.hasAttribute('data-it-app-new')) { return a.href; }
+        var href = a.href.replace(/[?&]it_src(_title)?=[^&#]*/g, '');
+        return href + (href.indexOf('?') === -1 ? '?' : '&') + 'it_src=' + encodeURIComponent(window.location.href) + '&it_src_title=' + encodeURIComponent(document.title);
+    }
+
+    /* Vorab laden (Zeigen, Fokus, Antippen): gilt 20 Sekunden */
+    function prefetch(a) {
+        var url = targetUrl(a);
+        var p = pre[url];
+        if (!p || Date.now() - p.t > 20000) {
+            pre[url] = { t: Date.now(), p: fetchApp(url) };
+            pre[url].p.catch(function () { delete pre[url]; });
+        }
+        loadAssets().catch(function () {});
+    }
+    function take(url) {
+        var p = pre[url];
+        delete pre[url];
+        return p && Date.now() - p.t <= 20000 ? p.p : fetchApp(url);
+    }
+
+    function esc(str) {
+        return String(str).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+    }
+
+    /* Ebene mit Platzhalter (gleiche Struktur wie AppShell::overlayStart) */
     function build() {
-        readLabels();
+        var l = config().labels;
         ov = document.createElement('div');
         ov.className = 'it-ov';
+        ov.setAttribute('data-it-ov', '');
         ov.hidden = true;
-        // Wie MediaPlace: Fenster über der abgedunkelten Seite, per „Vollbild“ auf die ganze Fläche
-        ov.innerHTML = '<div class="it-ov-win"><div class="it-ov-loading" role="status"><span class="it-ov-spinner" aria-hidden="true"></span><span class="it-ov-loading-text"></span>'
-            + '<button type="button" class="it-ov-close"><i class="rex-icon fa-times" aria-hidden="true"></i> <span></span></button></div>'
-            + '<iframe class="it-ov-frame"></iframe></div>';
-        setMax(readMax());
-        ov.querySelector('.it-ov-loading-text').textContent = labels.loading;
-        ov.querySelector('.it-ov-close span').textContent = labels.close;
-        ov.querySelector('.it-ov-close').addEventListener('click', close);
-        frame = ov.querySelector('.it-ov-frame');
-        frame.title = labels.title;
-        frame.addEventListener('load', function () {
-            if (!frame.getAttribute('src')) { return; }
-            ov.classList.remove('is-loading');
-            // Seite im Rahmen ist kein Issue Tracker mehr (z. B. abgemeldet): im ganzen Fenster öffnen
-            try {
-                var doc = frame.contentDocument;
-                if (doc && frame.contentWindow.location.href !== 'about:blank' && !doc.querySelector('[data-it-app]')) {
-                    window.location.href = frame.contentWindow.location.href;
-                }
-            } catch (e) { /* fremde Seite: nichts tun */ }
-        });
+        ov.innerHTML = '<div class="it-ov-win"><div class="it-ov-progress" aria-hidden="true"></div><div class="it-ov-host"></div></div>';
         document.body.appendChild(ov);
+    }
+    function skeleton() {
+        var l = config().labels;
+        var lines = function (n) { var h = ''; for (var i = 0; i < n; i++) { h += '<span class="it-sk-line"></span>'; } return h; };
+        return '<div class="it-sk" role="dialog" aria-modal="true" aria-label="' + esc(l.title) + '" aria-busy="true" tabindex="-1">'
+            + '<div class="it-sk-bar"><span class="it-sk-icon" aria-hidden="true"><i class="rex-icon fa-tasks"></i></span><span class="it-sk-title">' + esc(l.title) + '</span>'
+            + '<button type="button" class="it-sk-close" data-it-sk-close><i class="rex-icon fa-times" aria-hidden="true"></i> <span>' + esc(l.close) + '</span></button></div>'
+            + '<div class="it-sk-cols" aria-hidden="true"><div class="it-sk-col it-sk-col--mbx">' + lines(8) + '</div><div class="it-sk-col it-sk-col--ml">' + lines(10) + '</div><div class="it-sk-col it-sk-col--rp">' + lines(6) + '</div></div>'
+            + '<span class="it-sk-status" role="status">' + esc(l.loading) + '</span></div>';
     }
 
     function readMax() {
         try { return window.localStorage.getItem('it_app_max') === '1'; } catch (e) { return false; }
     }
-    function setMax(on) {
-        if (ov) { ov.classList.toggle('is-max', !!on); }
-        try { window.localStorage.setItem('it_app_max', on ? '1' : '0'); } catch (e) { /* ohne Speicher: nur für diese Sitzung */ }
-    }
-    function isMax() {
-        return !!ov && ov.classList.contains('is-max');
-    }
 
-    function isOpen() {
-        return !!ov && !ov.hidden;
-    }
-
-    function open(url, reload) {
+    function open(a) {
+        var url = targetUrl(a);
+        if (window.ITApp && window.ITApp.active()) { window.ITApp.navigate(url); return; }
         if (!ov) { build(); }
-        if (!isOpen()) { opener = document.activeElement; }
-        if (url && (reload || !frame.getAttribute('src'))) {
-            ov.classList.add('is-loading');
-            frame.setAttribute('src', url);
-        }
-        ov.hidden = false;
+        opener = a;
+        var host = ov.querySelector('.it-ov-host');
+        host.innerHTML = skeleton();
+        html.classList.toggle('it-ov-max', readMax());
         html.classList.add('it-ov-lock');
-        if (ov.classList.contains('is-loading')) {
-            ov.querySelector('.it-ov-close').focus({ preventScroll: true });
-        } else {
-            focusFrame();
-        }
+        ov.hidden = false;
+        waiting = true;
+        var sk = host.querySelector('.it-sk');
+        if (sk) { sk.focus({ preventScroll: true }); }
+        var response = take(url);
+        loadAssets().then(function () {
+            if (!waiting) { return; }
+            waiting = false;
+            if (!window.ITApp) { throw new Error('ITApp'); }
+            window.ITApp.launch({ ov: ov, url: url, response: response, opener: opener });
+        }).catch(function () {
+            // Dateien nicht ladbar: Seite normal öffnen
+            window.location.href = url;
+        });
     }
 
-    function focusFrame() {
-        try {
-            frame.focus();
-            var app = frame.contentDocument && frame.contentDocument.querySelector('[data-it-app]');
-            if (app && (!frame.contentDocument.activeElement || frame.contentDocument.activeElement === frame.contentDocument.body)) { app.focus({ preventScroll: true }); }
-        } catch (e) { /* ohne Zugriff */ }
-    }
-
-    function close() {
-        if (!isOpen()) { return; }
+    function cancel() {
+        if (!waiting || !ov) { return; }
+        waiting = false;
         ov.hidden = true;
+        ov.querySelector('.it-ov-host').innerHTML = '';
         html.classList.remove('it-ov-lock');
-        if (opener && opener.focus && document.contains(opener)) { opener.focus({ preventScroll: true }); }
-        opener = null;
+        if (opener && opener.focus) { opener.focus({ preventScroll: true }); }
     }
 
-    window.ITLauncher = {
-        open: open,
-        close: close,
-        isOpen: isOpen,
-        isMax: isMax,
-        toggleMax: function () { setMax(!isMax()); return isMax(); },
-        // Aktuelle Backend-Seite (für „Neues Thema“ in der App)
-        source: function () { return { url: window.location.href, title: document.title }; },
-        loaded: function () {
-            ov.classList.remove('is-loading');
-            if (isOpen()) { focusFrame(); }
-        }
-    };
+    var TRIGGER = 'a[data-it-app-open], a[data-it-app-new]';
 
     document.addEventListener('click', function (e) {
         if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) { return; }
-        var t = e.target;
-        var a = t && t.closest ? t.closest('a[data-it-app-open], a[data-it-app-new]') : null;
+        if (closest(e.target, '[data-it-sk-close]')) { e.preventDefault(); cancel(); return; }
+        var a = closest(e.target, TRIGGER);
         if (!a) { return; }
         e.preventDefault();
         e.stopPropagation();
-        if (a.hasAttribute('data-it-app-new')) {
-            var u = new URL(a.getAttribute('href'), window.location.href);
-            u.searchParams.set('it_src', window.location.href);
-            u.searchParams.set('it_src_title', document.title);
-            open(u.href, true);
-        } else {
-            open(a.href, false);
-        }
+        open(a);
     }, true);
 
+    function closest(el, sel) {
+        return el && el.closest ? el.closest(sel) : null;
+    }
+
+    // Vorab laden, sobald der Knopf angesteuert wird
+    ['pointerover', 'focusin', 'pointerdown', 'touchstart'].forEach(function (type) {
+        document.addEventListener(type, function (e) {
+            var a = closest(e.target, TRIGGER);
+            if (a) { prefetch(a); }
+        }, { capture: true, passive: true });
+    });
+
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && isOpen()) {
+        if (e.key === 'Escape' && waiting) {
             e.preventDefault();
-            close();
+            cancel();
         }
     });
+
+    // Letzte Backend-Seite außerhalb des Issue Trackers (Ziel für „Schließen“ nach direktem Aufruf)
+    window.addEventListener('pagehide', function () {
+        if (window.ITApp && window.ITApp.active()) { return; }
+        try { window.sessionStorage.setItem(KEY_RETURN, window.location.href); } catch (e) { /* ohne Speicher */ }
+    });
+
+    // Im Leerlauf: Dateien der App in den Browser-Cache holen (ohne sie auszuführen), einmal je Sitzung
+    function warm() {
+        try {
+            if (window.sessionStorage.getItem('it_app_warm') === '1') { return; }
+            window.sessionStorage.setItem('it_app_warm', '1');
+        } catch (e) { return; }
+        var c = config();
+        c.css.concat(c.js).forEach(function (href) {
+            var l = document.createElement('link');
+            l.rel = 'prefetch';
+            l.href = href;
+            document.head.appendChild(l);
+        });
+    }
+    window.addEventListener('load', function () {
+        if (!document.querySelector('[data-it-launch]')) { return; }
+        if ('requestIdleCallback' in window) { window.requestIdleCallback(warm, { timeout: 4000 }); } else { setTimeout(warm, 2000); }
+    });
+
+    window.ITLaunch = { open: open, prefetch: prefetch };
 })();

@@ -76,7 +76,7 @@ $replySubject = 'Re: ' . preg_replace('/^(Re:\s*)+/i', '', $message->getSubject(
         </div>
         <div class="it-tb-group">
             <a class="it-tb-btn it-tb-btn--danger" href="<?= rex_url::backendPage($listPage, ['box' => $box, 'func' => 'delete', 'message_id' => $message->getId()] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()) ?>"
-               onclick="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_delete_message_confirm')) ?>"
+               data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_delete_message_confirm')) ?>"
                title="<?= rex_escape($package->i18n('issue_tracker_mail_delete_conversation')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_delete_conversation') ?></span></a>
         </div>
         <div class="it-tb-group it-tb-group--end">

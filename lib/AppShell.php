@@ -14,6 +14,10 @@ use rex_url;
  *
  * Die Seiten des Issue Trackers werden darin ausgegeben; geöffnet wird sie als Ebene über der aktuellen
  * Backend-Seite (Menüpunkt, Knopf in der Kopfzeile, siehe assets/js/it-launcher.js) oder direkt per Link.
+ *
+ * Navigation in der Ebene läuft per PJAX (assets/js/it-app.js): Anfragen mit „X-PJAX: true“ und dem Container
+ * „#it-app“ rendert REDAXO ohne Backend-Layout (rex_be_controller::includeCurrentPage), es kommt nur der
+ * App-Rahmen mit Inhalt zurück. Bei normalem Aufruf (Deep Link, Neuladen) liegt die Ebene direkt im Seitenlayout.
  */
 final class AppShell
 {
@@ -95,12 +99,24 @@ final class AppShell
         $title = rex_i18n::msg('issue_tracker_app_title');
         $closeLabel = rex_i18n::msg('issue_tracker_app_close');
 
-        return '<div class="it-app" id="it-app" role="dialog" aria-modal="true" aria-labelledby="it-app-title" tabindex="-1" data-it-app>'
+        // Benutzereinstellungen, die bei PJAX-Wechseln am <body> der darunterliegenden Seite gesetzt werden (it-app.js)
+        $scale = (int) rex_config::get('issue_tracker', 'font_scale_' . $user->getId(), 100);
+        $cols = rex_config::get('issue_tracker', 'columns_' . $user->getId(), []);
+        $colsStyle = is_array($cols) && isset($cols['mbx'], $cols['ml']) ? (int) $cols['mbx'] . ',' . (int) $cols['ml'] : '';
+
+        // Direkter Aufruf (kein PJAX): Ebene samt Fenster gleich im Seitenlayout ausgeben
+        $wrap = self::isPjax() ? '' : self::overlayStart(true);
+
+        return $wrap
+            . '<div class="it-app" id="it-app" role="dialog" aria-modal="true" aria-labelledby="it-app-title" tabindex="-1" data-it-app'
+            . ' data-it-scale="' . (in_array($scale, [90, 110, 120, 130, 140], true) ? $scale : 100) . '"'
+            . ('' !== $colsStyle ? ' data-it-cols="' . $colsStyle . '"' : '')
+            . ' data-it-home="' . rex_escape(rex_url::backendController()) . '">'
             . '<header class="it-app-bar">'
             . '<div class="it-app-brand"><span class="it-app-icon" aria-hidden="true"><i class="rex-icon fa-tasks"></i></span>'
             . '<h1 class="it-app-title" id="it-app-title">' . rex_escape($title) . '</h1>' . $crumb . '</div>'
             . ('' !== $tabs ? '<nav class="it-app-nav" aria-label="' . rex_escape(rex_i18n::msg('issue_tracker_app_nav')) . '">' . $tabs . '</nav>' : '')
-            . '<button type="button" class="it-app-max" data-it-app-max hidden'
+            . '<button type="button" class="it-app-max" data-it-app-max'
             . ' data-label-on="' . rex_escape(rex_i18n::msg('issue_tracker_app_fullscreen')) . '" data-label-off="' . rex_escape(rex_i18n::msg('issue_tracker_app_window')) . '"'
             . ' title="' . rex_escape(rex_i18n::msg('issue_tracker_app_fullscreen')) . '" aria-label="' . rex_escape(rex_i18n::msg('issue_tracker_app_fullscreen')) . '">'
             . '<i class="rex-icon fa-expand" aria-hidden="true"></i></button>'
@@ -113,7 +129,57 @@ final class AppShell
 
     public static function close(): string
     {
-        return '</div></div>';
+        return '</div></div>' . (self::isPjax() ? '' : self::overlayEnd());
+    }
+
+    /** PJAX-Anfrage der Ebene (nur App-Rahmen ohne Backend-Layout ausliefern) */
+    public static function isPjax(): bool
+    {
+        return \rex_request::isPJAXContainer('#it-app');
+    }
+
+    /**
+     * Ebene mit Fenster (gleiche Struktur wie in it-launcher.js). $static: direkt im Seitenlayout ausgegeben.
+     */
+    public static function overlayStart(bool $static = false): string
+    {
+        return '<div class="it-ov" data-it-ov' . ($static ? ' data-it-ov-static' : '') . '>'
+            . '<div class="it-ov-win"><div class="it-ov-progress" aria-hidden="true"></div><div class="it-ov-host">';
+    }
+
+    public static function overlayEnd(): string
+    {
+        return '</div></div></div>';
+    }
+
+    /**
+     * Adresse einer Asset-Datei des AddOns wie in REDAXOs Seitenkopf (mit „buster“), damit der Browser-Cache
+     * für das Nachladen in der Ebene und die Seiten des Issue Trackers derselbe ist.
+     */
+    public static function assetUrl(string $file): string
+    {
+        $url = \rex_addon::get('issue_tracker')->getAssetsUrl($file);
+        $path = \rex_path::frontend(\rex_path::absolute($url));
+        $mtime = @filemtime($path);
+        if (!$mtime) {
+            return $url;
+        }
+        if (!rex::isDebugMode() && str_starts_with($path, \rex_path::assets())) {
+            return rex_url::backendController(['asset' => ltrim($url, '.'), 'buster' => $mtime], false);
+        }
+        return $url . '?buster=' . $mtime;
+    }
+
+    /** CSS-Dateien der App (Reihenfolge wie in boot.php) */
+    public static function cssFiles(): array
+    {
+        return ['easymde.min.css', 'issue_tracker.css', 'css/it-base.css', 'css/it-ui.css', 'css/it-mail.css', 'css/it-app.css'];
+    }
+
+    /** JS-Dateien der App (Reihenfolge wie in boot.php) */
+    public static function jsFiles(): array
+    {
+        return ['easymde.min.js', 'issue_tracker.js', 'js/it-ui.js', 'js/it-mail.js', 'js/it-app.js'];
     }
 
     /**
@@ -228,15 +294,20 @@ final class AppShell
         $source = self::normalizeBackendUrl('index.php?' . http_build_query($_GET, '', '&'));
         $listUrl = rex_url::backendPage('issue_tracker/issues/list');
         $newUrl = rex_url::backendPage('issue_tracker/issues/create', null !== $source ? ['it_src' => $source] : []);
-        $labels = [
-            'title' => rex_i18n::msg('issue_tracker_app_title'),
-            'close' => rex_i18n::msg('issue_tracker_app_close'),
-            'loading' => rex_i18n::msg('issue_tracker_app_loading'),
+        // Alles, was die Ebene zum Öffnen braucht: Texte und die (versionierten) Dateien der App zum Nachladen
+        $config = [
+            'labels' => [
+                'title' => rex_i18n::msg('issue_tracker_app_title'),
+                'close' => rex_i18n::msg('issue_tracker_app_close'),
+                'loading' => rex_i18n::msg('issue_tracker_app_loading'),
+            ],
+            'css' => array_map(self::assetUrl(...), self::cssFiles()),
+            'js' => array_map(self::assetUrl(...), self::jsFiles()),
         ];
         $open = rex_i18n::msg('issue_tracker_app_open');
         $new = rex_i18n::msg('issue_tracker_app_new');
-        return '<li class="it-launch-item"><a class="it-launch" href="' . $listUrl . '" data-it-app-open data-it-labels="' . rex_escape((string) json_encode($labels)) . '" title="' . rex_escape($open) . '" data-pjax="false">'
-            . '<i class="rex-icon fa-tasks" aria-hidden="true"></i><span class="it-launch-label">' . rex_escape($labels['title']) . '</span></a></li>'
+        return '<li class="it-launch-item"><a class="it-launch" href="' . $listUrl . '" data-it-app-open data-it-launch="' . rex_escape((string) json_encode($config, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) . '" title="' . rex_escape($open) . '" data-pjax="false">'
+            . '<i class="rex-icon fa-tasks" aria-hidden="true"></i><span class="it-launch-label">' . rex_escape($config['labels']['title']) . '</span></a></li>'
             . '<li class="it-launch-item"><a class="it-launch it-launch--new" href="' . $newUrl . '" data-it-app-new title="' . rex_escape(rex_i18n::msg('issue_tracker_app_new_hint')) . '" data-pjax="false">'
             . '<i class="rex-icon fa-plus-circle" aria-hidden="true"></i><span class="it-launch-label">' . rex_escape($new) . '</span></a></li>';
     }

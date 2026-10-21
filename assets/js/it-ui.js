@@ -1,6 +1,6 @@
 /**
  * Issue Tracker – kleine Helfer für Übersicht, Projekte, Wissen und Einstellungen.
- * - [data-it-autosubmit]: Auswahl sendet das Formular sofort ab
+ * - [data-it-autosubmit]: Auswahl sendet das Formular sofort ab (Auswahllisten, Häkchen in Aufgabenlisten)
  * - [data-it-tpl]: E-Mail-Vorlagen als Liste + Editor (ohne JavaScript bleiben alle Felder sichtbar)
  */
 (function () {
@@ -13,7 +13,10 @@
             }
             el.dataset.itBound = '1';
             el.addEventListener('change', function () {
-                if (el.form) {
+                // requestSubmit löst „submit“ aus (Prüfungen, PJAX in der Vollbild-App)
+                if (el.form && el.form.requestSubmit) {
+                    el.form.requestSubmit();
+                } else if (el.form) {
                     el.form.submit();
                 }
             });
@@ -138,12 +141,14 @@
         });
     }
 
-    function init() {
-        initAutosubmit(document);
-        initTemplates(document);
+    function init(e, container) {
+        var root = container && container[0] ? container[0] : document;
+        initAutosubmit(root);
+        initTemplates(root);
     }
 
     if (window.jQuery) {
+        // REDAXO löst rex:ready beim Laden und nach jedem PJAX-Wechsel aus
         window.jQuery(document).on('rex:ready', init);
     }
     if (document.readyState !== 'loading') {

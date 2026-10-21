@@ -112,7 +112,7 @@ if (rex_post('save', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::
     
     $oldStatus = $issue->getStatus();
     
-    $issue->setTitle(rex_post('title', 'string', ''));
+    $issue->setTitle(trim(rex_post('title', 'string', '')));
     $issue->setDescription(rex_post('description', 'string', ''));
     $issue->setCategory(rex_post('category', 'string', ''));
 
@@ -154,7 +154,11 @@ if (rex_post('save', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::
     }
 
     // Pflichtfeld: Zugewiesener User oder gemeinsame Zuständigkeit (Alle); Adresse muss gültig sein
-    if (('all' !== $assignedUserSelection && !$issue->getAssignedUserId()) || !$affectedUrlValid) {
+    $titleMissing = '' === $issue->getTitle();
+    if ($titleMissing) {
+        echo rex_view::error($package->i18n('issue_tracker_title_required'));
+    }
+    if (('all' !== $assignedUserSelection && !$issue->getAssignedUserId()) || !$affectedUrlValid || $titleMissing) {
         // Formular erneut anzeigen (weiter unten) – die Fehlermeldung steht im Formular direkt am Feld und in der Zusammenfassung
     } else {
     
@@ -278,9 +282,6 @@ if (rex_post('save', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::
         }
         
         echo rex_view::success($package->i18n($isNew ? 'issue_tracker_issue_created' : 'issue_tracker_issue_updated'));
-        
-        // LocalStorage-Draft löschen (zentrale Funktion)
-        echo '<script>issueTrackerClearDraft();</script>';
         
         // Rückmeldung nach der Weiterleitung als Einblendung
         \FriendsOfREDAXO\IssueTracker\UiHelper::flash(rex_i18n::rawMsg($isNew ? 'issue_tracker_flash_created' : 'issue_tracker_flash_updated', $issue->getId()));

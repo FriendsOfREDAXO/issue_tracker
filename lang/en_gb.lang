@@ -963,3 +963,4 @@ issue_tracker_source_note = Reported from the backend page “{0}”
 issue_tracker_source_remove = Do not include
 issue_tracker_app_fullscreen = Full screen
 issue_tracker_app_window = Show as window
+issue_tracker_title_required = Please enter a subject.

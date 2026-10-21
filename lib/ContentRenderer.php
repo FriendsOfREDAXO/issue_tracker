@@ -98,7 +98,7 @@ class ContentRenderer
                     . '<input type="hidden" name="toggle_checklist" value="1">'
                     . '<input type="hidden" name="cl_source" value="%s">'
                     . '<input type="hidden" name="cl_index" value="%d">'
-                    . '<input type="checkbox" %s onchange="this.form.submit()" style="cursor:pointer;vertical-align:middle;"> %s'
+                    . '<input type="checkbox" %s data-it-autosubmit style="cursor:pointer;vertical-align:middle;"> %s'
                     . '</form>'
                     . '</li>',
                     \rex_escape($url),
