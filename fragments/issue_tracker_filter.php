@@ -26,6 +26,7 @@ $defaults = [
     'filter_watched' => 0,
     'filter_mentioned' => 0,
     'filter_overdue' => 0,
+    'filter_recent_closed' => 0,
     'search' => '',
 ];
 $mode = (string) $this->getVar('mode', 'issues');
@@ -80,6 +81,7 @@ $fav = rex_sql::factory()->getArray(
     . ' (SELECT COUNT(DISTINCT i.id) FROM ' . $t('issues') . ' i INNER JOIN ' . $t('mentions') . " m ON m.issue_id = i.id AND m.mentioned_user_id = $userId AND m.read_at IS NULL WHERE $vis) AS mentioned_unread,"
     . ' (SELECT COUNT(*) FROM ' . $t('issues') . " i WHERE $vis AND $active AND i.due_date IS NOT NULL AND i.due_date < NOW()) AS overdue,"
     . ' (SELECT COUNT(*) FROM ' . $t('issues') . " i WHERE $vis AND i.due_date IS NOT NULL) AS with_due,"
+    . ' (SELECT COUNT(*) FROM ' . $t('issues') . " i WHERE $vis AND i.status = 'closed' AND i.closed_at >= " . rex_sql::factory()->escape(date('Y-m-d H:i:s', time() - 7 * 86400)) . ') AS recent_closed,'
     . ' (SELECT COUNT(*) FROM ' . $t('issues') . " i WHERE $vis) AS all_issues"
 )[0] ?? [];
 $byKnowledgeCategory = $count('SELECT i.category AS k, COUNT(*) AS c FROM ' . $t('issues') . " i WHERE $vis AND i.status = 'info' GROUP BY i.category");
@@ -106,13 +108,13 @@ $statusDot = static fn (string $status): string => '<span class="it-dot it-dot--
 /**
  * @param array<string, int|string> $params
  */
-$item = static function (string $label, array $params, string $icon, ?int $cnt = null, string $extraClass = '', string $title = '') use ($url, $isActive): string {
+$item = static function (string $label, array $params, string $icon, ?int $cnt = null, string $extraClass = '', string $title = '', string $countClass = '') use ($url, $isActive): string {
     $active = $isActive($params);
     return '<li><a class="it-mbx-item' . ($active ? ' is-active' : '') . $extraClass . '" href="' . $url($params) . '"'
         . ($active ? ' aria-current="page"' : '') . ($title !== '' ? ' title="' . rex_escape($title) . '"' : '') . '>'
         . $icon
         . '<span class="it-mbx-label">' . rex_escape($label) . '</span>'
-        . ($cnt !== null && $cnt > 0 ? '<span class="it-mbx-count">' . $cnt . '</span>' : '')
+        . ($cnt !== null && $cnt > 0 ? '<span class="it-mbx-count' . $countClass . '">' . $cnt . '</span>' : '')
         . '</a></li>';
 };
 $fa = static fn (string $name): string => '<i class="it-mbx-icon rex-icon ' . $name . '" aria-hidden="true"></i>';
@@ -202,6 +204,7 @@ $stateToken = rex_csrf_token::factory('issue_tracker_ui_state');
             <?php if ((int) ($fav['with_due'] ?? 0) > 0): ?>
             <?= $item($package->i18n('issue_tracker_overdue'), ['filter_overdue' => 1], $fa('fa-calendar-times-o'), (int) ($fav['overdue'] ?? 0)) ?>
             <?php endif; ?>
+            <?= $item($package->i18n('issue_tracker_mail_recent_closed'), ['filter_recent_closed' => 1], $fa('fa-check-circle-o'), (int) ($fav['recent_closed'] ?? 0), '', $package->i18n('issue_tracker_mail_recent_closed_title'), ' it-mbx-count--done') ?>
         </ul>
         <?php ob_start(); ?>
         <ul class="it-mbx-list">

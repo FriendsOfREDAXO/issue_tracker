@@ -293,9 +293,9 @@
 
 /* ---------- Breit (ab 1200 px): drei Spalten wie Mail ---------- */
 @media (min-width: 1200px) {
-    .it-mail { display: grid; grid-template-columns: var(--it-col-mbx, 196px) var(--it-col-ml, 310px) minmax(0, 1fr); height: var(--it-mail-h, calc(100vh - 230px)); min-height: 540px; overflow: hidden; }
-    .it-mail--table { grid-template-columns: var(--it-col-mbx, 196px) minmax(0, 1fr); height: auto; min-height: 0; overflow: visible; }
-    .it-mail--full { grid-template-columns: var(--it-col-mbx, 196px) minmax(0, 1fr); }
+    .it-mail { display: grid; grid-template-columns: var(--it-col-mbx, 214px) var(--it-col-ml, 310px) minmax(0, 1fr); height: var(--it-mail-h, calc(100vh - 230px)); min-height: 540px; overflow: hidden; }
+    .it-mail--table { grid-template-columns: var(--it-col-mbx, 214px) minmax(0, 1fr); height: auto; min-height: 0; overflow: visible; }
+    .it-mail--full { grid-template-columns: var(--it-col-mbx, 214px) minmax(0, 1fr); }
     .it-ml { display: flex; }
 
     .it-mbx { overflow-x: hidden; overflow-y: auto; border-right: 1px solid var(--it-border); border-radius: var(--it-radius) 0 0 var(--it-radius); }
@@ -313,8 +313,8 @@
     .it-mail:not(.it-mail--full) .it-tb-back:not(.it-tb-back--always) { display: none; }
 }
 @media (min-width: 1440px) {
-    .it-mail { grid-template-columns: var(--it-col-mbx, 216px) var(--it-col-ml, 360px) minmax(0, 1fr); }
-    .it-mail--table, .it-mail--full { grid-template-columns: var(--it-col-mbx, 216px) minmax(0, 1fr); }
+    .it-mail { grid-template-columns: var(--it-col-mbx, 232px) var(--it-col-ml, 360px) minmax(0, 1fr); }
+    .it-mail--table, .it-mail--full { grid-template-columns: var(--it-col-mbx, 232px) minmax(0, 1fr); }
 }
 
 /* ---------- Telefon ---------- */
@@ -420,7 +420,7 @@
 .it-msg--mine .it-msg-name { color: var(--it-link); }
 .it-msg.is-current { padding-left: 12px; box-shadow: inset 3px 0 0 var(--it-accent); }
 @media (min-width: 1200px) {
-    .it-mail--messages:not(.it-mail--full) { grid-template-columns: var(--it-col-mbx, 196px) var(--it-col-ml, 310px) minmax(0, 1fr); }
+    .it-mail--messages:not(.it-mail--full) { grid-template-columns: var(--it-col-mbx, 214px) var(--it-col-ml, 310px) minmax(0, 1fr); }
     .it-mail--compose { height: auto; min-height: 540px; overflow: visible; }
     .it-mail--compose .it-rp-wrap { overflow: visible; }
 }
@@ -511,3 +511,7 @@ details.it-mbx-section[open] > summary .it-mbx-seccount { display: none; }
     .it-col-handle:focus-visible::after { left: 3px; width: 3px; background: var(--it-accent); }
     .it-mail.is-resizing { cursor: col-resize; user-select: none; }
 }
+
+/* Kürzlich geschlossen: auffällige grüne Zahl (Kontrast ≥ 4.5:1 hell wie dunkel) */
+.it-mbx-count--done { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: #1f7a3a; color: #fff; font-weight: 700; line-height: 1.35; text-align: center; }
+.it-mbx-item.is-active .it-mbx-count--done { background: #fff; color: #1f7a3a; }

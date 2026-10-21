@@ -254,7 +254,7 @@
     }
 
     // Spaltenbreiten ziehen: Postfächer und Liste, begrenzt, pro Benutzer gespeichert
-    var COLS = { mbx: { min: 170, max: 340, def: 196 }, ml: { min: 260, max: 620, def: 310 } };
+    var COLS = { mbx: { min: 170, max: 340, def: 214 }, ml: { min: 260, max: 620, def: 310 } };
     var READ_MIN = 380;
     // Tatsächliche Breite der Spalte (gesetzt oder Standard aus dem CSS je Fensterbreite)
     function colWidth(key) {

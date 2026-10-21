@@ -91,6 +91,7 @@ if (rex_post('save_filter', 'int', 0) === 1) {
             'filter_watched' => rex_post('filter_watched', 'int', 0),
             'filter_mentioned' => rex_post('filter_mentioned', 'int', 0),
             'filter_overdue' => rex_post('filter_overdue', 'int', 0),
+            'filter_recent_closed' => rex_post('filter_recent_closed', 'int', 0),
             'search' => rex_post('search', 'string', ''),
         ];
 
@@ -127,7 +128,7 @@ if (rex_request('set_default_filter', 'int', 0) > 0) {
 // Session-Key für Filter
 $sessionKey = 'issue_tracker_filter';
 $filterKeys = ['filter_status' => 'string', 'filter_category' => 'string', 'filter_tag' => 'int', 'filter_created_by' => 'int', 'filter_assigned' => 'int',
-    'filter_project' => 'int', 'filter_watched' => 'int', 'filter_mentioned' => 'int', 'filter_overdue' => 'int', 'search' => 'string'];
+    'filter_project' => 'int', 'filter_watched' => 'int', 'filter_mentioned' => 'int', 'filter_overdue' => 'int', 'filter_recent_closed' => 'int', 'search' => 'string'];
 // Zuletzt genutztes Postfach pro Benutzer (wird beim nächsten Öffnen wiederhergestellt)
 $lastBoxKey = 'last_box_' . $currentUserId;
 
@@ -191,6 +192,7 @@ $filterProject = $filterState['filter_project'];
 $filterWatched = $filterState['filter_watched'];
 $filterMentioned = $filterState['filter_mentioned'];
 $filterOverdue = $filterState['filter_overdue'];
+$filterRecentClosed = (int) ($filterState['filter_recent_closed'] ?? 0);
 $searchTerm = $filterState['search'];
 
 // Modus: Themen, Projekt-Ordner, Wissen (Status „Info“) oder Nachrichten
@@ -382,7 +384,10 @@ if ($sortColumn === 'priority') {
 $where = [];
 $joins = '';
 
-if ($filterStatus === '_all_') {
+if ($filterRecentClosed === 1) {
+    // Kürzlich geschlossen: in den letzten 7 Tagen (Uhrzeit aus PHP, nicht aus der Datenbank)
+    $where[] = "i.status = 'closed' AND i.closed_at >= " . $escapeSql->escape(date('Y-m-d H:i:s', time() - 7 * 86400));
+} elseif ($filterStatus === '_all_') {
     // Alle Issues anzeigen, kein Status-Filter
 } elseif ($filterStatus !== '') {
     $where[] = 'i.status = ' . $escapeSql->escape($filterStatus);
@@ -439,6 +444,12 @@ if (!PermissionService::isAdmin()) {
 }
 
 $whereClause = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : '';
+
+// Kürzlich geschlossen: zuletzt geschlossene zuerst, solange nicht ausdrücklich anders sortiert
+if ($filterRecentClosed === 1 && '' === rex_request('sort', 'string', '')) {
+    $orderExpr = 'i.closed_at';
+    $sortOrder = 'DESC';
+}
 
 // Gesamtzahl
 $countSql = rex_sql::factory();

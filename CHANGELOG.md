@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [2.0.0-beta6] – unveröffentlicht
+
+- **Kürzlich erledigt**: neues Postfach unter „Themen“ mit den in den letzten 7 Tagen erledigten Themen und einer auffälligen grünen Zahl. Die Liste zeigt das Datum des Erledigens und sortiert die zuletzt erledigten nach oben.
+- Postfach-Spalte standardmäßig etwas breiter, damit die Beschriftungen nicht abgeschnitten werden.
+
 ## [2.0.0-beta5] – 2026-10-19
 
 - **Spaltenbreite ziehen**: Die Trennlinien zwischen Postfächern, Liste und Lesebereich lassen sich ziehen (auch per Pfeiltasten), begrenzt auf sinnvolle Breiten; Doppelklick stellt die Standardbreite wieder her. Die Breite wird pro Benutzer gespeichert.

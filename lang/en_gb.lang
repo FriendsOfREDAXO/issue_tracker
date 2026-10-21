@@ -880,3 +880,7 @@ issue_tracker_mail_font_smaller = Smaller text
 issue_tracker_mail_font_larger = Larger text
 issue_tracker_mail_font_reset = Reset to 100 %
 issue_tracker_mail_col_resize = Change column width (drag or arrow keys, double-click: default)
+
+# Kürzlich geschlossen
+issue_tracker_mail_recent_closed = Recently closed
+issue_tracker_mail_recent_closed_title = Topics closed in the last 7 days

@@ -41,6 +41,8 @@ if ((int) ($state['filter_mentioned'] ?? 0) === 1) {
     $mailboxTitle = $package->i18n('issue_tracker_mail_assigned_to_me');
 } elseif ((int) ($state['filter_created_by'] ?? 0) === $userId && $userId > 0) {
     $mailboxTitle = $package->i18n('issue_tracker_mail_created_by_me');
+} elseif ((int) ($state['filter_recent_closed'] ?? 0) === 1) {
+    $mailboxTitle = $package->i18n('issue_tracker_mail_recent_closed');
 } elseif ((int) ($state['filter_overdue'] ?? 0) === 1) {
     $mailboxTitle = $package->i18n('issue_tracker_overdue');
 } elseif ((int) ($state['filter_project'] ?? 0) > 0) {
@@ -211,7 +213,7 @@ foreach ($state as $k => $v) {
                 <div class="it-menu-pop it-menu-pop--right it-menu-pop--form">
                     <form method="get" action="<?= rex_url::backendController() ?>">
                         <input type="hidden" name="page" value="issue_tracker/issues/list" />
-                        <?php foreach (['filter_tag', 'filter_assigned', 'filter_project', 'filter_watched', 'filter_mentioned', 'filter_overdue', 'search'] as $key): ?>
+                        <?php foreach (['filter_tag', 'filter_assigned', 'filter_project', 'filter_watched', 'filter_mentioned', 'filter_overdue', 'filter_recent_closed', 'search'] as $key): ?>
                         <input type="hidden" name="<?= $key ?>" value="<?= rex_escape((string) ($state[$key] ?? '')) ?>" />
                         <?php endforeach; ?>
                         <?php if ($isKnowledge): ?>
@@ -351,7 +353,7 @@ foreach ($state as $k => $v) {
                     <span class="it-ml-main">
                         <span class="it-ml-line1">
                             <span class="it-ml-subject"><?= rex_escape($issue->getTitle()) ?></span>
-                            <?php $rowDate = $isKnowledge ? ($issue->getUpdatedAt() ?? $issue->getCreatedAt()) : $issue->getCreatedAt(); ?>
+                            <?php $rowDate = $isKnowledge ? ($issue->getUpdatedAt() ?? $issue->getCreatedAt()) : ((int) ($state['filter_recent_closed'] ?? 0) === 1 ? ($issue->getClosedAt() ?? $issue->getCreatedAt()) : $issue->getCreatedAt()); ?>
                             <time class="it-ml-date" datetime="<?= $rowDate ? $rowDate->format('c') : '' ?>"><?= rex_escape(UiHelper::relDate($rowDate)) ?></time>
                         </span>
                         <?php if ($isKnowledge): ?>
