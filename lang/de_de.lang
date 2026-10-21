@@ -893,7 +893,7 @@ issue_tracker_mail_recent_closed_title = In den letzten 7 Tagen erledigte Themen
 
 # Eigenschaften-Leiste beim Anlegen/Bearbeiten (beta6)
 issue_tracker_qbar_label = Eigenschaften des Themas
-issue_tracker_qbar_help = Zuständigkeit, Priorität, Kategorie und mehr: Die Angaben werden zusammen mit dem Thema gespeichert.
+issue_tracker_qbar_help = Zuständigkeit, Status, Priorität, Kategorie und mehr: Die Angaben werden zusammen mit dem Thema gespeichert.
 issue_tracker_qbar_search = Suchen …
 issue_tracker_qbar_no_match = Keine Treffer
 issue_tracker_qbar_remove = Entfernen

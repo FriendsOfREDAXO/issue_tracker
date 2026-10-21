@@ -56,8 +56,7 @@ if ($isNew && !$isRetry && $selectedCategory === '' && $categories !== []) {
     $selectedCategory = (string) reset($categories); // sinnvolle Vorbelegung
 }
 $selectedPriority = $issue->getPriority() ?: 'normal';
-$moreHasValues = $advancedHasValues || $issue->getIsPrivate()
-    || ($issue->getStatus() !== '' && $issue->getStatus() !== 'open');
+$moreHasValues = $advancedHasValues || $issue->getIsPrivate();
 $colorVar = static fn (string $c): string => preg_match('/^#[0-9a-f]{3,8}$/i', $c) ? '--c:' . $c : '--c:#7c7c82';
 
 // Betroffene Seite: Artikel aus der Struktur (Linkmap-Widget) oder freie Adresse
@@ -136,6 +135,20 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
                 </details>
 
                 <!-- Priorität -->
+                <?php if ($showStatusField): $selectedStatus = (string) ($issue->getStatus() ?: 'open'); ?>
+                <details class="it-menu it-qchip" data-it-qchip="single">
+                    <summary class="it-qchip-btn">
+                        <span class="it-qchip-label"><?= $package->i18n('issue_tracker_status') ?></span>
+                        <span class="it-qchip-value" data-it-qchip-value><span class="it-dot it-dot--sm it-dot--<?= rex_escape($selectedStatus) ?>" aria-hidden="true"></span> <?= $package->i18n('issue_tracker_status_' . $selectedStatus) ?></span>
+                    </summary>
+                    <div class="it-menu-pop it-qchip-pop" role="radiogroup" aria-label="<?= rex_escape($package->i18n('issue_tracker_status')) ?>">
+                        <?php foreach ($statuses as $statusKey => $statusLabel): ?>
+                        <label class="it-menu-item it-qchip-opt"><input type="radio" name="status" value="<?= rex_escape($statusKey) ?>"<?= $selectedStatus === $statusKey ? ' checked' : '' ?>><i class="rex-icon fa-check" aria-hidden="true"></i><span data-it-qchip-text><span class="it-dot it-dot--sm it-dot--<?= rex_escape($statusKey) ?>" aria-hidden="true"></span> <?= $package->i18n('issue_tracker_status_' . $statusKey) ?></span></label>
+                        <?php endforeach; ?>
+                    </div>
+                </details>
+                <?php endif; ?>
+
                 <details class="it-menu it-qchip" data-it-qchip="single">
                     <summary class="it-qchip-btn">
                         <span class="it-qchip-label"><?= $package->i18n('issue_tracker_priority') ?></span>
@@ -310,21 +323,6 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
         <details class="it-disclosure"<?= $moreHasValues ? ' open' : '' ?> data-it-more>
             <summary><i class="rex-icon fa-sliders" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_more_details') ?> <small class="it-muted-text"><?= $package->i18n('issue_tracker_mail_more_details_hint') ?></small></summary>
             <div class="it-disclosure-body">
-                <?php if ($showStatusField): ?>
-                <div class="it-field">
-                    <span class="it-field-label" id="issue-status-label"><?= $package->i18n('issue_tracker_status') ?></span>
-                    <div class="it-field-control">
-                        <div class="it-segpick it-segpick--wrap" role="radiogroup" aria-labelledby="issue-status-label">
-                            <?php foreach ($statuses as $statusKey => $statusLabel): ?>
-                            <label class="it-segpick-opt">
-                                <input type="radio" name="status" value="<?= rex_escape($statusKey) ?>" <?= ($issue->getStatus() ?: 'open') === $statusKey ? 'checked' : '' ?>>
-                                <span><span class="it-dot it-dot--<?= rex_escape($statusKey) ?>" aria-hidden="true"></span> <?= $package->i18n('issue_tracker_status_' . $statusKey) ?></span>
-                            </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
 
                 <?php if (PermissionService::canCreatePrivateIssues()): ?>
                 <div class="it-field">

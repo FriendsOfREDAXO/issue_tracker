@@ -424,7 +424,7 @@ foreach ($state as $k => $v) {
                         <?php if (!$isKnowledge): ?>
                         <span class="it-ml-meta">
                             <span class="it-ml-id">#<?= $iid ?></span>
-                            <span class="it-ml-status"><?= $package->i18n('issue_tracker_status_' . $issue->getStatus()) ?></span>
+                            <span class="it-chip it-ml-status"><span class="it-dot it-dot--sm it-dot--<?= rex_escape(preg_replace('/[^a-z_]/', '', (string) $issue->getStatus())) ?>" aria-hidden="true"></span><?= $package->i18n('issue_tracker_status_' . $issue->getStatus()) ?></span>
                             <?php if (in_array($prio, ['urgent', 'critical'], true)): ?>
                             <span class="it-ml-flag it-ml-flag--danger" title="<?= rex_escape($package->i18n('issue_tracker_priority_' . $prio)) ?>"><i class="rex-icon fa-flag" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_priority') ?>: <?= $package->i18n('issue_tracker_priority_' . $prio) ?></span></span>
                             <?php elseif ($prio === 'high'): ?>

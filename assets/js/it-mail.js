@@ -903,7 +903,20 @@
         });
     }
 
+    // Abstand für mitlaufende Leisten: Höhe des REDAXO-Kopfs, falls er fest steht (je nach Backend-Stil)
+    function setStickyTop() {
+        var top = 0;
+        var nav = document.querySelector('#rex-js-nav-top, .rex-nav-top');
+        if (nav) {
+            var pos = getComputedStyle(nav).position;
+            if (pos === 'fixed' || pos === 'sticky') { top = Math.max(0, Math.round(nav.getBoundingClientRect().bottom)); }
+        }
+        Array.prototype.forEach.call(document.querySelectorAll('[data-it-mail]'), function (m) { m.style.setProperty('--it-sticky-top', top + 'px'); });
+    }
+
     function initAll() {
+        setStickyTop();
+        window.addEventListener('resize', setStickyTop);
         initToasts(document);
         initFontSize(document);
         Array.prototype.forEach.call(document.querySelectorAll('[data-it-mail]'), initColumns);

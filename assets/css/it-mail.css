@@ -297,8 +297,8 @@
 
 /* ---------- Breit (ab 1200 px): drei Spalten wie Mail ----------
    Das Fenster folgt dem Seitenfluss (keine feste Höhe): Die Seite scrollt wie jede REDAXO-Seite.
-   Postfächer und Liste bleiben unter dem REDAXO-Kopf stehen (sticky) und scrollen nur selbst,
-   wenn sie höher als das Fenster sind. Hintergrund und Trennlinien der Spalten malt .it-mail,
+   Alle Spalten wachsen mit ihrem Inhalt, es gibt keine eigenen Scrollbereiche. Nur die Symbolleiste
+   des Lesebereichs und „Antworten“ bleiben beim Scrollen stehen. Hintergrund und Trennlinien der Spalten malt .it-mail,
    damit sie auch neben einem langen Lesebereich durchgehen. */
 @media (min-width: 1200px) {
     .it-mail {
@@ -321,15 +321,14 @@
     }
     .it-ml { display: flex; }
 
-    .it-mbx { position: sticky; top: var(--it-sticky-top); max-height: calc(100vh - var(--it-sticky-top)); overflow-x: hidden; overflow-y: auto; border-right: 1px solid var(--it-border); border-radius: var(--it-radius) 0 0 var(--it-radius); overscroll-behavior: contain; }
+    /* Keine Höhenbegrenzung: Postfächer und Liste wachsen mit, die Seite scrollt */
+    .it-mbx { overflow-x: hidden; border-right: 1px solid var(--it-border); border-radius: var(--it-radius) 0 0 var(--it-radius); }
 
-    .it-ml { position: sticky; top: var(--it-sticky-top); flex-direction: column; min-height: 0; max-height: calc(100vh - var(--it-sticky-top)); border-right: 1px solid var(--it-border); }
-    .it-mail--table .it-ml { position: static; max-height: none; border-right: 0; }
-    .it-ml-items { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
-    .it-mail--table .it-ml-items { overflow: visible; }
+    .it-ml { flex-direction: column; min-height: 0; border-right: 1px solid var(--it-border); }
+    .it-mail--table .it-ml { border-right: 0; }
+    .it-ml-items { flex: 1 1 auto; }
     .it-ml-more { flex: 0 0 auto; }
-    /* sticky bildet eine eigene Ebene: die Spalte mit offenem Menü nach vorn holen */
-    .it-mbx, .it-ml { z-index: 1; }
+    .it-mbx, .it-ml { position: relative; z-index: 1; }
     .it-mbx:has(details.it-menu[open]), .it-ml:has(details.it-menu[open]) { z-index: 9; }
 
     .it-rp-wrap { align-self: stretch; border-radius: 0 var(--it-radius) var(--it-radius) 0; }
@@ -652,3 +651,8 @@ body.rex-theme-dark .it-toast-close:hover, body.rex-theme-dark .it-toast-close:f
     body:not(.rex-theme-light) .it-toast-close:hover, body:not(.rex-theme-light) .it-toast-close:focus-visible { background: rgba(0, 0, 0, .08); outline-color: #1f2a36; }
 }
 @media (prefers-reduced-motion: reduce) { .it-toast { transition: none; } }
+
+/* Nichts bleibt beim Scrollen stehen und nichts liegt über dem Inhalt: Leisten scrollen normal mit,
+   „Antworten“ ist in der Symbolleiste (Taste R) – kein schwebender Knopf. */
+.it-mail .it-ml-bar, .it-mail .it-rp-toolbar { position: static; }
+.it-mail .it-rp-sticky, .it-mail .it-rp-sticky.is-hidden { display: none; }

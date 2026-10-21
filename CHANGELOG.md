@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [2.0.0-beta7] – unveröffentlicht
+
+- **Status als Pill**: In der Liste steht der Status als farbige Pill; beim Anlegen und Bearbeiten ist der Status ein eigener Chip in der Eigenschaften-Leiste.
+- **Keine festen Bereiche mehr**: Postfächer, Liste und Lesebereich haben keine eigenen Scrollbereiche und nichts bleibt beim Scrollen stehen; „Antworten“ läuft über die Symbolleiste (Taste R) statt über einen schwebenden Knopf.
+
 ## [2.0.0-beta6] – 2026-10-21
 
 - **Kürzlich erledigt**: neues Postfach unter „Themen“ mit den in den letzten 7 Tagen erledigten Themen und einer auffälligen grünen Zahl. Die Liste zeigt das Datum des Erledigens und sortiert die zuletzt erledigten nach oben.

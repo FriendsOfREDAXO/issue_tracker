@@ -891,7 +891,7 @@ issue_tracker_mail_recent_closed_title = Topics closed in the last 7 days
 
 # Property bar when creating/editing (beta6)
 issue_tracker_qbar_label = Topic properties
-issue_tracker_qbar_help = Assignee, priority, category and more: these are saved together with the issue.
+issue_tracker_qbar_help = Assignee, status, priority, category and more: these are saved together with the issue.
 issue_tracker_qbar_search = Search …
 issue_tracker_qbar_no_match = No matches
 issue_tracker_qbar_remove = Remove
