@@ -2,7 +2,7 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
-## [2.0.0-beta6] – unveröffentlicht
+## [2.0.0-beta6] – 2026-10-21
 
 - **Kürzlich erledigt**: neues Postfach unter „Themen“ mit den in den letzten 7 Tagen erledigten Themen und einer auffälligen grünen Zahl. Die Liste zeigt das Datum des Erledigens und sortiert die zuletzt erledigten nach oben.
 - Postfach-Spalte standardmäßig etwas breiter, damit die Beschriftungen nicht abgeschnitten werden.
