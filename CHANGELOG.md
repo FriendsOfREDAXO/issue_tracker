@@ -11,6 +11,7 @@ Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 - **Einstellung „Als Vollbild öffnen“** (Allgemein, Standard: an). Ausgeschaltet erscheint der Issue Tracker wie bisher innerhalb der REDAXO-Oberfläche: keine festen Bereiche, keine eigenen Scrollbereiche, die Seite scrollt; keine Knöpfe in der Kopfzeile.
 - Neue Klasse `AppShell` (Rahmen, Prüfung von Backend-Adressen), neue Assets `css/it-app.css`, `js/it-app.js` (nur auf Seiten des Issue Trackers) und `css/it-launcher.css`, `js/it-launcher.js` (klein, auf den übrigen Backend-Seiten für Benutzer mit Zugriff). Die Seite dahinter wird über eine eigene Klasse am `<html>` gesperrt; REDAXO-Stile bleiben unberührt.
 - Datenbank: neue Spalten `source_url` (varchar 500, NULL) und `source_title` (varchar 255, NULL) in `rex_issue_tracker_issues`; neue Methoden `Issue::getSourceUrl()`, `getSourceTitle()`, `setSource()`. Auch im Backup-Export/-Import enthalten (beim Import erneut geprüft).
+- **Fenster oder Vollbild** (wie MediaPlace): Der Issue Tracker öffnet als großes Fenster über der abgedunkelten Backend-Seite; der Knopf neben „Schließen“ vergrößert auf die ganze Fläche und zurück. Die Wahl merkt sich der Browser. Auf schmalen Bildschirmen immer ganze Fläche.
 
 ## [2.0.0-beta6] – 2026-10-21
 

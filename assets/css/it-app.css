@@ -38,6 +38,13 @@ html.it-app-lock { overflow: hidden; overscroll-behavior: none; }
 .it-app-badge { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 999px; background: #c4282e; color: #fff; font-size: calc(12px * var(--it-scale, 1)); font-weight: 700; line-height: 18px; text-align: center; }
 .it-app a.it-app-close { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; height: 34px; margin-left: auto; padding: 0 12px; border: 1px solid rgba(255, 255, 255, .45); border-radius: 8px; color: var(--it-app-bar-text); font-size: calc(14px * var(--it-scale, 1)); font-weight: 600; text-decoration: none; white-space: nowrap; }
 .it-app-nav + a.it-app-close { margin-left: 0; }
+/* Vollbild/Fenster umschalten (nur im Overlay, wie MediaPlace) */
+.it-app button.it-app-max { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 34px; height: 34px; margin-left: auto; padding: 0; border: 1px solid rgba(255, 255, 255, .45); border-radius: 8px; background: transparent; color: var(--it-app-bar-text); font-size: calc(15px * var(--it-scale, 1)); cursor: pointer; }
+.it-app button.it-app-max[hidden] { display: none; }
+.it-app-nav + button.it-app-max { margin-left: 0; }
+.it-app button.it-app-max:not([hidden]) + a.it-app-close { margin-left: 0; }
+.it-app button.it-app-max:hover, .it-app button.it-app-max:focus-visible { background: var(--it-app-bar-hover); }
+@media (max-width: 1199px) { .it-app button.it-app-max { display: none; } }
 .it-app a.it-app-close:hover, .it-app a.it-app-close:focus-visible { background: var(--it-app-bar-hover); color: var(--it-app-bar-text); }
 .it-app-bar :focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
 

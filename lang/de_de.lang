@@ -963,3 +963,5 @@ issue_tracker_ui_f_fullscreen_help = Der Issue Tracker öffnet sich als eigene E
 issue_tracker_source_page = Gemeldet von Seite
 issue_tracker_source_note = Gemeldet von der Backend-Seite „{0}“
 issue_tracker_source_remove = Nicht übernehmen
+issue_tracker_app_fullscreen = Vollbild
+issue_tracker_app_window = Als Fenster anzeigen

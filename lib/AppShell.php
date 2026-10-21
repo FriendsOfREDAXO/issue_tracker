@@ -100,6 +100,10 @@ final class AppShell
             . '<div class="it-app-brand"><span class="it-app-icon" aria-hidden="true"><i class="rex-icon fa-tasks"></i></span>'
             . '<h1 class="it-app-title" id="it-app-title">' . rex_escape($title) . '</h1>' . $crumb . '</div>'
             . ('' !== $tabs ? '<nav class="it-app-nav" aria-label="' . rex_escape(rex_i18n::msg('issue_tracker_app_nav')) . '">' . $tabs . '</nav>' : '')
+            . '<button type="button" class="it-app-max" data-it-app-max hidden'
+            . ' data-label-on="' . rex_escape(rex_i18n::msg('issue_tracker_app_fullscreen')) . '" data-label-off="' . rex_escape(rex_i18n::msg('issue_tracker_app_window')) . '"'
+            . ' title="' . rex_escape(rex_i18n::msg('issue_tracker_app_fullscreen')) . '" aria-label="' . rex_escape(rex_i18n::msg('issue_tracker_app_fullscreen')) . '">'
+            . '<i class="rex-icon fa-expand" aria-hidden="true"></i></button>'
             . '<a class="it-app-close" href="' . rex_escape(rex_url::backendController()) . '" data-it-app-close title="' . rex_escape(rex_i18n::msg('issue_tracker_app_close_hint')) . '">'
             . '<i class="rex-icon fa-times" aria-hidden="true"></i><span class="it-app-close-label">' . rex_escape($closeLabel) . '</span></a>'
             . '</header>'

@@ -28,9 +28,11 @@
         ov = document.createElement('div');
         ov.className = 'it-ov';
         ov.hidden = true;
-        ov.innerHTML = '<div class="it-ov-loading" role="status"><span class="it-ov-spinner" aria-hidden="true"></span><span class="it-ov-loading-text"></span>'
+        // Wie MediaPlace: Fenster über der abgedunkelten Seite, per „Vollbild“ auf die ganze Fläche
+        ov.innerHTML = '<div class="it-ov-win"><div class="it-ov-loading" role="status"><span class="it-ov-spinner" aria-hidden="true"></span><span class="it-ov-loading-text"></span>'
             + '<button type="button" class="it-ov-close"><i class="rex-icon fa-times" aria-hidden="true"></i> <span></span></button></div>'
-            + '<iframe class="it-ov-frame"></iframe>';
+            + '<iframe class="it-ov-frame"></iframe></div>';
+        setMax(readMax());
         ov.querySelector('.it-ov-loading-text').textContent = labels.loading;
         ov.querySelector('.it-ov-close span').textContent = labels.close;
         ov.querySelector('.it-ov-close').addEventListener('click', close);
@@ -48,6 +50,17 @@
             } catch (e) { /* fremde Seite: nichts tun */ }
         });
         document.body.appendChild(ov);
+    }
+
+    function readMax() {
+        try { return window.localStorage.getItem('it_app_max') === '1'; } catch (e) { return false; }
+    }
+    function setMax(on) {
+        if (ov) { ov.classList.toggle('is-max', !!on); }
+        try { window.localStorage.setItem('it_app_max', on ? '1' : '0'); } catch (e) { /* ohne Speicher: nur für diese Sitzung */ }
+    }
+    function isMax() {
+        return !!ov && ov.classList.contains('is-max');
     }
 
     function isOpen() {
@@ -90,6 +103,8 @@
         open: open,
         close: close,
         isOpen: isOpen,
+        isMax: isMax,
+        toggleMax: function () { setMax(!isMax()); return isMax(); },
         // Aktuelle Backend-Seite (für „Neues Thema“ in der App)
         source: function () { return { url: window.location.href, title: document.title }; },
         loaded: function () {

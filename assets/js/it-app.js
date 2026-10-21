@@ -75,6 +75,27 @@
         return tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable || !!closest(el, '.CodeMirror');
     }
 
+    // „Vollbild“: Fenster des Overlays auf die ganze Fläche (Zustand merkt sich die Seite darunter)
+    function initMax() {
+        var btn = document.querySelector('[data-it-app-max]');
+        var ovHost = null;
+        try { ovHost = window.parent !== window ? window.parent.ITLauncher : null; } catch (e) { ovHost = null; }
+        if (!btn || !ovHost || !ovHost.toggleMax) { return; }
+        btn.hidden = false;
+        var sync = function () {
+            var on = ovHost.isMax();
+            var label = btn.getAttribute(on ? 'data-label-off' : 'data-label-on');
+            btn.title = label;
+            btn.setAttribute('aria-label', label);
+            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            var icon = btn.querySelector('.rex-icon');
+            if (icon) { icon.className = 'rex-icon ' + (on ? 'fa-compress' : 'fa-expand'); }
+        };
+        btn.addEventListener('click', function () { ovHost.toggleMax(); sync(); });
+        sync();
+    }
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMax); } else { initMax(); }
+
     // Esc schließt die App – nur, wenn kein Feld, Menü oder Fenster offen ist (Prüfung vor den anderen Esc-Handlern)
     window.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape' || e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) { return; }

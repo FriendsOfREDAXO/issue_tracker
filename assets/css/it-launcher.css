@@ -4,8 +4,14 @@
  */
 html.it-ov-lock { overflow: hidden; overscroll-behavior: none; }
 
-.it-ov { position: fixed; inset: 0; z-index: 1035; background: #f4f6f8; }
+/* Fenster über der abgedunkelten Seite (wie MediaPlace); .is-max: ganze Fläche */
+.it-ov { position: fixed; inset: 0; z-index: 1035; display: flex; align-items: center; justify-content: center; background: rgba(16, 24, 40, .45); }
 .it-ov[hidden] { display: none; }
+.it-ov-win { position: relative; width: 92vw; max-width: 1600px; height: 88vh; height: 88dvh; min-width: 480px; min-height: 320px; overflow: hidden; border-radius: 12px; background: #f4f6f8; box-shadow: 0 24px 64px rgba(16, 24, 40, .35); }
+.it-ov.is-max .it-ov-win { width: 100vw; max-width: none; height: 100vh; height: 100dvh; min-width: 0; min-height: 0; border-radius: 0; box-shadow: none; }
+@media (max-width: 1199px) {
+    .it-ov-win { width: 100vw; max-width: none; height: 100vh; height: 100dvh; min-width: 0; min-height: 0; border-radius: 0; }
+}
 .it-ov-frame { display: block; width: 100%; height: 100%; border: 0; background: transparent; }
 .it-ov-loading { position: absolute; inset: 0; z-index: 1; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #f4f6f8; color: #324050; font-size: 15px; }
 .it-ov.is-loading .it-ov-loading { display: flex; }
@@ -16,10 +22,10 @@ html.it-ov-lock { overflow: hidden; overscroll-behavior: none; }
 @keyframes it-ov-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .it-ov-spinner { animation: none; } }
 
-body.rex-theme-dark .it-ov, body.rex-theme-dark .it-ov-loading { background: #1b232c; color: rgba(255, 255, 255, .87); }
+body.rex-theme-dark .it-ov-win, body.rex-theme-dark .it-ov-loading { background: #1b232c; color: rgba(255, 255, 255, .87); }
 body.rex-theme-dark .it-ov-close { background: #222c37; border-color: #4b5867; color: rgba(255, 255, 255, .87); }
 @media (prefers-color-scheme: dark) {
-    body:not(.rex-theme-light) .it-ov, body:not(.rex-theme-light) .it-ov-loading { background: #1b232c; color: rgba(255, 255, 255, .87); }
+    body:not(.rex-theme-light) .it-ov-win, body:not(.rex-theme-light) .it-ov-loading { background: #1b232c; color: rgba(255, 255, 255, .87); }
     body:not(.rex-theme-light) .it-ov-close { background: #222c37; border-color: #4b5867; color: rgba(255, 255, 255, .87); }
 }
 
