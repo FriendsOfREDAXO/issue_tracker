@@ -22,7 +22,7 @@ $emailUpdated = false;
 $emailErrors = [];
 
 // E-Mail aktualisieren
-if (rex_post('update_email', 'boolean')) {
+if (rex_post('update_email', 'boolean') && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $newEmail = rex_post('user_email', 'string', '');
 
     if (empty($newEmail)) {
@@ -42,7 +42,7 @@ if (rex_post('update_email', 'boolean')) {
 }
 
 // Formular speichern
-if (rex_post('save_preferences', 'boolean')) {
+if (rex_post('save_preferences', 'boolean') && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $sql = rex_sql::factory();
     $sql->setTable(rex::getTable('issue_tracker_notifications'));
 
@@ -75,7 +75,7 @@ if (empty($userEmail)) {
     if (!$emailErrors) {
         echo rex_view::warning(rex_escape(rex_i18n::rawMsg('issue_tracker_ui_pref_no_email')));
     }
-    echo '<form method="post" novalidate><div class="it-group">'
+    echo '<form method="post" novalidate>' . \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() . '<div class="it-group">'
         . UiHelper::field(
             rex_i18n::rawMsg('issue_tracker_email_address'),
             '<input type="email" id="it-user-email" name="user_email" class="form-control" value="' . rex_escape(rex_post('user_email', 'string', '')) . '" placeholder="' . $package->i18n('issue_tracker_email_address_placeholder') . '" required />'
@@ -128,6 +128,7 @@ $switchRow = static function (string $key) use ($values): string {
 // ---------- Formular ----------
 ?>
 <form method="post">
+    <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
     <h3 class="it-group-title"><?= rex_escape(rex_i18n::rawMsg('issue_tracker_ui_pref_issues')) ?></h3>
     <div class="it-group">
         <?= $switchRow('email_on_new') ?>

@@ -2,7 +2,7 @@
 
 Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht, Wünsche zu äußern, Probleme zu melden und Vorschläge zu machen. Mit integriertem Projektmanagement und privatem Nachrichtensystem.
 
-**Ab Version 2.0 so vertraut wie Mail auf dem Mac:** Links die Postfächer (Mir zugewiesen, Offen, Projekte, Tags …), in der Mitte die Themenliste mit Vorschau, rechts das Lesefenster mit dem Gesprächsverlauf. Mit ↑/↓ blättern, mit R antworten, mit T Tags direkt in der Liste setzen. Am Handy wie am iPhone. Wer lieber die klassische Tabelle mag, schaltet oben auf „Tabelle“ um. Beim Anlegen stehen Zuständigkeit, Priorität, Kategorie, Tags und die betroffene Seite gleich oben als Leiste bereit, alles Weitere liegt aufgeräumt unter „Weitere Angaben“. Hell und dunkel.
+**Ab Version 2.0 so vertraut wie Mail auf dem Mac:** Links die Postfächer (Mir zugewiesen, Offen, Projekte, Tags …), in der Mitte die Themenliste mit Vorschau, rechts das Lesefenster mit dem Gesprächsverlauf. Mit ↑/↓ blättern, mit R antworten, mit T Tags direkt in der Liste setzen, mit ? alle Tastenkürzel anzeigen. Am Handy wie am iPhone. Wer lieber die klassische Tabelle mag, schaltet oben auf „Tabelle“ um. Beim Anlegen stehen Zuständigkeit, Priorität, Kategorie, Tags und die betroffene Seite gleich oben als Leiste bereit, alles Weitere liegt aufgeräumt unter „Weitere Angaben“. Hell und dunkel.
 
 ## Features
 
@@ -359,7 +359,9 @@ E-Mail-Templates können direkt im Backend unter **Einstellungen → E-Mail-Temp
 
 Verfügbare Templates: Neues Issue, Neuer Kommentar, Status-Änderung, Zuweisung, Erinnerung – jeweils in Deutsch und Englisch.
 
-Verfügbare Platzhalter: `{{recipient_name}}`, `{{issue_id}}`, `{{issue_title}}`, `{{issue_category}}`, `{{issue_priority}}`, `{{issue_description}}`, `{{creator_name}}`, `{{comment_text}}`, `{{old_status}}`, `{{new_status}}`, `{{issue_url}}`, `{{sent_by_name}}`, `{{issue_status}}`, `{{due_date}}`
+Verfügbare Platzhalter: `{{recipient_name}}`, `{{issue_id}}`, `{{issue_title}}`, `{{issue_category}}`, `{{issue_priority}}`, `{{issue_description}}`, `{{creator_name}}`, `{{comment_text}}`, `{{old_status}}`, `{{new_status}}`, `{{issue_url}}`, `{{sent_by_name}}`, `{{issue_status}}`, `{{due_date}}`, `{{affected_page}}`
+
+`{{affected_page}}` ergibt eine komplette Zeile „Betroffene Seite: …“ (mit Zeilenumbruch davor) – Titel und absolute Frontend-Adresse des Artikels bzw. die eingegebene Adresse; Empfänger mit Rechten auf Kategorie und Sprache bekommen zusätzlich den Link „Im Backend bearbeiten“. Ist keine Seite gesetzt, bleibt der Platzhalter leer, es entsteht also keine leere Beschriftung. Die mitgelieferten Vorlagen enthalten ihn im Infokasten; beim Update werden unveränderte Standardvorlagen automatisch ergänzt, selbst angepasste Vorlagen bleiben unangetastet (dort bei Bedarf `{{affected_page}}` von Hand einfügen).
 
 In Beschreibungen und Kommentaren wird einfaches Markdown unterstützt:
 - `**fett**`, `*kursiv*`

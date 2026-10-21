@@ -75,8 +75,16 @@ if (!in_array($viewMode, ['mail', 'table'], true)) {
     $viewMode = 'mail';
 }
 
+// Gespeicherte Filter (speichern, löschen, als Standard) nur mit gültigem CSRF-Token
+$savedFilterToken = rex_csrf_token::factory('issue_tracker_saved_filter');
+$savedFilterAction = rex_post('save_filter', 'int', 0) === 1 || rex_post('delete_filter', 'int', 0) > 0 || rex_post('set_default_filter', 'int', 0) > 0;
+$savedFilterTokenOk = !$savedFilterAction || $savedFilterToken->isValid();
+if (!$savedFilterTokenOk) {
+    echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
+}
+
 // Filter speichern
-if (rex_post('save_filter', 'int', 0) === 1) {
+if ($savedFilterTokenOk && rex_post('save_filter', 'int', 0) === 1) {
     $filterName = rex_post('filter_name', 'string', '');
     $isDefault = rex_post('is_default', 'int', 0) === 1;
 
@@ -112,15 +120,15 @@ if (rex_post('save_filter', 'int', 0) === 1) {
 }
 
 // Filter löschen
-if (rex_post('delete_filter', 'int', 0) > 0) {
+if ($savedFilterTokenOk && rex_post('delete_filter', 'int', 0) > 0) {
     $filterId = rex_post('delete_filter', 'int', 0);
     \FriendsOfREDAXO\IssueTracker\SavedFilterService::delete($filterId, $currentUserId);
     echo rex_view::success($package->i18n('issue_tracker_filter_deleted'));
 }
 
 // Filter als Default setzen
-if (rex_request('set_default_filter', 'int', 0) > 0) {
-    $filterId = rex_request('set_default_filter', 'int', 0);
+if ($savedFilterTokenOk && rex_post('set_default_filter', 'int', 0) > 0) {
+    $filterId = rex_post('set_default_filter', 'int', 0);
     \FriendsOfREDAXO\IssueTracker\SavedFilterService::setDefault($filterId, $currentUserId);
     echo rex_view::success($package->i18n('issue_tracker_filter_saved'));
 }
@@ -237,7 +245,7 @@ if ($mode === 'messages') {
     }
 
     $func = rex_request('func', 'string');
-    if ($func === 'delete' && rex_request('message_id', 'int', 0) > 0) {
+    if ($func === 'delete' && rex_request('message_id', 'int', 0) > 0 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
         $delMessage = \FriendsOfREDAXO\IssueTracker\Message::get(rex_request('message_id', 'int', 0));
         if ($delMessage && $delMessage->hasAccess($currentUserId)) {
             if ($delMessage->delete($currentUserId)) {
@@ -297,7 +305,7 @@ if ($mode === 'messages') {
 // Löschaktion (Admin oder Issue-Manager)
 $func = rex_request('func', 'string', '');
 
-if ($func === 'delete' && PermissionService::canDelete()) {
+if ($func === 'delete' && rex_request('issue_id', 'int', 0) > 0 && PermissionService::canDelete() && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $issueId = rex_request('issue_id', 'int', 0);
     $issue = Issue::get($issueId);
 
@@ -541,6 +549,7 @@ foreach ($mentionUsersSql as $row) {
 
 $rootClass = 'it-mail' . ($viewMode === 'table' ? ' it-mail--table' : '') . ($selectedIssueId > 0 ? ' it-mail--sel' : '') . ($screen === 'list' ? ' it-mail--list' : '');
 ?>
+<?= \FriendsOfREDAXO\IssueTracker\UiHelper::flashToast() ?>
 <div class="<?= $rootClass ?>" data-it-mail data-mode="<?= $mode ?>" data-mention-users="<?= rex_escape(json_encode($mentionUsers)) ?>"
      data-pane-url="<?= rex_escape(rex_url::backendPage('issue_tracker/issues/list', ['it_pane' => 1], false)) ?>"
      data-list-url="<?= rex_escape(rex_url::backendPage('issue_tracker/issues/list', [], false)) ?>"

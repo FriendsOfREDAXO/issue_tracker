@@ -82,8 +82,9 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
 ?>
 <?php $itTbLabels = ['bold' => $package->i18n('issue_tracker_mail_tb_bold'), 'italic' => $package->i18n('issue_tracker_mail_tb_italic'), 'unordered-list' => $package->i18n('issue_tracker_mail_tb_list'), 'ordered-list' => $package->i18n('issue_tracker_mail_tb_olist'), 'link' => $package->i18n('issue_tracker_mail_tb_link'), 'image' => $package->i18n('issue_tracker_mail_tb_image'), 'preview' => $package->i18n('issue_tracker_mail_tb_preview'), 'rex-link' => $package->i18n('issue_tracker_mail_tb_page')]; ?>
 <div class="issue-tracker-form it-sheet" data-it-tb-labels="<?= rex_escape(json_encode($itTbLabels)) ?>"<?= !empty($mentionUsers) ? ' data-mention-users="' . rex_escape(json_encode(array_values($mentionUsers))) . '"' : '' ?>>
-    <form method="post" action="<?= rex_url::currentBackendPage() ?>" enctype="multipart/form-data" data-it-form>
+    <form method="post" action="<?= rex_url::currentBackendPage() ?>" enctype="multipart/form-data" data-it-form data-it-unsaved="<?= rex_escape(rex_i18n::rawMsg('issue_tracker_unsaved_confirm')) ?>">
         <input type="hidden" name="save" value="1" />
+        <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
         <?php if (!$isNew): ?>
         <input type="hidden" name="issue_id" value="<?= $issue->getId() ?>" />
         <input type="hidden" name="old_assigned_user_id" value="<?= $issue->getAssignedUserId() ?? 0 ?>" />
@@ -98,7 +99,7 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
                 <?php if ($isNew): ?>
                 <button type="button" class="it-tb-btn" data-toggle="modal" data-target="#issue-help-modal" title="<?= rex_escape($package->i18n('issue_tracker_help')) ?>"><i class="rex-icon fa-question-circle" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_help') ?></span></button>
                 <?php endif; ?>
-                <a href="<?= $cancelUrl ?>" class="btn btn-default"><?= $package->i18n('issue_tracker_cancel') ?></a>
+                <a href="<?= $cancelUrl ?>" class="btn btn-default" data-it-cancel><?= $package->i18n('issue_tracker_cancel') ?></a>
                 <button type="submit" class="btn btn-primary it-btn-primary"><?= $submitLabel ?></button>
             </div>
         </div>
@@ -116,7 +117,7 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
 
         <!-- Eigenschaften-Leiste: wie die Chips im Lesebereich – Werte gelten sofort beim neuen Thema -->
         <div class="it-qbar-row<?= $assignError || $urlError ? ' has-error' : '' ?>">
-            <div class="it-qbar" role="group" aria-label="<?= rex_escape($package->i18n('issue_tracker_qbar_label')) ?>"<?= $tagApiUrl !== '' ? ' data-it-tag-api="' . rex_escape($tagApiUrl) . '"' : '' ?> data-it-qbar-labels="<?= rex_escape(json_encode(['new' => $package->i18n('issue_tracker_quicktag_new', '{0}'), 'error' => $package->i18n('issue_tracker_quicktag_error'), 'assign' => $package->i18n('issue_tracker_mail_err_assign')])) ?>">
+            <div class="it-qbar" role="group" aria-label="<?= rex_escape($package->i18n('issue_tracker_qbar_label')) ?>"<?= $tagApiUrl !== '' ? ' data-it-tag-api="' . rex_escape($tagApiUrl) . '"' : '' ?> data-it-qbar-labels="<?= rex_escape(json_encode(['new' => $package->i18n('issue_tracker_quicktag_new', '{0}'), 'error' => $package->i18n('issue_tracker_quicktag_error'), 'assign' => $package->i18n('issue_tracker_mail_err_assign'), 'url' => rex_i18n::rawMsg('issue_tracker_affected_url_invalid')])) ?>">
                 <!-- Zuweisen (Pflicht) -->
                 <details class="it-menu it-qchip<?= $assignError ? ' has-error' : '' ?>" data-it-qchip="single" data-it-qchip-required>
                     <summary class="it-qchip-btn" id="issue-assigned-user" aria-describedby="issue-qbar-help">
@@ -262,6 +263,7 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
                         <input type="text" inputmode="url" class="form-control" id="issue-affected-url" name="affected_url" maxlength="500" value="<?= rex_escape($selectedUrl) ?>" placeholder="<?= rex_escape($package->i18n('issue_tracker_affected_url_placeholder')) ?>"<?= $urlError ? ' aria-invalid="true" aria-describedby="issue-affected-url-error"' : '' ?>>
                         <?php if ($urlError): ?><p class="it-field-help" id="issue-affected-url-error"><span class="it-field-error"><?= $package->i18n('issue_tracker_affected_url_invalid') ?></span></p><?php endif; ?>
                         <div class="it-menu-actions">
+                            <button type="button" class="btn btn-default btn-sm" data-it-page-clear<?= $pageLabel === '' && $selectedUrl === '' ? ' hidden' : '' ?>><?= $package->i18n('issue_tracker_affected_clear') ?></button>
                             <button type="button" class="btn btn-primary it-btn-primary btn-sm" data-it-qchip-close><?= $package->i18n('issue_tracker_qbar_done') ?></button>
                         </div>
                     </div>
@@ -410,7 +412,7 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
         </details>
 
         <div class="it-sheet-foot">
-            <a href="<?= $cancelUrl ?>" class="btn btn-default"><?= $package->i18n('issue_tracker_cancel') ?></a>
+            <a href="<?= $cancelUrl ?>" class="btn btn-default" data-it-cancel><?= $package->i18n('issue_tracker_cancel') ?></a>
             <button type="submit" class="btn btn-primary it-btn-primary"><?= $submitLabel ?></button>
         </div>
     </form>
@@ -426,7 +428,7 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
                 <div class="col-sm-6 col-md-4">
                     <?= $attachment->renderCard([
                         'maxHeight' => 150,
-                        'deleteUrl' => rex_url::currentBackendPage(['issue_id' => $issue->getId(), 'delete_attachment' => $attachment->getId()]),
+                        'deleteUrl' => rex_url::currentBackendPage(['issue_id' => $issue->getId(), 'delete_attachment' => $attachment->getId()] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()),
                     ]) ?>
                 </div>
                 <?php endforeach; ?>
@@ -460,6 +462,7 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
             <!-- Neuer Kommentar -->
             <form method="post" action="<?= rex_url::currentBackendPage(['issue_id' => $issue->getId()]) ?>" class="it-compose">
                 <input type="hidden" name="add_comment" value="1" />
+                <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
                 <input type="hidden" name="issue_id" value="<?= $issue->getId() ?>" />
                 <label class="it-compose-title" for="comment-text"><?= $package->i18n('issue_tracker_add_comment') ?></label>
                 <textarea class="form-control" id="comment-text" name="comment" rows="4"></textarea>

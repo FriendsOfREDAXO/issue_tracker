@@ -8,8 +8,9 @@
 $package = rex_addon::get('issue_tracker');
 ?>
 <div class="issue-tracker-broadcast it-sheet it-sheet--inline">
-    <form method="post" action="<?= rex_url::currentBackendPage() ?>" data-it-form>
+    <form method="post" action="<?= rex_url::currentBackendPage() ?>" data-it-form data-it-unsaved="<?= rex_escape(rex_i18n::rawMsg('issue_tracker_unsaved_confirm')) ?>">
         <input type="hidden" name="send_broadcast" value="1" />
+        <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
 
         <div class="it-sheet-head">
             <h2 class="it-sheet-title">
@@ -17,7 +18,7 @@ $package = rex_addon::get('issue_tracker');
                 <?= $package->i18n('issue_tracker_broadcast') ?>
             </h2>
             <div class="it-sheet-actions">
-                <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['box' => 'inbox']) ?>" class="btn btn-default"><?= $package->i18n('issue_tracker_cancel') ?></a>
+                <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['box' => 'inbox']) ?>" class="btn btn-default" data-it-cancel><?= $package->i18n('issue_tracker_cancel') ?></a>
             </div>
         </div>
         <p class="it-sheet-intro"><?= $package->i18n('issue_tracker_broadcast_info') ?></p>
@@ -58,7 +59,7 @@ $package = rex_addon::get('issue_tracker');
         </div>
 
         <div class="it-sheet-foot">
-            <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['box' => 'inbox']) ?>" class="btn btn-default"><?= $package->i18n('issue_tracker_cancel') ?></a>
+            <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['box' => 'inbox']) ?>" class="btn btn-default" data-it-cancel><?= $package->i18n('issue_tracker_cancel') ?></a>
             <button type="submit" class="btn btn-primary it-btn-primary" onclick="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_broadcast_confirm')) ?>"><?= $package->i18n('issue_tracker_mail_broadcast_send') ?></button>
         </div>
     </form>

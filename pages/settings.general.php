@@ -21,7 +21,7 @@ echo \FriendsOfREDAXO\IssueTracker\UiHelper::settingsStart('general');
 $func = rex_request('func', 'string', '');
 
 // Tag hinzufügen/bearbeiten
-if (rex_post('save_tag', 'int', 0) === 1) {
+if (rex_post('save_tag', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $tagId = rex_post('tag_id', 'int', 0);
     $tagName = trim(rex_post('tag_name', 'string', ''));
     $tagColor = rex_post('tag_color', 'string', '#007bff');
@@ -51,7 +51,7 @@ if (rex_post('save_tag', 'int', 0) === 1) {
 }
 
 // Tag löschen
-if ($func === 'delete_tag') {
+if ($func === 'delete_tag' && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $tagId = rex_request('tag_id', 'int', 0);
     $tag = \FriendsOfREDAXO\IssueTracker\Tag::get($tagId);
     
@@ -64,7 +64,8 @@ if ($func === 'delete_tag') {
 // Einstellungen speichern
 // Eingaben prüfen, bevor gespeichert wird (bei Fehlern bleiben die Eingaben im Formular stehen)
 $formErrors = [];
-if (rex_post('save_settings', 'int', 0) === 1) {
+$saveSettings = rex_post('save_settings', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck();
+if ($saveSettings) {
     $postedFromAddress = trim(rex_post('email_from_address', 'string', ''));
     if ($postedFromAddress !== '' && !filter_var($postedFromAddress, FILTER_VALIDATE_EMAIL)) {
         $formErrors['email-from-address'] = rex_i18n::rawMsg('issue_tracker_ui_error_email');
@@ -81,7 +82,7 @@ if (rex_post('save_settings', 'int', 0) === 1) {
     }
 }
 
-if (rex_post('save_settings', 'int', 0) === 1 && !$formErrors) {
+if ($saveSettings && !$formErrors) {
     // Menü-Titel
     rex_sql::factory()
         ->setTable(rex::getTable('issue_tracker_settings'))

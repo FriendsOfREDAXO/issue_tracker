@@ -57,6 +57,7 @@ class rex_api_issue_tracker_export extends rex_api_function
             'Ersteller',
             'Fälligkeitsdatum',
             'Domain',
+            'Betroffene Seite',
         ];
         
         echo implode(',', array_map([$this, 'escapeCsv'], $headers)) . "\n";
@@ -109,9 +110,10 @@ class rex_api_issue_tracker_export extends rex_api_function
                 $creator,
                 $issue->getDueDate() ? $issue->getDueDate()->format('d.m.Y') : '',
                 $domainStr,
+                $issue->getAffectedPageSummary(),
             ];
             
-            echo implode(',', array_map([$this, 'escapeCsv'], $row)) . "\n";
+            echo implode(',', array_map(fn ($value): string => $this->escapeCsv((string) $value), $row)) . "\n";
         }
         
         exit;

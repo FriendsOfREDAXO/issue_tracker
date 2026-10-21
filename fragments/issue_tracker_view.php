@@ -209,7 +209,7 @@ $relatedIssues = $issue->getDuplicates();
             <a class="it-tb-back it-tb-back--always" href="<?= $listUrl ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_back_to_list') ?></a>
             <?php endif; ?>
             <?php if (!$isKnowledge): ?>
-            <a class="it-tb-btn" href="#it-reply" data-it-reply title="<?= rex_escape($package->i18n('issue_tracker_mail_reply_title')) ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_reply_title') ?></span></a>
+            <a class="it-tb-btn" href="#it-reply" data-it-reply aria-keyshortcuts="R" title="<?= rex_escape($package->i18n('issue_tracker_mail_reply_title') . ' (R)') ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_reply_title') ?></span></a>
 
             <?php if ($canChangeStatus): ?>
             <details class="it-menu">
@@ -261,7 +261,7 @@ $relatedIssues = $issue->getDuplicates();
 
         <div class="it-tb-group">
             <?php if ($canEdit): ?>
-            <a class="it-tb-btn" data-it-edit href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
+            <a class="it-tb-btn" data-it-edit href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>"<?= $isKnowledge ? ' aria-keyshortcuts="E"' : '' ?> title="<?= rex_escape($package->i18n('issue_tracker_edit') . ($isKnowledge ? ' (E)' : '')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
             <?php endif; ?>
             <?php if ($canChangeStatus && $isKnowledge): ?>
             <form method="post" action="<?= $selfAction ?>" class="it-tb-form" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_knowledge_remove_confirm')) ?>">
@@ -282,7 +282,7 @@ $relatedIssues = $issue->getDuplicates();
             </form>
             <?php endif; ?>
             <?php if (PermissionService::canDelete() && !$isKnowledge): ?>
-            <a class="it-tb-btn it-tb-btn--danger" href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()]) ?>"
+            <a class="it-tb-btn it-tb-btn--danger" href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()) ?>"
                onclick="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_confirm')) ?>"
                title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></a>
             <?php endif; ?>

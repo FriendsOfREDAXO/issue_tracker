@@ -20,13 +20,14 @@ $hasErrors = in_array(true, $errors, true);
 $err = static fn (string $k): bool => !empty($errors[$k]);
 ?>
 <div class="issue-tracker-message-form it-sheet it-sheet--inline">
-    <form method="post" action="<?= rex_url::currentBackendPage() ?>" data-it-form>
+    <form method="post" action="<?= rex_url::currentBackendPage() ?>" data-it-form data-it-unsaved="<?= rex_escape(rex_i18n::rawMsg('issue_tracker_unsaved_confirm')) ?>">
         <?php if ($forwardMessage): ?>
         <input type="hidden" name="forward_send" value="1" />
         <input type="hidden" name="forward" value="<?= $forwardMessage->getId() ?>" />
         <?= $forwardToken ? $forwardToken->getHiddenField() : '' ?>
         <?php else: ?>
         <input type="hidden" name="send" value="1" />
+        <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
         <?php endif; ?>
         <?php if ($replyToMessage): ?>
         <input type="hidden" name="reply_to" value="<?= $replyToMessage->getId() ?>" />
@@ -38,7 +39,7 @@ $err = static fn (string $k): bool => !empty($errors[$k]);
                 <?= $forwardMessage ? $package->i18n('issue_tracker_mail_forward_title') : ($replyToMessage ? $package->i18n('issue_tracker_reply_to_message') : $package->i18n('issue_tracker_mail_new_message')) ?>
             </h2>
             <div class="it-sheet-actions">
-                <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['box' => 'inbox']) ?>" class="btn btn-default"><?= $package->i18n('issue_tracker_cancel') ?></a>
+                <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['box' => 'inbox']) ?>" class="btn btn-default" data-it-cancel><?= $package->i18n('issue_tracker_cancel') ?></a>
                 <button type="submit" class="btn btn-primary it-btn-primary"><?= $package->i18n($forwardMessage ? 'issue_tracker_mail_forward_send' : 'issue_tracker_mail_send_message') ?></button>
             </div>
         </div>
@@ -105,7 +106,7 @@ $err = static fn (string $k): bool => !empty($errors[$k]);
         <?php endif; ?>
 
         <div class="it-sheet-foot">
-            <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['box' => 'inbox']) ?>" class="btn btn-default"><?= $package->i18n('issue_tracker_cancel') ?></a>
+            <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['box' => 'inbox']) ?>" class="btn btn-default" data-it-cancel><?= $package->i18n('issue_tracker_cancel') ?></a>
             <button type="submit" class="btn btn-primary it-btn-primary"><?= $package->i18n($forwardMessage ? 'issue_tracker_mail_forward_send' : 'issue_tracker_mail_send_message') ?></button>
         </div>
     </form>

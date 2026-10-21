@@ -433,6 +433,8 @@ if (rex_post('add_comment', 'int', 0) === 1) {
                 NotificationService::notifyNewComment($comment, $issue);
             }
             
+            \FriendsOfREDAXO\IssueTracker\UiHelper::flash(rex_i18n::rawMsg('closed' === $issue->getStatus() && $closeAndComment ? 'issue_tracker_flash_reply_closed' : 'issue_tracker_flash_reply'));
+
             // Redirect zur aktuellen Seite mit Anker zum neuen Kommentar
             $redirectUrl = $itSelfUrl . '#comment-' . $comment->getId();
             header('Location: ' . $redirectUrl);
@@ -709,6 +711,7 @@ if ($itEmbedded) {
 $sidebar = new rex_fragment();
 $sidebar->setVar('mode', $itMode);
 ?>
+<?= \FriendsOfREDAXO\IssueTracker\UiHelper::flashToast() ?>
 <div class="it-mail it-mail--full it-mail--sel" data-it-mail data-mode="<?= rex_escape($itMode) ?>" data-mention-users="<?= rex_escape(json_encode(array_values($allIssueTrackerUsers))) ?>">
     <?= $sidebar->parse('issue_tracker_filter.php') ?>
     <section class="it-rp-wrap" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_reading_pane')) ?>" data-it-pane>

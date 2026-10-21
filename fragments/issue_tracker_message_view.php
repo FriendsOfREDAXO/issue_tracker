@@ -62,8 +62,8 @@ $replySubject = 'Re: ' . preg_replace('/^(Re:\s*)+/i', '', $message->getSubject(
     <div class="it-rp-toolbar" role="toolbar" aria-label="<?= rex_escape($package->i18n('issue_tracker_actions')) ?>">
         <div class="it-tb-group">
             <a class="it-tb-back" href="<?= rex_url::backendPage($listPage, ['box' => $box, 'screen' => 'list']) ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $box === 'sent' ? $package->i18n('issue_tracker_messages_sent') : $package->i18n('issue_tracker_messages_inbox') ?></a>
-            <a class="it-tb-btn" href="#it-reply" data-it-reply title="<?= rex_escape($package->i18n('issue_tracker_reply') . ' (R)') ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_reply') ?></span></a>
-            <a class="it-tb-btn" data-it-forward href="<?= rex_url::backendPage('issue_tracker/messages/compose', ['forward' => $message->getId()]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_mail_forward') . ' (F)') ?>"><i class="rex-icon fa-share" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_forward') ?></span></a>
+            <a class="it-tb-btn" href="#it-reply" data-it-reply aria-keyshortcuts="R" title="<?= rex_escape($package->i18n('issue_tracker_reply') . ' (R)') ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_reply') ?></span></a>
+            <a class="it-tb-btn" data-it-forward aria-keyshortcuts="F" href="<?= rex_url::backendPage('issue_tracker/messages/compose', ['forward' => $message->getId()]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_mail_forward') . ' (F)') ?>"><i class="rex-icon fa-share" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_forward') ?></span></a>
             <?php if ($lastReceived): $isUnreadNow = !$lastReceived->isRead(); ?>
             <form method="post" action="<?= rex_url::backendPage($listPage, ['box' => $box]) ?>" class="it-tb-form" data-it-unread>
                 <?= $msgToken->getHiddenField() ?>
@@ -75,7 +75,7 @@ $replySubject = 'Re: ' . preg_replace('/^(Re:\s*)+/i', '', $message->getSubject(
             <a class="it-tb-btn" href="<?= rex_url::backendPage('issue_tracker/messages/compose', ['recipient_id' => $partnerId]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_new_message_to', $partnerName)) ?>"><i class="rex-icon fa-pencil-square-o" aria-hidden="true"></i><span class="sr-only"><?= rex_escape($package->i18n('issue_tracker_new_message_to', $partnerName)) ?></span></a>
         </div>
         <div class="it-tb-group">
-            <a class="it-tb-btn it-tb-btn--danger" href="<?= rex_url::backendPage($listPage, ['box' => $box, 'func' => 'delete', 'message_id' => $message->getId()]) ?>"
+            <a class="it-tb-btn it-tb-btn--danger" href="<?= rex_url::backendPage($listPage, ['box' => $box, 'func' => 'delete', 'message_id' => $message->getId()] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()) ?>"
                onclick="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_delete_message_confirm')) ?>"
                title="<?= rex_escape($package->i18n('issue_tracker_mail_delete_conversation')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_delete_conversation') ?></span></a>
         </div>

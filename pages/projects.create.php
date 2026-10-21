@@ -32,7 +32,7 @@ foreach ($usersSql as $row) {
 // Speichern
 $formErrors = [];
 $postedMembers = null;
-if (rex_post('save', 'int', 0) === 1) {
+if (rex_post('save', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $project->setName(rex_post('name', 'string', ''));
     $project->setDescription(rex_post('description', 'string', ''));
     $project->setStatus(rex_post('status', 'string', 'active'));

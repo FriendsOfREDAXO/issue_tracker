@@ -143,6 +143,24 @@ if ($isProject && $projectCard) {
 }
 $searchPlaceholder = $package->i18n($isKnowledge ? 'issue_tracker_mail_search_knowledge' : ($isProject ? 'issue_tracker_mail_search_project' : 'issue_tracker_mail_search_issues'));
 $emptyText = $package->i18n($isKnowledge ? 'issue_tracker_mail_empty_knowledge' : ($isProject ? 'issue_tracker_mail_empty_project' : 'issue_tracker_mail_empty_issues'));
+// Eigene Hinweise für die festen Postfächer, damit klar ist, warum die Liste leer ist
+if (!$isKnowledge && !$isProject) {
+    if ((int) ($state['filter_mentioned'] ?? 0) === 1) {
+        $emptyText = $package->i18n('issue_tracker_mail_empty_mentioned');
+    } elseif ((int) ($state['filter_watched'] ?? 0) === 1) {
+        $emptyText = $package->i18n('issue_tracker_mail_empty_watched');
+    } elseif ((int) ($state['filter_overdue'] ?? 0) === 1) {
+        $emptyText = $package->i18n('issue_tracker_mail_empty_overdue');
+    } elseif ((int) ($state['filter_recent_closed'] ?? 0) === 1) {
+        $emptyText = $package->i18n('issue_tracker_mail_empty_recent_closed');
+    } elseif ((int) ($state['filter_assigned'] ?? 0) === $userId) {
+        $emptyText = $package->i18n('issue_tracker_mail_empty_assigned');
+    } elseif ((int) ($state['filter_created_by'] ?? 0) === $userId) {
+        $emptyText = $package->i18n('issue_tracker_mail_empty_created');
+    }
+}
+// Ohne Recht auf Wissenseinträge kein „Neu“-Knopf im leeren Wissen
+$showEmptyNew = !$isKnowledge || PermissionService::isAdminOrManager();
 if (($state['search'] ?? '') !== '') {
     $emptyText = $package->i18n('issue_tracker_mail_empty_search');
 }
@@ -174,6 +192,7 @@ $quickTagAttrs = ' data-it-qtag-api="' . rex_escape(rex_url::backendPage('issue_
         'saved' => $package->i18n('issue_tracker_quicktag_saved'),
         'search' => $package->i18n('issue_tracker_qbar_search'),
         'none' => $package->i18n('issue_tracker_qbar_no_match'),
+        'empty' => $package->i18n(PermissionService::canManageTags() ? 'issue_tracker_quicktag_empty_create' : 'issue_tracker_quicktag_empty'),
         'close' => $package->i18n('issue_tracker_close'),
     ])) . '"';
 // Tag-Pillen einer Zeile (auch für die Aktualisierung per JS gleich aufgebaut)
@@ -189,7 +208,7 @@ $renderRowTags = static function (array $tags, int $max) use ($colorVar): string
 };
 $quickTagButton = static function (int $issueId, string $title, array $tagIds) use ($package): string {
     return '<button type="button" class="it-qtag-btn" data-it-qtag data-issue-id="' . $issueId . '" data-tag-ids="' . rex_escape(implode(',', $tagIds)) . '"'
-        . ' data-issue-title="' . rex_escape($title) . '" aria-haspopup="dialog" title="' . rex_escape($package->i18n('issue_tracker_quicktag_title')) . '">'
+        . ' data-issue-title="' . rex_escape($title) . '" aria-haspopup="dialog" aria-keyshortcuts="T" title="' . rex_escape($package->i18n('issue_tracker_quicktag_title')) . '">'
         . '<i class="rex-icon fa-tag" aria-hidden="true"></i><span class="sr-only">' . rex_escape($package->i18n('issue_tracker_quicktag')) . ': #' . $issueId . ' ' . rex_escape($title) . '</span></button>';
 };
 
@@ -351,7 +370,7 @@ foreach ($state as $k => $v) {
         <div class="it-empty">
             <i class="rex-icon <?= $isKnowledge ? 'fa-book' : 'fa-inbox' ?>" aria-hidden="true"></i>
             <?= rex_escape($emptyText) ?>
-            <?php if (($state['search'] ?? '') === ''): ?>
+            <?php if (($state['search'] ?? '') === '' && $showEmptyNew): ?>
             <p><a class="btn btn-default btn-sm" href="<?= $newHref ?>"><?= rex_escape($newLabel) ?></a></p>
             <?php endif; ?>
         </div>
@@ -437,9 +456,10 @@ foreach ($state as $k => $v) {
         </ul>
         <?php if (count($issues) < $totalIssues): ?>
         <div class="it-ml-more">
-            <a class="it-ml-more-link" href="<?= $listUrl(['show' => $showCount + $pageSize] + $carry) ?>"><?= $package->i18n('issue_tracker_mail_load_more') ?> (<?= count($issues) ?>/<?= $totalIssues ?>)</a>
+            <a class="it-ml-more-link" data-it-more href="<?= $listUrl(['show' => $showCount + $pageSize] + $carry + ($selectedIssueId > 0 ? ['issue_id' => $selectedIssueId] : [])) ?>"><?= $package->i18n('issue_tracker_mail_load_more') ?> <span class="it-ml-more-count">(<?= $package->i18n('issue_tracker_mail_shown_of', count($issues), $totalIssues) ?>)</span></a>
         </div>
         <?php endif; ?>
+        <p class="sr-only" role="status" aria-live="polite" data-it-more-status data-msg="<?= rex_escape(rex_i18n::rawMsg('issue_tracker_mail_loaded_status', count($issues), $totalIssues)) ?>"></p>
     <?php else: ?>
         <div class="it-group it-table-wrap">
             <table class="table table-hover it-table">
@@ -538,7 +558,7 @@ foreach ($state as $k => $v) {
                             <?php if (PermissionService::canEdit($issue)): ?><?= $quickTagButton($issue->getId(), $issue->getTitle(), array_map(static fn ($t) => $t->getId(), $tags)) ?><?php endif; ?>
                             <a href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>" class="it-tb-btn it-tb-btn--sm" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
                             <?php if (PermissionService::canDelete()): ?>
-                            <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()]) ?>" class="it-tb-btn it-tb-btn--sm it-tb-btn--danger"
+                            <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()) ?>" class="it-tb-btn it-tb-btn--sm it-tb-btn--danger"
                                title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>" onclick="return confirm('<?= rex_escape($package->i18n('issue_tracker_delete_confirm')) ?>')"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></a>
                             <?php endif; ?>
                         </td>

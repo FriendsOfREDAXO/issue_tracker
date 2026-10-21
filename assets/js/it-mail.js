@@ -134,6 +134,63 @@
             });
     }
 
+    /* „Weitere laden“: nächste Einträge anhängen – Auswahl, Fokus, Tastatur und Scrollposition bleiben erhalten */
+    function loadMore(root, link) {
+        var list = root.querySelector('.it-ml-items');
+        if (!list || link.getAttribute('aria-busy') === 'true') { return; }
+        var sel = root.querySelector('.it-ml-row.is-selected');
+        var url = new URL(link.href, window.location.href);
+        if (sel) { url.searchParams.set('issue_id', sel.getAttribute('data-issue-id')); }
+        var before = list.children.length;
+        var hadFocus = document.activeElement === link;
+        link.setAttribute('aria-busy', 'true');
+        link.classList.add('is-busy');
+        fetch(url.href, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (res) {
+                if (!res.ok) { throw new Error('HTTP ' + res.status); }
+                return res.text();
+            })
+            .then(function (html) {
+                var doc = new DOMParser().parseFromString(html, 'text/html');
+                var newList = doc.querySelector('[data-it-mail] .it-ml-items');
+                if (!newList || newList.children.length <= before) { throw new Error('unexpected'); }
+                var listScroll = list.scrollTop;
+                // Bestehende Zeilen behalten (Fokus, Auswahl), nur ihre Links auf den neuen Umfang setzen
+                Array.prototype.forEach.call(list.querySelectorAll('.it-ml-row'), function (r) {
+                    var fresh = newList.querySelector('.it-ml-row[data-issue-id="' + r.getAttribute('data-issue-id') + '"]');
+                    if (fresh) { r.setAttribute('href', fresh.getAttribute('href')); }
+                });
+                var firstNew = null;
+                Array.prototype.slice.call(newList.children, before).forEach(function (li) {
+                    var node = document.importNode(li, true);
+                    var nr = node.querySelector('.it-ml-row');
+                    if (nr) {
+                        nr.classList.remove('is-selected');
+                        nr.removeAttribute('aria-current');
+                    }
+                    list.appendChild(node);
+                    if (!firstNew) { firstNew = nr; }
+                });
+                list.scrollTop = listScroll;
+                var oldMore = closest(link, '.it-ml-more');
+                var newMore = doc.querySelector('[data-it-mail] .it-ml-more');
+                if (oldMore) {
+                    if (newMore) { oldMore.parentNode.replaceChild(document.importNode(newMore, true), oldMore); } else { oldMore.parentNode.removeChild(oldMore); }
+                }
+                var status = root.querySelector('[data-it-more-status]');
+                var newStatus = doc.querySelector('[data-it-more-status]');
+                if (status && newStatus) { status.textContent = newStatus.getAttribute('data-msg') || ''; }
+                if (window.history && window.history.replaceState) { window.history.replaceState(window.history.state, '', url.href); }
+                if (hadFocus && firstNew) {
+                    firstNew.focus({ preventScroll: true });
+                    revealRow(root, firstNew, true);
+                }
+            })
+            .catch(function () {
+                window.location.href = url.href;
+            });
+    }
+
     function initRoot(root) {
         if (root.getAttribute('data-it-ready')) { return; }
         root.setAttribute('data-it-ready', '1');
@@ -188,7 +245,25 @@
         }, true);
     }
 
-    /* Ungültiges Feld in „Weitere Angaben“: Bereich automatisch öffnen */
+    /* Aktueller Inhalt eines Formulars (für die Warnung bei ungespeicherten Änderungen) */
+    function formState(form) {
+        var parts = [];
+        Array.prototype.forEach.call(form.elements, function (el) {
+            if (!el.name || el.disabled || el.name === '_csrf_token') { return; }
+            if (el.type === 'file') { parts.push(el.name + '#' + (el.files ? el.files.length : 0)); return; }
+            if ((el.type === 'checkbox' || el.type === 'radio') && !el.checked) { return; }
+            var v = el.value;
+            if (el.tagName === 'TEXTAREA') {
+                var box = closest(el, '.EasyMDEContainer') || (el.nextElementSibling && el.nextElementSibling.classList.contains('EasyMDEContainer') ? el.nextElementSibling : null);
+                var cm = box ? box.querySelector('.CodeMirror') : null;
+                if (cm && cm.CodeMirror) { v = cm.CodeMirror.getValue(); }
+            }
+            parts.push(el.name + '=' + v);
+        });
+        return parts.join('\n');
+    }
+
+    /* Ungültiges Feld in „Weitere Angaben“: Bereich automatisch öffnen; vor dem Verlassen mit ungespeicherten Änderungen warnen */
     function initForms(scope) {
         Array.prototype.forEach.call(scope.querySelectorAll('form[data-it-form]'), function (form) {
             if (form.getAttribute('data-it-form-ready')) { return; }
@@ -197,6 +272,27 @@
                 var more = closest(e.target, 'details');
                 if (more && !more.open) { more.open = true; }
             }, true);
+
+            var msg = form.getAttribute('data-it-unsaved');
+            if (!msg) { return; }
+            // Nach einem Fehler beim Absenden sind die Eingaben noch nicht gespeichert
+            var initial = form.querySelector('.it-form-summary') ? null : formState(form);
+            var leaving = false;
+            var isDirty = function () { return initial === null || formState(form) !== initial; };
+            // Auf window lauschen: läuft nach den Prüfungen am Formular (z. B. Pflicht-Chip), die das Absenden abbrechen können
+            window.addEventListener('submit', function (e) { if (e.target === form && !e.defaultPrevented) { leaving = true; } });
+            Array.prototype.forEach.call(form.querySelectorAll('[data-it-cancel]'), function (a) {
+                a.addEventListener('click', function (e) {
+                    if (!isDirty()) { leaving = true; return; }
+                    if (window.confirm(msg)) { leaving = true; } else { e.preventDefault(); }
+                });
+            });
+            window.addEventListener('beforeunload', function (e) {
+                if (leaving || !document.body.contains(form) || !isDirty()) { return; }
+                e.preventDefault();
+                e.returnValue = msg;
+                return msg;
+            });
         });
     }
 
@@ -452,6 +548,8 @@
                 var url = chip.querySelector('input[name="affected_url"]');
                 var label = name && name.value ? name.value : (url && url.value.trim() ? url.value.trim() : '');
                 setValue(chip, label, true);
+                var clearBtn = chip.querySelector('[data-it-page-clear]');
+                if (clearBtn) { clearBtn.hidden = label === ''; }
             }
         }
         function closeChip(chip) {
@@ -495,6 +593,16 @@
                     update(chip);
                 }
                 if (type === 'page' && closest(e.target, '[data-it-page-widget] a')) { setTimeout(function () { update(chip); }, 0); }
+                // „Keine Seite“: Artikel und Adresse leeren
+                if (type === 'page' && closest(e.target, '[data-it-page-clear]')) {
+                    e.preventDefault();
+                    Array.prototype.forEach.call(chip.querySelectorAll('[data-it-page-widget] input, input[name="affected_url"]'), function (inp) { inp.value = ''; });
+                    if (urlInput) { showUrlError(false); }
+                    update(chip);
+                    var sumEl = chip.querySelector('summary');
+                    chip.open = false;
+                    if (sumEl) { sumEl.focus(); }
+                }
                 var nb = closest(e.target, '[data-it-qchip-new]');
                 if (nb) { e.preventDefault(); createTag(chip); }
             });
@@ -559,9 +667,58 @@
         }
         window.addEventListener('focus', function () { chips.forEach(function (c) { if (c.getAttribute('data-it-qchip') === 'page') { update(c); } }); });
 
+        // Adresse der betroffenen Seite: gleiche Regel wie auf dem Server (https://… oder Pfad ab „/“), Hinweis direkt am Feld
+        var urlInput = bar.querySelector('input[name="affected_url"]');
+        var urlChip = urlInput ? closest(urlInput, '[data-it-qchip]') : null;
+        function urlValid(v) {
+            v = (v || '').trim();
+            if (v === '') { return true; }
+            if (v.length > 500 || /\s/.test(v)) { return false; }
+            if (v.charAt(0) === '/' && v.charAt(1) !== '/') { return true; }
+            if (!/^https?:\/\//i.test(v)) { return false; }
+            try { return !!new URL(v).hostname; } catch (err) { return false; }
+        }
+        function showUrlError(on) {
+            if (!urlInput) { return true; }
+            var errId = 'issue-affected-url-error';
+            var err = document.getElementById(errId);
+            if (on && !err) {
+                err = document.createElement('p');
+                err.className = 'it-field-help';
+                err.id = errId;
+                err.innerHTML = '<span class="it-field-error"></span>';
+                urlInput.parentNode.insertBefore(err, urlInput.nextSibling);
+            }
+            if (err) {
+                err.hidden = !on;
+                err.querySelector('.it-field-error').textContent = labels.url || '';
+            }
+            if (on) {
+                urlInput.setAttribute('aria-invalid', 'true');
+                urlInput.setAttribute('aria-describedby', errId);
+            } else {
+                urlInput.removeAttribute('aria-invalid');
+                urlInput.removeAttribute('aria-describedby');
+            }
+            if (urlChip) { urlChip.classList.toggle('has-error', on); }
+            return !on;
+        }
+        if (urlInput) {
+            urlInput.addEventListener('change', function () { showUrlError(!urlValid(urlInput.value)); });
+            urlInput.addEventListener('input', function () { if (urlValid(urlInput.value)) { showUrlError(false); } });
+        }
+
         // Pflichtfeld „Zuweisen an“: vor dem Absenden prüfen, Menü öffnen und Hinweis zeigen
         if (form) {
             form.addEventListener('submit', function (e) {
+                if (urlInput && !urlValid(urlInput.value)) {
+                    e.preventDefault();
+                    showUrlError(true);
+                    if (help) { help.innerHTML = '<span class="it-field-error">' + esc(labels.url || '') + '</span>'; }
+                    if (urlChip) { urlChip.open = true; }
+                    urlInput.focus();
+                    return;
+                }
                 var missing = chips.filter(function (c) { return c.hasAttribute('data-it-qchip-required') && !c.querySelector('input:checked'); })[0];
                 if (!missing) { if (help) { help.innerHTML = helpDefault; } return; }
                 e.preventDefault();
@@ -635,6 +792,7 @@
             + '<input type="search" class="it-qchip-search" placeholder="' + esc(labels.search || '') + '" aria-label="' + esc(labels.search || '') + '">'
             + '<div class="it-qtag-list" role="group" aria-label="' + esc(title) + '"></div>'
             + '<p class="it-qchip-empty" hidden>' + esc(labels.none || '') + '</p>'
+            + (allTags.length ? '' : '<p class="it-qtag-empty">' + esc(labels.empty || '') + '</p>')
             + (canCreate ? '<button type="button" class="it-menu-item it-qchip-new" hidden><i class="rex-icon fa-plus" aria-hidden="true"></i> <span></span></button>' : '')
             + '<p class="it-qtag-msg" role="status" aria-live="polite"></p>';
         var list = pop.querySelector('.it-qtag-list');
@@ -649,6 +807,8 @@
         var search = pop.querySelector('.it-qchip-search');
         var newBtn = pop.querySelector('.it-qchip-new');
         var msg = pop.querySelector('.it-qtag-msg');
+        // Ohne Tags und ohne Recht zum Anlegen gibt es nichts zu suchen
+        if (!allTags.length && !canCreate) { search.hidden = true; }
         var root = closest(btn, '[data-it-mail]');
 
         function done(json) {
@@ -688,6 +848,8 @@
                 search.value = '';
                 filterOptions(pop, '');
                 newBtn.hidden = true;
+                var emptyNote = pop.querySelector('.it-qtag-empty');
+                if (emptyNote) { emptyNote.parentNode.removeChild(emptyNote); }
                 done(json);
                 search.focus();
             }, function () { fail(null); });
@@ -716,12 +878,33 @@
             if (closest(e.target, '[data-it-qtag-close]')) { closeQtag(true); return; }
             if (newBtn && closest(e.target, '.it-qchip-new')) { create(); }
         });
-        search.focus();
+        if (search.hidden) { pop.querySelector('[data-it-qtag-close]').focus(); } else { search.focus(); }
     }
     window.addEventListener('resize', function () { placeQtag(); });
     window.addEventListener('scroll', function () { placeQtag(); }, true);
 
+    /* Rückmeldung einblenden und nach einigen Sekunden ausblenden (nicht solange Maus oder Fokus darauf liegen) */
+    function initToasts(scope) {
+        Array.prototype.forEach.call(scope.querySelectorAll('[data-it-toast]'), function (toast) {
+            if (toast.getAttribute('data-it-toast-ready')) { return; }
+            toast.setAttribute('data-it-toast-ready', '1');
+            var timer = null;
+            function hide() {
+                toast.classList.add('is-hiding');
+                setTimeout(function () { if (toast.parentNode) { toast.parentNode.removeChild(toast); } }, 350);
+            }
+            function arm() { clearTimeout(timer); timer = setTimeout(hide, 6000); }
+            toast.addEventListener('mouseenter', function () { clearTimeout(timer); });
+            toast.addEventListener('mouseleave', arm);
+            toast.addEventListener('focusin', function () { clearTimeout(timer); });
+            toast.addEventListener('focusout', arm);
+            toast.querySelector('[data-it-toast-close]').addEventListener('click', hide);
+            arm();
+        });
+    }
+
     function initAll() {
+        initToasts(document);
         initFontSize(document);
         Array.prototype.forEach.call(document.querySelectorAll('[data-it-mail]'), initColumns);
         restoreSections(document);
@@ -758,6 +941,12 @@
 
             var row = closest(e.target, '.it-ml-row');
             var root = closest(e.target, '[data-it-mail]');
+            var more = closest(e.target, '[data-it-more]');
+            if (more && root && 'DOMParser' in window && 'URL' in window) {
+                e.preventDefault();
+                loadMore(root, more);
+                return;
+            }
             if (row && root && root.querySelector('[data-it-pane]') && root.getAttribute('data-pane-url')) {
                 e.preventDefault();
                 loadPane(root, row, true);
@@ -826,6 +1015,11 @@
             pop.style.setProperty('--pop-top', Math.round(r.bottom + 4) + 'px');
             pop.style.setProperty('--pop-left', Math.round(Math.min(r.left, window.innerWidth - 240)) + 'px');
             m.classList.add('is-fixed');
+            // Unten kein Platz (z. B. kleine Laptop-Höhe): über dem Auslöser öffnen
+            var ph = pop.getBoundingClientRect().height;
+            if (r.bottom + 4 + ph > window.innerHeight - 8 && r.top - ph - 4 >= 8) {
+                pop.style.setProperty('--pop-top', Math.round(r.top - ph - 4) + 'px');
+            }
         }, true);
         document.addEventListener('toggle', function (e) {
             var d = e.target;
@@ -846,6 +1040,12 @@
                     var s = d.querySelector('summary');
                     if (s) { s.focus(); }
                 });
+                return;
+            }
+            // „?“ = Übersicht der Tastaturkürzel
+            if (e.key === '?' && !e.metaKey && !e.ctrlKey && !e.altKey && !isTypingTarget(e.target) && document.getElementById('it-shortcuts-modal') && window.jQuery && window.jQuery.fn.modal) {
+                e.preventDefault();
+                window.jQuery('#it-shortcuts-modal').modal('show');
                 return;
             }
             if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey || isTypingTarget(e.target)) { return; }
@@ -884,7 +1084,8 @@
             var list = rows(root);
             if (!list.length) { return; }
             var current = root.querySelector('.it-ml-row.is-selected');
-            var idx = current ? list.indexOf(current) : -1;
+            // Vom fokussierten Eintrag aus weiterblättern (z. B. nach „Weitere laden“), sonst vom ausgewählten
+            var idx = active && active.classList && active.classList.contains('it-ml-row') ? list.indexOf(active) : (current ? list.indexOf(current) : -1);
 
             if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                 e.preventDefault();

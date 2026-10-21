@@ -565,6 +565,48 @@ class Issue
     }
 
     /**
+     * Macht eine (relative) Frontend-Adresse absolut (für E-Mails und Exporte).
+     */
+    public static function toAbsoluteUrl(string $url): string
+    {
+        if (preg_match('#^https?://#i', $url)) {
+            return $url;
+        }
+        $server = (string) \rex::getServer();
+        if (str_starts_with($url, '/')) {
+            // Pfad ab Domain-Wurzel: nur Schema + Host (+ Port) der Server-Adresse verwenden
+            $parts = parse_url($server);
+            if (isset($parts['scheme'], $parts['host'])) {
+                return $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '') . $url;
+            }
+            return rtrim($server, '/') . $url;
+        }
+        return rtrim($server, '/') . '/' . preg_replace('#^(\.\./|\./)+#', '', $url);
+    }
+
+    /**
+     * Betroffene Seite als einzeiliger Text (Titel [ID] + absolute Adresse), z. B. für PDF/CSV.
+     * Leer, wenn nichts gesetzt ist.
+     */
+    public function getAffectedPageSummary(): string
+    {
+        $parts = [];
+        if (null !== $this->articleId) {
+            $article = $this->getAffectedArticle();
+            if ($article) {
+                $parts[] = trim((string) $article->getName()) . ' [' . $this->articleId . '] '
+                    . self::toAbsoluteUrl((string) rex_getUrl($this->articleId, (int) $article->getClangId()));
+            } else {
+                $parts[] = \rex_i18n::rawMsg('issue_tracker_affected_missing', $this->articleId);
+            }
+        }
+        if (null !== $this->affectedUrl) {
+            $parts[] = self::isValidAffectedUrl($this->affectedUrl) ? self::toAbsoluteUrl($this->affectedUrl) : $this->affectedUrl;
+        }
+        return implode(' · ', $parts);
+    }
+
+    /**
      * Prüft eine frei eingegebene Adresse: http(s)-URL oder Pfad ab „/“.
      */
     public static function isValidAffectedUrl(string $url): bool

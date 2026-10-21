@@ -684,11 +684,9 @@ jQuery(document).on('rex:ready', function() {
         $btn.prop('disabled', true).find('i').removeClass('fa-refresh').addClass('fa-spinner fa-spin');
         
         jQuery.ajax({
-            url: 'index.php',
-            method: 'GET',
-            data: {
-                'rex-api-call': 'issue_tracker_generate_token'
-            },
+            // URL mit CSRF-Token aus dem Knopf (Fallback für alte Markups)
+            url: $btn.data('url') || 'index.php?rex-api-call=issue_tracker_generate_token',
+            method: 'POST',
             dataType: 'json',
             success: function(response) {
                 if (response.success) {

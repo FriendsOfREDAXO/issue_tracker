@@ -306,6 +306,13 @@ ob_start();
         .priority-normal { color: #1976d2; }
         .priority-low { color: #388e3c; }
         
+        .affected {
+            margin-top: 2px;
+            font-size: 9px;
+            color: #555;
+            word-break: break-all;
+        }
+
         .page-break {
             page-break-before: always;
         }
@@ -394,7 +401,11 @@ ob_start();
                 <?php foreach ($issues as $issue): ?>
                 <tr>
                     <td><?= $issue->getId() ?></td>
-                    <td><?= \rex_escape($issue->getTitle()) ?></td>
+                    <td><?= \rex_escape($issue->getTitle()) ?>
+                        <?php $affectedSummary = $issue->getAffectedPageSummary(); if ('' !== $affectedSummary): ?>
+                        <div class="affected"><?= \rex_escape($package->i18n('issue_tracker_affected_page')) ?>: <?= \rex_escape($affectedSummary) ?></div>
+                        <?php endif; ?>
+                    </td>
                     <td>
                         <span class="status-<?= \rex_escape($issue->getStatus()) ?>">
                             <?= \rex_escape($package->i18n('issue_tracker_status_' . $issue->getStatus())) ?>

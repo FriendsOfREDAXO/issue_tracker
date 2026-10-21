@@ -255,6 +255,7 @@ class EmailTemplateService
                     <strong>Kategorie:</strong> <span class="badge badge-info">{{issue_category}}</span><br>
                     <strong>Priorität:</strong> <span class="badge badge-warning">{{issue_priority}}</span><br>
                     <strong>Erstellt von:</strong> {{creator_name}}
+                    {{affected_page}}
                 </div>
 
                 <h3>Beschreibung:</h3>
@@ -278,6 +279,7 @@ class EmailTemplateService
                     <strong>Category:</strong> <span class="badge badge-info">{{issue_category}}</span><br>
                     <strong>Priority:</strong> <span class="badge badge-warning">{{issue_priority}}</span><br>
                     <strong>Created by:</strong> {{creator_name}}
+                    {{affected_page}}
                 </div>
 
                 <h3>Description:</h3>
@@ -299,6 +301,7 @@ class EmailTemplateService
                 <div class="info-box">
                     <strong>Issue:</strong> {{issue_title}}<br>
                     <strong>Kommentar von:</strong> {{creator_name}}
+                    {{affected_page}}
                 </div>
 
                 <h3>Kommentar:</h3>
@@ -320,6 +323,7 @@ class EmailTemplateService
                 <div class="info-box">
                     <strong>Issue:</strong> {{issue_title}}<br>
                     <strong>Comment by:</strong> {{creator_name}}
+                    {{affected_page}}
                 </div>
 
                 <h3>Comment:</h3>
@@ -342,6 +346,7 @@ class EmailTemplateService
                     <strong>Issue:</strong> {{issue_title}}<br>
                     <strong>Alter Status:</strong> <span class="badge badge-secondary">{{old_status}}</span><br>
                     <strong>Neuer Status:</strong> <span class="badge badge-success">{{new_status}}</span>
+                    {{affected_page}}
                 </div>
 
                 <a href="{{issue_url}}" class="button">Zum Issue →</a>
@@ -361,6 +366,7 @@ class EmailTemplateService
                     <strong>Issue:</strong> {{issue_title}}<br>
                     <strong>Old status:</strong> <span class="badge badge-secondary">{{old_status}}</span><br>
                     <strong>New status:</strong> <span class="badge badge-success">{{new_status}}</span>
+                    {{affected_page}}
                 </div>
 
                 <a href="{{issue_url}}" class="button">View Issue →</a>
@@ -380,6 +386,7 @@ class EmailTemplateService
                     <strong>Issue:</strong> #{{issue_id}} - {{issue_title}}<br>
                     <strong>Kategorie:</strong> <span class="badge badge-info">{{issue_category}}</span><br>
                     <strong>Priorität:</strong> <span class="badge badge-warning">{{issue_priority}}</span>
+                    {{affected_page}}
                 </div>
 
                 <h3>Beschreibung:</h3>
@@ -402,6 +409,7 @@ class EmailTemplateService
                     <strong>Issue:</strong> #{{issue_id}} - {{issue_title}}<br>
                     <strong>Category:</strong> <span class="badge badge-info">{{issue_category}}</span><br>
                     <strong>Priority:</strong> <span class="badge badge-warning">{{issue_priority}}</span>
+                    {{affected_page}}
                 </div>
 
                 <h3>Description:</h3>
@@ -427,6 +435,7 @@ class EmailTemplateService
                     <strong>Kategorie:</strong> <span class="badge badge-info">{{issue_category}}</span><br>
                     <strong>Priorität:</strong> <span class="badge badge-warning">{{issue_priority}}</span>
                     {{due_date}}
+                    {{affected_page}}
                 </div>
 
                 <h3>Beschreibung:</h3>
@@ -452,6 +461,7 @@ class EmailTemplateService
                     <strong>Category:</strong> <span class="badge badge-info">{{issue_category}}</span><br>
                     <strong>Priority:</strong> <span class="badge badge-warning">{{issue_priority}}</span>
                     {{due_date}}
+                    {{affected_page}}
                 </div>
 
                 <h3>Description:</h3>

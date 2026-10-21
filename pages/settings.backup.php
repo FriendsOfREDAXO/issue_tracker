@@ -11,7 +11,7 @@ $package = rex_addon::get('issue_tracker');
 echo \FriendsOfREDAXO\IssueTracker\UiHelper::settingsStart('backup');
 
 // JSON Import
-if (rex_post('import', 'int', 0) === 1 && !empty($_FILES['import_file']['tmp_name'])) {
+if (rex_post('import', 'int', 0) === 1 && !empty($_FILES['import_file']['tmp_name']) && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $jsonContent = file_get_contents($_FILES['import_file']['tmp_name']);
     $data = json_decode($jsonContent, true);
     
@@ -418,6 +418,7 @@ $advancedHtml = '<div class="it-group">'
     </div>
     <form method="post" enctype="multipart/form-data" data-confirm="<?= rex_escape($t('issue_tracker_ui_backup_import_confirm')) ?>">
         <input type="hidden" name="import" value="1" />
+        <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
         <?= \FriendsOfREDAXO\IssueTracker\UiHelper::field(
             $t('issue_tracker_ui_bk_import_file'),
             '<input type="file" id="it-import-file" name="import_file" accept=".json" class="form-control it-file" required />'

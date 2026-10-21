@@ -25,11 +25,13 @@ if (!$currentUser) {
 }
 
 // Attachment löschen
-if (rex_request('delete_attachment', 'int', 0) > 0) {
+if (rex_request('delete_attachment', 'int', 0) > 0 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $attachmentId = rex_request('delete_attachment', 'int', 0);
     $attachment = Attachment::get($attachmentId);
-    
-    if ($attachment && $attachment->delete()) {
+    $attachmentIssue = $attachment && $attachment->getIssueId() ? Issue::get((int) $attachment->getIssueId()) : null;
+
+    // Nur wer das Thema bearbeiten darf, darf seine Anhänge löschen
+    if ($attachment && $attachmentIssue && \FriendsOfREDAXO\IssueTracker\PermissionService::canEdit($attachmentIssue) && $attachment->delete()) {
         echo rex_view::success($package->i18n('issue_tracker_attachment_deleted'));
     }
 }
@@ -91,7 +93,7 @@ if (!$issue) {
 }
 
 // Speichern
-if (rex_post('save', 'int', 0) === 1) {
+if (rex_post('save', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $oldIssue = null;
     if (!$isNew) {
         // Altes Issue für History speichern
@@ -267,6 +269,9 @@ if (rex_post('save', 'int', 0) === 1) {
         // LocalStorage-Draft löschen (zentrale Funktion)
         echo '<script>issueTrackerClearDraft();</script>';
         
+        // Rückmeldung nach der Weiterleitung als Einblendung
+        \FriendsOfREDAXO\IssueTracker\UiHelper::flash(rex_i18n::rawMsg($isNew ? 'issue_tracker_flash_created' : 'issue_tracker_flash_updated', $issue->getId()));
+
         // Redirect zur Liste
         header('Location: ' . rex_url::backendPage('issue_tracker/issues/list', ['issue_id' => $issue->getId()], false));
         exit;
@@ -277,7 +282,7 @@ if (rex_post('save', 'int', 0) === 1) {
 }
 
 // Kommentar hinzufügen
-if (!$isNew && rex_post('add_comment', 'int', 0) === 1) {
+if (!$isNew && rex_post('add_comment', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $comment = new Comment();
     $comment->setIssueId($issue->getId());
     $comment->setComment(rex_post('comment', 'string', ''));

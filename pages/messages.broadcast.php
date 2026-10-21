@@ -18,7 +18,7 @@ if (!PermissionService::isAdmin()) {
 }
 
 // Broadcast senden
-if (rex_post('send_broadcast', 'int', 0) === 1) {
+if (rex_post('send_broadcast', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $subject = rex_post('broadcast_subject', 'string', '');
     $message = rex_post('broadcast_message', 'string', '');
     $method = rex_post('broadcast_method', 'string', 'message');

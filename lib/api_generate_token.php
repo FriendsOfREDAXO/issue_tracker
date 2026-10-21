@@ -12,6 +12,11 @@ use FriendsOfREDAXO\IssueTracker\PermissionService;
 class rex_api_issue_tracker_generate_token extends rex_api_function
 {
     protected $published = false; // Nur für eingeloggte Backend-User
+
+    protected function requiresCsrfProtection()
+    {
+        return true;
+    }
     
     public function execute()
     {

@@ -41,11 +41,11 @@ if (rex_post('archive_project', 'int', 0) === 1) {
 }
 
 // Mitglieder mit Rolle verwalten (früher in der Projektansicht)
-if (rex_request('func', 'string') === 'remove_user' && rex_request('user_id', 'int', 0) > 0) {
+if (rex_request('func', 'string') === 'remove_user' && rex_request('user_id', 'int', 0) > 0 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $project->removeUser(rex_request('user_id', 'int', 0));
     echo rex_view::success($package->i18n('issue_tracker_user_removed'));
 }
-if (rex_post('add_user', 'int', 0) === 1) {
+if (rex_post('add_user', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $newUserId = rex_post('user_id', 'int', 0);
     $role = rex_post('role', 'string', 'member');
     if ($newUserId > 0 && in_array($role, ['owner', 'member', 'viewer'], true)) {
@@ -68,7 +68,7 @@ $currentMembers = array_column($project->getUsers(), 'user_id');
 // Speichern
 $formErrors = [];
 $postedMembers = null;
-if (rex_post('save', 'int', 0) === 1) {
+if (rex_post('save', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $project->setName(rex_post('name', 'string', ''));
     $project->setDescription(rex_post('description', 'string', ''));
     $project->setStatus(rex_post('status', 'string', 'active'));
@@ -161,7 +161,7 @@ $roleLabels = ['owner' => $package->i18n('issue_tracker_role_owner'), 'member' =
             <div class="it-row-control">
                 <span class="it-badge"><?= rex_escape($roleLabels[$member['role']] ?? $member['role']) ?></span>
                 <?php if ((int) $member['user_id'] !== (int) $currentUser->getId()): ?>
-                <a class="it-tb-btn it-tb-btn--sm it-tb-btn--danger" href="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $project->getId(), 'func' => 'remove_user', 'user_id' => $member['user_id']]) ?>#it-members"
+                <a class="it-tb-btn it-tb-btn--sm it-tb-btn--danger" href="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $project->getId(), 'func' => 'remove_user', 'user_id' => $member['user_id']] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()) ?>#it-members"
                    onclick="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_user_remove_confirm')) ?>"
                    title="<?= rex_escape($package->i18n('issue_tracker_ui_remove_member')) ?>"><i class="rex-icon fa-times" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_ui_remove_member') ?>: <?= rex_escape($memberName) ?></span></a>
                 <?php endif; ?>
@@ -171,6 +171,7 @@ $roleLabels = ['owner' => $package->i18n('issue_tracker_role_owner'), 'member' =
         <div class="it-row">
             <form method="post" action="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $project->getId()]) ?>#it-members" class="it-inline-form">
                 <input type="hidden" name="add_user" value="1" />
+                <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
                 <label class="sr-only" for="it-add-member-user"><?= $package->i18n('issue_tracker_ui_add_member') ?></label>
                 <select id="it-add-member-user" name="user_id" class="form-control" required>
                     <option value=""><?= $package->i18n('issue_tracker_ui_add_member') ?></option>

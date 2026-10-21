@@ -44,7 +44,9 @@ Die Übersicht bietet einen Überblick über den aktuellen Stand:
 4. Status, Privat, AddOn, Version usw. liegen unter **Weitere Angaben**
 5. Klicke auf **Thema erstellen**
 
-Im Lesebereich erscheint die betroffene Seite mit den Links **Seite ansehen** (Frontend) und **Bearbeiten** (Inhalt im Backend, wenn du die Rechte dafür hast).
+Ungültige Adressen werden direkt am Feld gemeldet; **Keine Seite** entfernt Artikel und Adresse wieder. Im Lesebereich erscheint die betroffene Seite mit den Links **Seite ansehen** (Frontend) und **Bearbeiten** (Inhalt im Backend, bei entsprechenden Rechten). Auch E-Mail-Benachrichtigungen, der PDF-Export und der CSV-Export nennen die betroffene Seite.
+
+Wer das Formular mit ungespeicherten Eingaben verlässt (z. B. über **Abbrechen**), wird vorher gefragt. Nach dem Speichern bestätigt eine kurze Einblendung unten im Fenster, dass das Thema angelegt bzw. geändert wurde.
 
 ### Thema bearbeiten
 
@@ -161,7 +163,11 @@ Die Filter-Leiste bietet:
 3. Gib einen Namen ein
 4. Optional: Als **Standard** festlegen
 
-Gespeicherte Filter erscheinen als Buttons über der Filter-Leiste.
+Gespeicherte Filter erscheinen in der Seitenleiste unter **Gespeicherte Filter**. Über das Menü **…** daneben lässt sich ein Filter als Standard festlegen oder löschen (mit Rückfrage).
+
+### Lange Listen
+
+Das Postfach zeigt zunächst 50 Einträge. **Weitere laden** am Ende der Liste hängt die nächsten 50 an, ohne die Seite neu aufzubauen: Auswahl, Lesebereich und Scrollposition bleiben erhalten, der Fokus springt auf den ersten neuen Eintrag, und mit ↑/↓ geht es von dort weiter.
 
 ### Session-Speicherung
 
@@ -241,9 +247,14 @@ Admins können Nachrichten an alle berechtigten Benutzer senden:
 
 ## Tastenkürzel und Tipps
 
+Eine Übersicht aller Tastenkürzel öffnet die Taste **?** oder das Zahnrad-Menü → **Tastaturkürzel**. Die Tasten wirken, solange der Cursor nicht in einem Eingabefeld steht.
+
 - **↑/↓**: In der Liste zum vorherigen/nächsten Thema blättern
+- **Enter**: Ausgewähltes Thema in der Vollansicht öffnen
 - **T**: Tags des ausgewählten Themas direkt in der Liste bearbeiten (auch über das Tag-Symbol in jeder Zeile und in der Tabelle)
 - **R**: Antworten
+- **E**: Wissenseintrag bearbeiten · **F**: Nachricht weiterleiten · **U**: Nachricht gelesen/ungelesen
+- **Esc**: Menü oder Fenster schließen
 - **Markdown**: In Beschreibungen und Kommentaren kannst du Markdown verwenden
 - **@-Mentions**: Erwähne andere Benutzer mit @username
 - **Dateianhänge**: Unterstützt Bilder, PDFs, Dokumente und mehr
