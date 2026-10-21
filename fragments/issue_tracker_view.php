@@ -315,6 +315,13 @@ $relatedIssues = $issue->getDuplicates();
                     <?php if ($issue->getCategory() !== ''): ?>
                     <span class="it-chip"><i class="rex-icon fa-folder-o" aria-hidden="true"></i> <?= rex_escape($issue->getCategory()) ?></span>
                     <?php endif; ?>
+                    <?php
+                    $chipArticle = $issue->getArticleId() ? $issue->getAffectedArticle() : null;
+                    if ($chipArticle): ?>
+                    <a class="it-chip it-chip--link" href="#it-affected" title="<?= rex_escape($package->i18n('issue_tracker_affected_page')) ?>"><i class="rex-icon fa-file-text-o" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_affected_page') ?>:</span> <?= rex_escape($chipArticle->getName()) ?></a>
+                    <?php elseif ($issue->getAffectedUrl()): ?>
+                    <a class="it-chip it-chip--link" href="#it-affected" title="<?= rex_escape($package->i18n('issue_tracker_affected_page')) ?>"><i class="rex-icon fa-globe" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_affected_page') ?>:</span> <?= rex_escape(mb_strimwidth((string) preg_replace('#^https?://#i', '', (string) $issue->getAffectedUrl()), 0, 40, '…')) ?></a>
+                    <?php endif; ?>
                     <?php if ($issue->getIsPrivate()): ?>
                     <span class="it-badge it-badge--warn"><i class="rex-icon fa-lock" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_private') ?></span>
                     <?php endif; ?>
@@ -362,6 +369,34 @@ $relatedIssues = $issue->getDuplicates();
         <?= $renderAttachments($attachments, 'issue-' . $issue->getId()) ?>
 
         <dl class="it-rp-facts">
+            <?php
+            // Betroffene Seite: Artikel aus der Struktur (Ansehen/Bearbeiten) oder freie Adresse
+            $affectedArticleId = $issue->getArticleId();
+            $affectedUrl = $issue->getAffectedUrl();
+            if ($affectedArticleId || $affectedUrl):
+                $affectedArticle = $affectedArticleId ? $issue->getAffectedArticle() : null;
+            ?>
+            <div class="it-rp-fact--wide" id="it-affected"><dt><?= $package->i18n('issue_tracker_affected_page') ?></dt><dd class="it-affected">
+                <?php if ($affectedArticleId && $affectedArticle):
+                    $affClang = $affectedArticle->getClangId();
+                    $affCanEdit = $currentUser->getComplexPerm('clang')->hasPerm($affClang)
+                        && $currentUser->getComplexPerm('structure')->hasCategoryPerm($affectedArticle->getCategoryId());
+                ?>
+                <span class="it-affected-name"><i class="rex-icon fa-file-text-o" aria-hidden="true"></i> <?= rex_escape($affectedArticle->getName()) ?> <span class="it-muted-text">[<?= (int) $affectedArticleId ?>]<?= rex_clang::count() > 1 && rex_clang::get($affClang) ? ' · ' . rex_escape(rex_clang::get($affClang)->getName()) : '' ?></span></span>
+                <a class="it-affected-link" href="<?= rex_escape(rex_getUrl($affectedArticleId, $affClang)) ?>" target="_blank" rel="noopener"><i class="rex-icon fa-external-link" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_affected_view') ?></a>
+                <?php if ($affCanEdit): ?>
+                <a class="it-affected-link" href="<?= rex_url::backendPage('content/edit', ['article_id' => $affectedArticleId, 'clang' => $affClang, 'mode' => 'edit']) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_affected_edit') ?></a>
+                <?php endif; ?>
+                <?php elseif ($affectedArticleId): ?>
+                <span class="it-muted-text"><?= $package->i18n('issue_tracker_affected_missing', (int) $affectedArticleId) ?></span>
+                <?php endif; ?>
+                <?php if ($affectedUrl && !\FriendsOfREDAXO\IssueTracker\Issue::isValidAffectedUrl($affectedUrl)): ?>
+                <span class="it-affected-url"><?= rex_escape($affectedUrl) ?></span>
+                <?php elseif ($affectedUrl): ?>
+                <a class="it-affected-link it-affected-url" href="<?= rex_escape($affectedUrl) ?>" target="_blank" rel="noopener noreferrer"><i class="rex-icon fa-external-link" aria-hidden="true"></i> <?= rex_escape($affectedUrl) ?></a>
+                <?php endif; ?>
+            </dd></div>
+            <?php endif; ?>
             <?php if ($issue->getAssignedAddon()): ?>
             <div><dt><?= $package->i18n('issue_tracker_addon') ?></dt><dd><?= rex_escape($issue->getAssignedAddon()) ?></dd></div>
             <?php endif; ?>

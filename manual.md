@@ -33,15 +33,18 @@ Die Übersicht bietet einen Überblick über den aktuellen Stand:
 ### Neues Thema erstellen
 
 1. Navigiere zu **Themen** → **Neues Thema**
-2. Fülle das Formular aus:
-   - **Titel**: Kurze, prägnante Beschreibung des Problems oder Wunsches
-   - **Beschreibung**: Detaillierte Beschreibung (Markdown wird unterstützt)
-   - **Kategorie**: Wähle die passende Kategorie
+2. Setze oben in der **Eigenschaften-Leiste** (Chips wie im Lesebereich) gleich die wichtigsten Werte:
+   - **Zuweisen an** (Pflicht): eine Person oder „Alle“
    - **Priorität**: Niedrig, Normal, Hoch oder Dringend
-   - **Fälligkeit**: Optional eine Deadline setzen
-   - **Tags**: Optional Tags zur Kategorisierung hinzufügen
-   - **Dateianhänge**: Bilder, PDFs oder andere Dateien hochladen
-3. Klicke auf **Speichern**
+   - **Kategorie** und **Projekt**
+   - **Fälligkeit**: optional eine Deadline setzen
+   - **Tags**: ankreuzen, mit Suchfeld; Admins können direkt ein neues Tag anlegen
+   - **Betroffene Seite**: optional einen Artikel über die Linkmap aus der Struktur wählen oder eine Adresse eingeben (https://… oder /pfad)
+3. Fülle **Titel** und **Beschreibung** aus (Markdown wird unterstützt) und hänge bei Bedarf Dateien an
+4. Status, Privat, AddOn, Version usw. liegen unter **Weitere Angaben**
+5. Klicke auf **Thema erstellen**
+
+Im Lesebereich erscheint die betroffene Seite mit den Links **Seite ansehen** (Frontend) und **Bearbeiten** (Inhalt im Backend, wenn du die Rechte dafür hast).
 
 ### Thema bearbeiten
 
@@ -238,6 +241,9 @@ Admins können Nachrichten an alle berechtigten Benutzer senden:
 
 ## Tastenkürzel und Tipps
 
+- **↑/↓**: In der Liste zum vorherigen/nächsten Thema blättern
+- **T**: Tags des ausgewählten Themas direkt in der Liste bearbeiten (auch über das Tag-Symbol in jeder Zeile und in der Tabelle)
+- **R**: Antworten
 - **Markdown**: In Beschreibungen und Kommentaren kannst du Markdown verwenden
 - **@-Mentions**: Erwähne andere Benutzer mit @username
 - **Dateianhänge**: Unterstützt Bilder, PDFs, Dokumente und mehr

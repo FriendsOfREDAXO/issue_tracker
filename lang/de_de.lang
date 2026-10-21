@@ -630,7 +630,7 @@ issue_tracker_mail_description_help = Beschreiben Sie, was passiert ist, wo es a
 issue_tracker_mail_dnd_hint = Tipp: Dateien einfach in dieses Fenster ziehen, um sie anzuhängen.
 issue_tracker_mail_add_files = Dateien anhängen
 issue_tracker_mail_more_details = Weitere Angaben
-issue_tracker_mail_more_details_hint = Kategorie, Status, Tags, Fälligkeit und mehr – nur bei Bedarf
+issue_tracker_mail_more_details_hint = Status, Privat, AddOn, Version und mehr – nur bei Bedarf
 issue_tracker_mail_category_help = Hilft beim Sortieren, zum Beispiel „Redaktion“ oder „Technik“.
 issue_tracker_mail_tags_help = Stichwörter zum schnellen Wiederfinden (optional).
 issue_tracker_mail_due_help = Bis wann soll es erledigt sein? Leer lassen, wenn es keinen Termin gibt.
@@ -886,3 +886,33 @@ issue_tracker_mail_col_resize = Spaltenbreite ändern (ziehen oder Pfeiltasten, 
 # Kürzlich geschlossen
 issue_tracker_mail_recent_closed = Kürzlich erledigt
 issue_tracker_mail_recent_closed_title = In den letzten 7 Tagen erledigte Themen
+
+# Eigenschaften-Leiste beim Anlegen/Bearbeiten (beta6)
+issue_tracker_qbar_label = Eigenschaften des Themas
+issue_tracker_qbar_help = Wählen Sie hier Zuständigkeit, Priorität, Kategorie und mehr – alles ist sofort beim neuen Thema gespeichert.
+issue_tracker_qbar_search = Suchen …
+issue_tracker_qbar_no_match = Keine Treffer
+issue_tracker_qbar_remove = Entfernen
+issue_tracker_qbar_done = Fertig
+issue_tracker_qbar_none = –
+
+# Betroffene Seite (beta6)
+issue_tracker_affected_page = Betroffene Seite
+issue_tracker_affected_page_help = Auf welcher Seite tritt es auf? Wählen Sie einen Artikel aus der Struktur oder geben Sie eine Adresse ein (optional).
+issue_tracker_affected_from_structure = Seite aus der Struktur wählen
+issue_tracker_affected_enter_url = Oder Adresse eingeben
+issue_tracker_affected_url_placeholder = https://… oder /pfad/zur/seite
+issue_tracker_affected_url_invalid = Bitte geben Sie eine vollständige Adresse (https://…) oder einen Pfad ab „/“ ein.
+issue_tracker_affected_language = Sprache
+issue_tracker_affected_view = Seite ansehen
+issue_tracker_affected_edit = Bearbeiten
+issue_tracker_affected_missing = Artikel {0} gibt es nicht mehr
+issue_tracker_affected_open_url = Adresse öffnen
+
+# Schnelles Tagging in der Liste (beta6)
+issue_tracker_quicktag = Tags bearbeiten
+issue_tracker_quicktag_title = Tags bearbeiten (Taste T)
+issue_tracker_quicktag_for = Tags für #{0}
+issue_tracker_quicktag_new = Neues Tag „{0}“ anlegen
+issue_tracker_quicktag_error = Die Tags konnten nicht gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.
+issue_tracker_quicktag_saved = Tags gespeichert

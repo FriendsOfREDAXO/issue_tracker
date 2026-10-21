@@ -2,7 +2,7 @@
 
 Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht, Wünsche zu äußern, Probleme zu melden und Vorschläge zu machen. Mit integriertem Projektmanagement und privatem Nachrichtensystem.
 
-**Ab Version 2.0 so vertraut wie Mail auf dem Mac:** Links die Postfächer (Mir zugewiesen, Offen, Projekte, Tags …), in der Mitte die Themenliste mit Vorschau, rechts das Lesefenster mit dem Gesprächsverlauf. Mit ↑/↓ blättern, mit R antworten. Am Handy wie am iPhone. Wer lieber die klassische Tabelle mag, schaltet oben auf „Tabelle“ um. Formulare zeigen nur das Wichtige, alles Weitere liegt aufgeräumt unter „Weitere Angaben“. Hell und dunkel.
+**Ab Version 2.0 so vertraut wie Mail auf dem Mac:** Links die Postfächer (Mir zugewiesen, Offen, Projekte, Tags …), in der Mitte die Themenliste mit Vorschau, rechts das Lesefenster mit dem Gesprächsverlauf. Mit ↑/↓ blättern, mit R antworten, mit T Tags direkt in der Liste setzen. Am Handy wie am iPhone. Wer lieber die klassische Tabelle mag, schaltet oben auf „Tabelle“ um. Beim Anlegen stehen Zuständigkeit, Priorität, Kategorie, Tags und die betroffene Seite gleich oben als Leiste bereit, alles Weitere liegt aufgeräumt unter „Weitere Angaben“. Hell und dunkel.
 
 ## Features
 
@@ -145,14 +145,10 @@ Weitere Details siehe [MEDIA_MANAGER.md](MEDIA_MANAGER.md)
 
 1. Klicke auf "Issue Tracker" → "Issues" → "Neues Issue"
 2. Fülle das Formular aus:
+   - **Eigenschaften-Leiste** oben (Chips wie im Lesebereich): Zuweisen an (Pflicht), Priorität, Kategorie, Projekt, Fälligkeit, Tags und **Betroffene Seite** (Artikel aus der Struktur per Linkmap oder freie Adresse)
    - **Titel**: Kurze, prägnante Beschreibung
    - **Beschreibung**: Detaillierte Beschreibung des Problems/Wunsches (Markdown-Unterstützung)
-   - **Kategorie**: Wähle die passende Kategorie
-   - **Status**: Standardmäßig "Offen"
-   - **Priorität**: Setze die Priorität
-   - **Fälligkeit**: Optional Deadline setzen
-   - **Zuweisungen**: Optional User oder AddOn zuweisen
-   - **Tags**: Optional Tags hinzufügen
+   - **Weitere Angaben**: Status (standardmäßig "Offen"), AddOn, Version, Domains, YForm-Tabellen
    - **Dateianhänge**: Optional Dateien hochladen (Bilder, PDFs, Dokumente)
    - **Privat** (nur Admins): Markiere das Issue als privat, sodass es nur du und andere Admins sehen können
 3. Klicke auf "Speichern"

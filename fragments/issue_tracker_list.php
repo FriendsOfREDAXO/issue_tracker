@@ -159,6 +159,40 @@ $exportParams = $exportFilter + ['rex-api-call' => 'issue_tracker_export', 'form
 $hasPdf = \rex_addon::exists('pdfout') && \rex_addon::get('pdfout')->isAvailable();
 $pdfParams = $exportFilter + ['export_pdf' => 1];
 
+// Schnelles Tagging (Liste + Tabelle): Daten für das Tag-Fenster in it-mail.js
+$quickTagTags = [];
+foreach ($allTags as $tag) {
+    $quickTagTags[] = ['id' => $tag->getId(), 'name' => $tag->getName(), 'color' => $tag->getColor()];
+}
+$quickTagAttrs = ' data-it-qtag-api="' . rex_escape(rex_url::backendPage('issue_tracker/issues/list', rex_api_issue_tracker_tags::getUrlParams(), false)) . '"'
+    . ' data-it-qtag-tags="' . rex_escape(json_encode($quickTagTags)) . '"'
+    . ' data-it-qtag-create="' . (PermissionService::canManageTags() ? '1' : '0') . '"'
+    . ' data-it-qtag-labels="' . rex_escape(json_encode([
+        'for' => $package->i18n('issue_tracker_quicktag_for', '{0}'),
+        'new' => $package->i18n('issue_tracker_quicktag_new', '{0}'),
+        'error' => $package->i18n('issue_tracker_quicktag_error'),
+        'saved' => $package->i18n('issue_tracker_quicktag_saved'),
+        'search' => $package->i18n('issue_tracker_qbar_search'),
+        'none' => $package->i18n('issue_tracker_qbar_no_match'),
+        'close' => $package->i18n('issue_tracker_close'),
+    ])) . '"';
+// Tag-Pillen einer Zeile (auch für die Aktualisierung per JS gleich aufgebaut)
+$renderRowTags = static function (array $tags, int $max) use ($colorVar): string {
+    $out = '';
+    foreach ($max > 0 ? array_slice($tags, 0, $max) : $tags as $tag) {
+        $out .= '<span class="it-chip"><span class="it-dot it-dot--custom it-dot--sm" style="' . rex_escape($colorVar($tag->getColor())) . '" aria-hidden="true"></span>' . rex_escape($tag->getName()) . '</span>';
+    }
+    if ($max > 0 && count($tags) > $max) {
+        $out .= '<span class="it-chip">+' . (count($tags) - $max) . '</span>';
+    }
+    return $out;
+};
+$quickTagButton = static function (int $issueId, string $title, array $tagIds) use ($package): string {
+    return '<button type="button" class="it-qtag-btn" data-it-qtag data-issue-id="' . $issueId . '" data-tag-ids="' . rex_escape(implode(',', $tagIds)) . '"'
+        . ' data-issue-title="' . rex_escape($title) . '" aria-haspopup="dialog" title="' . rex_escape($package->i18n('issue_tracker_quicktag_title')) . '">'
+        . '<i class="rex-icon fa-tag" aria-hidden="true"></i><span class="sr-only">' . rex_escape($package->i18n('issue_tracker_quicktag')) . ': #' . $issueId . ' ' . rex_escape($title) . '</span></button>';
+};
+
 $activeFilterCount = 0;
 foreach ($state as $k => $v) {
     if ($k !== 'search' && $v !== '' && $v !== 0 && $v !== '0') {
@@ -166,7 +200,7 @@ foreach ($state as $k => $v) {
     }
 }
 ?>
-<section class="it-ml<?= $viewMode === 'table' ? ' it-ml--table' : '' ?>" aria-label="<?= rex_escape($mailboxTitle) ?>">
+<section class="it-ml<?= $viewMode === 'table' ? ' it-ml--table' : '' ?>" aria-label="<?= rex_escape($mailboxTitle) ?>"<?= $quickTagAttrs ?>>
     <header class="it-ml-bar">
         <a class="it-tb-back it-tb-back--list" href="<?= $listUrl() ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_mailboxes') ?></a>
         <div class="it-ml-head">
@@ -337,8 +371,9 @@ foreach ($state as $k => $v) {
                 $cCount = $commentCounts[$iid] ?? 0;
                 $aCount = $attachmentCounts[$iid] ?? 0;
                 $text = $preview($issue->getDescription());
+                $canQuickTag = !$isKnowledge && PermissionService::canEdit($issue);
             ?>
-            <li>
+            <li<?= $canQuickTag ? ' class="has-qtag"' : '' ?>>
                 <a class="it-ml-row<?= $isSel ? ' is-selected' : '' ?><?= $unread ? ' is-unread' : '' ?>" href="<?= $listUrl($carry + ['issue_id' => $iid]) ?>"
                    data-issue-id="<?= $iid ?>" data-view-href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $iid]) ?>"<?= $isSel ? ' aria-current="true"' : '' ?>>
                     <span class="it-ml-mark">
@@ -391,14 +426,12 @@ foreach ($state as $k => $v) {
                             <?php if ($cCount > 0): ?>
                             <span class="it-ml-icon" title="<?= rex_escape($package->i18n('issue_tracker_comments')) ?>"><i class="rex-icon fa-comment-o" aria-hidden="true"></i> <?= $cCount ?></span>
                             <?php endif; ?>
-                            <?php foreach (array_slice($tags, 0, 2) as $tag): ?>
-                            <span class="it-chip"><span class="it-dot it-dot--custom it-dot--sm" style="<?= rex_escape($colorVar($tag->getColor())) ?>" aria-hidden="true"></span><?= rex_escape($tag->getName()) ?></span>
-                            <?php endforeach; ?>
-                            <?php if (count($tags) > 2): ?><span class="it-chip">+<?= count($tags) - 2 ?></span><?php endif; ?>
+                            <span class="it-ml-tags" data-it-row-tags="<?= $iid ?>" data-max="2"><?= $renderRowTags($tags, 2) ?></span>
                         </span>
                         <?php endif; ?>
                     </span>
                 </a>
+                <?php if ($canQuickTag): ?><?= $quickTagButton($iid, $issue->getTitle(), array_map(static fn ($t) => $t->getId(), $tags)) ?><?php endif; ?>
             </li>
             <?php endforeach; ?>
         </ul>
@@ -467,13 +500,7 @@ foreach ($state as $k => $v) {
                                     <?php endif; ?>
                                 </small>
                             <?php endif; ?>
-                            <?php if (!empty($tags)): ?>
-                                <div class="it-chips">
-                                <?php foreach ($tags as $tag): ?>
-                                    <span class="it-chip"><span class="it-dot it-dot--custom it-dot--sm" style="<?= rex_escape($colorVar($tag->getColor())) ?>" aria-hidden="true"></span><?= rex_escape($tag->getName()) ?></span>
-                                <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
+                            <div class="it-chips" data-it-row-tags="<?= $issue->getId() ?>" data-max="0"><?= $renderRowTags($tags, 0) ?></div>
                             <?php if ($clProgress['total'] > 0): ?>
                                 <div class="it-progress-mini"><small class="it-muted-text"><i class="rex-icon fa-check-square-o" aria-hidden="true"></i> <?= $clProgress['checked'] ?>/<?= $clProgress['total'] ?></small>
                                 <progress class="it-progress" max="<?= (int) $clProgress['total'] ?>" value="<?= (int) $clProgress['checked'] ?>"></progress></div>
@@ -508,6 +535,7 @@ foreach ($state as $k => $v) {
                         </td>
                         <td class="it-col-actions">
                             <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]) ?>" class="it-tb-btn it-tb-btn--sm" title="<?= rex_escape($package->i18n('issue_tracker_view')) ?>"><i class="rex-icon fa-eye" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_view') ?></span></a>
+                            <?php if (PermissionService::canEdit($issue)): ?><?= $quickTagButton($issue->getId(), $issue->getTitle(), array_map(static fn ($t) => $t->getId(), $tags)) ?><?php endif; ?>
                             <a href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>" class="it-tb-btn it-tb-btn--sm" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
                             <?php if (PermissionService::canDelete()): ?>
                             <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()]) ?>" class="it-tb-btn it-tb-btn--sm it-tb-btn--danger"

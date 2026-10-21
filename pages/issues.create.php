@@ -122,8 +122,24 @@ if (rex_post('save', 'int', 0) === 1) {
     $issue->setVersion(rex_post('version', 'string', null));
     $issue->setIsPrivate(rex_post('is_private', 'int', 0) === 1);
 
-    // Pflichtfeld: Zugewiesener User oder gemeinsame Zuständigkeit (Alle)
-    if ('all' !== $assignedUserSelection && !$issue->getAssignedUserId()) {
+    // Betroffene Seite: Artikel aus der Struktur (nur existierende) oder freie Adresse (http/https oder Pfad)
+    $affectedArticleId = rex_post('article_id', 'int', 0);
+    $affectedClangId = rex_post('clang_id', 'int', 0);
+    if ($affectedArticleId > 0 && class_exists('rex_article')) {
+        if (!rex_clang::exists($affectedClangId)) {
+            $affectedClangId = rex_clang::getStartId();
+        }
+        if (!rex_article::get($affectedArticleId, $affectedClangId)) {
+            $affectedArticleId = 0;
+        }
+    }
+    $issue->setAffectedArticle($affectedArticleId > 0 ? $affectedArticleId : null, $affectedArticleId > 0 ? $affectedClangId : null);
+    $affectedUrl = trim(rex_post('affected_url', 'string', ''));
+    $affectedUrlValid = Issue::isValidAffectedUrl($affectedUrl);
+    $issue->setAffectedUrl($affectedUrlValid ? $affectedUrl : null);
+
+    // Pflichtfeld: Zugewiesener User oder gemeinsame Zuständigkeit (Alle); Adresse muss gültig sein
+    if (('all' !== $assignedUserSelection && !$issue->getAssignedUserId()) || !$affectedUrlValid) {
         // Formular erneut anzeigen (weiter unten) – die Fehlermeldung steht im Formular direkt am Feld und in der Zusammenfassung
     } else {
     
