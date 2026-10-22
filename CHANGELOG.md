@@ -2,6 +2,10 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [2.0.0-beta10] – 2026-10-22
+
+- Das Doppelpfeil-Symbol für den Status in der Symbolleiste ist entfernt (wurde leicht mit „Weiterleiten“ verwechselt). Der Status wird an der Status-Pill im Kopf des Themas geändert.
+
 ## [2.0.0-beta9] – 2026-10-22
 
 - Fix: „Bearbeiten“ (Stift) und „Antworten“ an einem Kommentar zeigten in manchen Backends nur ein leeres Feld – das Formular wurde per `style.display` statt über das `hidden`-Attribut eingeblendet und blieb bei Stilen mit festem `[hidden]` unsichtbar.

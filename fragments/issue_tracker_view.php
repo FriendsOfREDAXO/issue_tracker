@@ -211,20 +211,7 @@ $relatedIssues = $issue->getDuplicates();
             <?php if (!$isKnowledge): ?>
             <a class="it-tb-btn" href="#it-reply" data-it-reply aria-keyshortcuts="R" title="<?= rex_escape($package->i18n('issue_tracker_mail_reply_title') . ' (R)') ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_reply_title') ?></span></a>
 
-            <?php if ($canChangeStatus): ?>
-            <details class="it-menu">
-                <summary class="it-tb-btn" title="<?= rex_escape($package->i18n('issue_tracker_change_status')) ?>"><i class="rex-icon fa-exchange" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_change_status') ?></span></summary>
-                <form class="it-menu-pop" method="post" action="<?= $selfAction ?>">
-                    <input type="hidden" name="change_status" value="1" />
-                    <div class="it-menu-label"><?= $package->i18n('issue_tracker_status') ?></div>
-                    <?php foreach ($statuses as $statusKey => $statusLabel): ?>
-                    <button type="submit" name="status" value="<?= rex_escape($statusKey) ?>" class="it-menu-item<?= $status === $statusKey ? ' is-checked' : '' ?>">
-                        <span class="it-dot it-dot--<?= rex_escape($statusKey) ?>" aria-hidden="true"></span> <?= $package->i18n('issue_tracker_status_' . $statusKey) ?>
-                    </button>
-                    <?php endforeach; ?>
-                </form>
-            </details>
-            <?php endif; ?>
+            <?php // Status wird an der Status-Pill im Kopf geändert (kein eigenes Symbol in der Symbolleiste) ?>
 
             <?php if ($canQuickEdit && $quickToken): ?>
             <details class="it-menu">
