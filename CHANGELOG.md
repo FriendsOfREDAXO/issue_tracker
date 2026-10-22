@@ -2,7 +2,7 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
-## [2.0.0] – unveröffentlicht
+## [2.0.0] – 2026-10-22
 
 Version 2.0 ist eine komplett neue Oberfläche für den Issue Tracker. Alle Funktionen, Rechte, Daten und Links aus E-Mails bleiben erhalten. Die Einzelheiten stehen in den Abschnitten der Vorabversionen (2.0.0-beta1 bis beta11) weiter unten.
 
