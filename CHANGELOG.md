@@ -2,7 +2,7 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
-## [2.0.0-beta9] – unveröffentlicht
+## [2.0.0-beta9] – 2026-10-22
 
 - Fix: „Bearbeiten“ (Stift) und „Antworten“ an einem Kommentar zeigten in manchen Backends nur ein leeres Feld – das Formular wurde per `style.display` statt über das `hidden`-Attribut eingeblendet und blieb bei Stilen mit festem `[hidden]` unsichtbar.
 - **Status und Priorität direkt an der Pill ändern**: Ein Klick auf die Status- bzw. Prioritäts-Pill im Lesebereich öffnet das Auswahlmenü (bisher nur über die Symbole in der Symbolleiste).
