@@ -307,8 +307,36 @@ $relatedIssues = $issue->getDuplicates();
                 <div class="it-rp-toline"><span class="it-rp-label"><?= $package->i18n('issue_tracker_to') ?>:</span> <?= rex_escape($assigneeName) ?></div>
                 <h2 class="it-rp-subject"><span class="it-rp-id">#<?= $issue->getId() ?></span> <?= rex_escape($issue->getTitle()) ?></h2>
                 <div class="it-rp-badges">
+                    <?php // Status und Priorität direkt an der Pill ändern (gleiche Formulare wie in der Symbolleiste) ?>
+                    <?php if ($canChangeStatus): ?>
+                    <details class="it-menu it-pillmenu">
+                        <summary class="it-pillmenu-btn" title="<?= rex_escape($package->i18n('issue_tracker_change_status')) ?>"><?= UiHelper::statusBadge($status) ?><span class="sr-only"> – <?= $package->i18n('issue_tracker_change_status') ?></span></summary>
+                        <form class="it-menu-pop" method="post" action="<?= $selfAction ?>">
+                            <input type="hidden" name="change_status" value="1" />
+                            <div class="it-menu-label"><?= $package->i18n('issue_tracker_status') ?></div>
+                            <?php foreach ($statuses as $statusKey => $statusLabel): ?>
+                            <button type="submit" name="status" value="<?= rex_escape($statusKey) ?>" class="it-menu-item<?= $status === $statusKey ? ' is-checked' : '' ?>"><span class="it-dot it-dot--<?= rex_escape($statusKey) ?>" aria-hidden="true"></span> <?= $package->i18n('issue_tracker_status_' . $statusKey) ?></button>
+                            <?php endforeach; ?>
+                        </form>
+                    </details>
+                    <?php else: ?>
                     <?= UiHelper::statusBadge($status) ?>
+                    <?php endif; ?>
+                    <?php if ($canQuickEdit && $quickToken): ?>
+                    <details class="it-menu it-pillmenu">
+                        <summary class="it-pillmenu-btn" title="<?= rex_escape($package->i18n('issue_tracker_priority')) ?>"><?= UiHelper::badge($package->i18n('issue_tracker_priority_' . $issue->getPriority()), UiHelper::priorityVariant($issue->getPriority())) ?><span class="sr-only"> – <?= $package->i18n('issue_tracker_priority') ?></span></summary>
+                        <form class="it-menu-pop" method="post" action="<?= $selfAction ?>">
+                            <?= $quickToken->getHiddenField() ?>
+                            <input type="hidden" name="change_priority" value="1" />
+                            <div class="it-menu-label"><?= $package->i18n('issue_tracker_priority') ?></div>
+                            <?php foreach ($priorities as $prioKey => $prioLabel): ?>
+                            <button type="submit" name="priority" value="<?= rex_escape($prioKey) ?>" class="it-menu-item<?= $issue->getPriority() === $prioKey ? ' is-checked' : '' ?>"><i class="rex-icon fa-flag it-prio-<?= rex_escape($prioKey) ?>" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_priority_' . $prioKey) ?></button>
+                            <?php endforeach; ?>
+                        </form>
+                    </details>
+                    <?php else: ?>
                     <?= UiHelper::badge($package->i18n('issue_tracker_priority_' . $issue->getPriority()), UiHelper::priorityVariant($issue->getPriority())) ?>
+                    <?php endif; ?>
                     <?php if ($project): ?>
                     <a class="it-chip it-chip--link" href="<?= rex_url::backendPage('issue_tracker/issues/list', ['filter_status' => '', 'filter_project' => $project->getId()]) ?>"><span class="it-dot it-dot--custom it-dot--sm" style="<?= rex_escape($colorVar($project->getColor())) ?>" aria-hidden="true"></span><?php if ($project->getIsPrivate()): ?><i class="rex-icon fa-lock" aria-hidden="true"></i> <?php endif; ?><?= rex_escape($project->getName()) ?></a>
                     <?php endif; ?>

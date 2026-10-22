@@ -497,15 +497,18 @@ function toggleReplyForm(commentId) {
     var form = document.getElementById('reply-form-' + commentId);
     if (!form) return;
 
-    if (form.style.display === 'none' || form.style.display === '') {
-        form.style.display = 'block';
+    // Über das hidden-Attribut umschalten (siehe toggleEditForm)
+    if (form.hidden || form.style.display === 'none') {
+        form.hidden = false;
+        form.style.display = '';
         // Editor für das Antwortfeld anlegen
         var textarea = form.querySelector('textarea[name="comment"]');
         if (textarea && window.ITEditors) {
             window.ITEditors.comment(textarea, (document.documentElement.lang || 'de').indexOf('de') === 0 ? 'Antwort schreiben …' : 'Write a reply …', '120px');
         }
     } else {
-        form.style.display = 'none';
+        form.hidden = true;
+        form.style.display = '';
     }
 }
 
@@ -518,17 +521,20 @@ function toggleEditForm(commentId) {
     var content = document.getElementById('comment-content-' + commentId);
     if (!form) return;
 
-    if (form.style.display === 'none' || form.style.display === '') {
-        form.style.display = 'block';
-        if (content) content.style.display = 'none';
+    // Über das hidden-Attribut umschalten (nicht style.display): manche Backend-Stile verstecken [hidden] fest
+    if (form.hidden || form.style.display === 'none') {
+        form.hidden = false;
+        form.style.display = '';
+        if (content) { content.hidden = true; content.style.display = ''; }
         // Editor für das Bearbeiten-Feld anlegen
         var textarea = form.querySelector('textarea[name="comment_text"]');
         if (textarea && window.ITEditors) {
             window.ITEditors.comment(textarea, (document.documentElement.lang || 'de').indexOf('de') === 0 ? 'Kommentar bearbeiten …' : 'Edit comment …', '150px');
         }
     } else {
-        form.style.display = 'none';
-        if (content) content.style.display = 'block';
+        form.hidden = true;
+        form.style.display = '';
+        if (content) { content.hidden = false; content.style.display = ''; }
     }
 }
 

@@ -661,3 +661,11 @@ body.rex-theme-dark .it-toast-close:hover, body.rex-theme-dark .it-toast-close:f
 .it-source-note { display: flex; align-items: center; gap: 8px; margin: 10px 14px 0; padding: 6px 6px 6px 12px; border-radius: 8px; background: var(--it-info-bg); color: var(--it-info); font-size: calc(14px * var(--it-scale, 1)); }
 .it-source-text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
 .it-source-note .it-tb-btn { color: var(--it-info); }
+
+/* Status/Priorität an der Pill ändern */
+.it-pillmenu { display: inline-block; }
+.it-pillmenu-btn { display: inline-flex; align-items: center; list-style: none; cursor: pointer; border-radius: 999px; }
+.it-pillmenu-btn::-webkit-details-marker { display: none; }
+.it-pillmenu-btn .it-badge::after { content: ""; display: inline-block; width: 0; height: 0; margin-left: 6px; vertical-align: 2px; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid currentColor; opacity: .7; }
+.it-pillmenu-btn:hover .it-badge, .it-pillmenu[open] > .it-pillmenu-btn .it-badge { box-shadow: 0 0 0 2px var(--it-border); }
+.it-pillmenu-btn:focus-visible { outline: 2px solid var(--it-accent); outline-offset: 2px; }
