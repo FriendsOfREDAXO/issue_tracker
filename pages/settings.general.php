@@ -21,7 +21,7 @@ echo \FriendsOfREDAXO\IssueTracker\UiHelper::settingsStart('general');
 $func = rex_request('func', 'string', '');
 
 // Tag hinzufügen/bearbeiten
-if (rex_post('save_tag', 'int', 0) === 1) {
+if (rex_post('save_tag', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $tagId = rex_post('tag_id', 'int', 0);
     $tagName = trim(rex_post('tag_name', 'string', ''));
     $tagColor = rex_post('tag_color', 'string', '#007bff');
@@ -51,8 +51,9 @@ if (rex_post('save_tag', 'int', 0) === 1) {
 }
 
 // Tag löschen
-if ($func === 'delete_tag') {
-    $tagId = rex_request('tag_id', 'int', 0);
+// Tag löschen nur per POST mit CSRF-Token im Formular
+if (rex_post('func', 'string', '') === 'delete_tag' && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
+    $tagId = rex_post('tag_id', 'int', 0);
     $tag = \FriendsOfREDAXO\IssueTracker\Tag::get($tagId);
     
     if ($tag) {
@@ -64,7 +65,8 @@ if ($func === 'delete_tag') {
 // Einstellungen speichern
 // Eingaben prüfen, bevor gespeichert wird (bei Fehlern bleiben die Eingaben im Formular stehen)
 $formErrors = [];
-if (rex_post('save_settings', 'int', 0) === 1) {
+$saveSettings = rex_post('save_settings', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck();
+if ($saveSettings) {
     $postedFromAddress = trim(rex_post('email_from_address', 'string', ''));
     if ($postedFromAddress !== '' && !filter_var($postedFromAddress, FILTER_VALIDATE_EMAIL)) {
         $formErrors['email-from-address'] = rex_i18n::rawMsg('issue_tracker_ui_error_email');
@@ -81,7 +83,7 @@ if (rex_post('save_settings', 'int', 0) === 1) {
     }
 }
 
-if (rex_post('save_settings', 'int', 0) === 1 && !$formErrors) {
+if ($saveSettings && !$formErrors) {
     // Menü-Titel
     rex_sql::factory()
         ->setTable(rex::getTable('issue_tracker_settings'))
@@ -89,6 +91,9 @@ if (rex_post('save_settings', 'int', 0) === 1 && !$formErrors) {
         ->setValue('setting_value', rex_post('menu_title', 'string', ''))
         ->insertOrUpdate();
     
+    // Als Vollbild öffnen (eigene Ebene über dem Backend)
+    rex_config::set('issue_tracker', 'fullscreen', rex_post('fullscreen', 'int', 0) === 1);
+
     // Kategorien
     $categories = array_filter(rex_post('categories', 'array', []), 'strlen');
     rex_sql::factory()
@@ -185,6 +190,7 @@ $fragment->setVar('apiToken', $apiToken);
 $fragment->setVar('allTags', $allTags);
 $fragment->setVar('editTag', $editTag);
 $fragment->setVar('formErrors', $formErrors);
+$fragment->setVar('fullscreen', \FriendsOfREDAXO\IssueTracker\AppShell::isEnabled());
 if ($formErrors) {
     // Eingegebene Werte wieder anzeigen
     $fragment->setVar('menuTitle', rex_post('menu_title', 'string', ''));
@@ -194,6 +200,7 @@ if ($formErrors) {
     $fragment->setVar('emailFromName', rex_post('email_from_name', 'string', ''));
     $fragment->setVar('reminderCooldownHours', rex_post('reminder_cooldown_hours', 'string', ''));
     $fragment->setVar('installationName', rex_post('installation_name', 'string', ''));
+    $fragment->setVar('fullscreen', rex_post('fullscreen', 'int', 0) === 1);
 }
 echo $fragment->parse('issue_tracker_settings.php');
 echo \FriendsOfREDAXO\IssueTracker\UiHelper::settingsEnd();

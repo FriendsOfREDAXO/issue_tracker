@@ -46,7 +46,7 @@ $tokenControl = '<div class="input-group">'
     . '<input type="text" class="form-control it-mono" id="api-token" value="' . rex_escape($apiToken) . '" readonly placeholder="' . rex_escape($t('issue_tracker_no_api_token')) . '">'
     . '<span class="input-group-btn">'
     . '<button type="button" class="btn btn-default" id="copy-api-token" title="' . rex_escape($t('issue_tracker_copy')) . '" aria-label="' . rex_escape($t('issue_tracker_copy')) . '"' . ($apiToken ? '' : ' disabled') . '><i class="rex-icon fa-copy" aria-hidden="true"></i></button>'
-    . '<button type="button" class="btn btn-default" id="generate-api-token"><i class="rex-icon fa-refresh" aria-hidden="true"></i> ' . rex_escape($t('issue_tracker_generate_token')) . '</button>'
+    . '<button type="button" class="btn btn-default" id="generate-api-token" data-url="' . rex_escape(rex_url::backendController(['rex-api-call' => 'issue_tracker_generate_token'], false)) . '" data-token="' . rex_escape(rex_csrf_token::factory(rex_api_issue_tracker_generate_token::class)->getValue()) . '"><i class="rex-icon fa-refresh" aria-hidden="true"></i> ' . rex_escape($t('issue_tracker_generate_token')) . '</button>'
     . '</span></div>';
 
 $advancedHtml = '<h3 class="it-group-title">' . rex_escape($t('issue_tracker_ui_g_email_advanced')) . '</h3><div class="it-group">'
@@ -71,12 +71,14 @@ $advancedHtml = '<h3 class="it-group-title">' . rex_escape($t('issue_tracker_ui_
 
     <form method="post" action="<?= rex_url::currentBackendPage() ?>" novalidate>
         <input type="hidden" name="save_settings" value="1" />
+        <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
 
         <h3 class="it-group-title"><?= rex_escape($t('issue_tracker_ui_g_general')) ?></h3>
         <div class="it-group">
             <?= UiHelper::field($t('issue_tracker_ui_f_menu_title'),
                 '<input type="text" class="form-control" id="menu-title" name="menu_title" value="' . rex_escape($menuTitle) . '" placeholder="' . rex_escape($t('issue_tracker_menu_title_placeholder')) . '">',
                 $t('issue_tracker_ui_f_menu_title_help'), 'menu-title') ?>
+            <?= UiHelper::field($t('issue_tracker_ui_f_fullscreen'), UiHelper::switch('fullscreen', (bool) ($this->getVar('fullscreen', true)), 'it-fullscreen'), $t('issue_tracker_ui_f_fullscreen_help'), 'it-fullscreen') ?>
             <?= UiHelper::field($t('issue_tracker_ui_f_categories'), $categoriesControl, $t('issue_tracker_ui_f_categories_help'), 'issue-tracker-categories', true, $formErrors['issue-tracker-categories'] ?? '', true) ?>
         </div>
 
@@ -110,10 +112,10 @@ $advancedHtml = '<h3 class="it-group-title">' . rex_escape($t('issue_tracker_ui_
                     <a href="<?= rex_url::currentBackendPage(['func' => 'edit_tag', 'tag_id' => $tag->getId()]) ?>#tag-form" class="btn btn-xs btn-default" title="<?= $package->i18n('issue_tracker_edit') ?>" aria-label="<?= $package->i18n('issue_tracker_edit') ?>: <?= rex_escape($tag->getName()) ?>">
                         <i class="rex-icon fa-pencil" aria-hidden="true"></i>
                     </a>
-                    <a href="<?= rex_url::currentBackendPage(['func' => 'delete_tag', 'tag_id' => $tag->getId()]) ?>#tag-form" class="btn btn-xs btn-default" title="<?= $package->i18n('issue_tracker_delete') ?>" aria-label="<?= $package->i18n('issue_tracker_delete') ?>: <?= rex_escape($tag->getName()) ?>"
-                       data-confirm="<?= rex_escape(rex_i18n::rawMsg('issue_tracker_ui_tag_delete_confirm', $tag->getName())) ?>">
+                    <?php [$delForm, $delFormAttr] = UiHelper::postForm(rex_url::currentBackendPage([], false) . '#tag-form', ['func' => 'delete_tag', 'tag_id' => $tag->getId()], rex_i18n::rawMsg('issue_tracker_ui_tag_delete_confirm', $tag->getName())); ?>
+                    <button type="submit"<?= $delFormAttr ?> class="btn btn-xs btn-default" title="<?= $package->i18n('issue_tracker_delete') ?>" aria-label="<?= $package->i18n('issue_tracker_delete') ?>: <?= rex_escape($tag->getName()) ?>">
                         <i class="rex-icon fa-trash" aria-hidden="true"></i>
-                    </a>
+                    </button><?= $delForm ?>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -128,6 +130,7 @@ $advancedHtml = '<h3 class="it-group-title">' . rex_escape($t('issue_tracker_ui_
         <div class="it-row">
             <form method="post" action="<?= rex_url::currentBackendPage() ?>#tag-form" class="it-tag-form">
                 <input type="hidden" name="save_tag" value="1" />
+                <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
                 <?php if ($editTag): ?>
                 <input type="hidden" name="tag_id" value="<?= $editTag->getId() ?>" />
                 <?php endif; ?>

@@ -12,11 +12,22 @@ use FriendsOfREDAXO\IssueTracker\PermissionService;
 class rex_api_issue_tracker_generate_token extends rex_api_function
 {
     protected $published = false; // Nur für eingeloggte Backend-User
+
+    protected function requiresCsrfProtection()
+    {
+        return true;
+    }
     
     public function execute()
     {
         rex_response::cleanOutputBuffers();
         
+        if ('post' !== rex_request::requestMethod()) {
+            rex_response::setStatus('405 Method Not Allowed');
+            rex_response::sendJson(['success' => false, 'error' => 'POST required']);
+            exit;
+        }
+
         // Nur Admins dürfen Token generieren
         if (!PermissionService::canManageSettings()) {
             rex_response::setStatus(rex_response::HTTP_FORBIDDEN);

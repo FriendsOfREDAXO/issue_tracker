@@ -65,9 +65,10 @@ $viewUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $iss
 $listUrl = rex_url::backendPage('issue_tracker/issues/list', ['screen' => 'list']);
 
 // Checklisten im Lesebereich an die aktuelle Seite zurücksenden
-$render = static function (string $text, ?int $commentId = null) use ($issue, $embedded, $viewUrl, $selfUrl): string {
-    $html = ContentRenderer::render($text, $issue->getId(), $commentId);
-    return $embedded ? str_replace(rex_escape($viewUrl), rex_escape($selfUrl), $html) : $html;
+$render = static function (string $text, ?int $commentId = null, bool $interactive = true) use ($issue, $embedded, $viewUrl, $selfUrl): string {
+    $html = ContentRenderer::render($text, $issue->getId(), $commentId, $interactive);
+    // nur die Ziele der Checklisten-Formulare ersetzen – Verweise auf andere Themen (#50 in #5) bleiben unverändert
+    return $embedded ? str_replace('action="' . rex_escape($viewUrl) . '"', 'action="' . rex_escape($selfUrl) . '"', $html) : $html;
 };
 
 $creatorName = UiHelper::userName($createdBy, '–');
@@ -128,7 +129,7 @@ $renderComment = static function ($comment, bool $isReply) use (&$renderComment,
             </div>
             <div class="it-msg-actions">
                 <?php if (!$isReply): ?>
-                <button type="button" class="it-tb-btn it-tb-btn--sm" onclick="toggleReplyForm(<?= $cid ?>)" title="<?= rex_escape($package->i18n('issue_tracker_reply')) ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_reply') ?></span></button>
+                <button type="button" class="it-tb-btn it-tb-btn--sm" data-it-toggle-reply="<?= $cid ?>" title="<?= rex_escape($package->i18n('issue_tracker_reply')) ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_reply') ?></span></button>
                 <?php endif; ?>
                 <?php if (!$isReply && $canModerate): ?>
                 <form method="post" action="<?= $selfAction ?>">
@@ -141,10 +142,10 @@ $renderComment = static function ($comment, bool $isReply) use (&$renderComment,
                 </form>
                 <?php endif; ?>
                 <?php if (!$isReply && $canEditComment): ?>
-                <button type="button" class="it-tb-btn it-tb-btn--sm" onclick="toggleEditForm(<?= $cid ?>)" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></button>
+                <button type="button" class="it-tb-btn it-tb-btn--sm" data-it-toggle-edit="<?= $cid ?>" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></button>
                 <?php endif; ?>
                 <?php if (!$isReply && $currentUser->isAdmin()): ?>
-                <form method="post" action="<?= $selfAction ?>" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_comment_confirm')) ?>">
+                <form method="post" action="<?= $selfAction ?>" data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_comment_confirm')) ?>">
                     <input type="hidden" name="delete_comment" value="<?= $cid ?>" />
                     <button type="submit" class="it-tb-btn it-tb-btn--sm it-tb-btn--danger" title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></button>
                 </form>
@@ -158,14 +159,14 @@ $renderComment = static function ($comment, bool $isReply) use (&$renderComment,
                 <input type="hidden" name="edit_comment" value="<?= $cid ?>" />
                 <textarea name="comment_text" class="form-control" rows="4" aria-label="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><?= rex_escape($comment->getComment()) ?></textarea>
                 <div class="it-form-actions">
-                    <button type="button" class="btn btn-default btn-sm" onclick="toggleEditForm(<?= $cid ?>)"><?= $package->i18n('issue_tracker_cancel') ?></button>
+                    <button type="button" class="btn btn-default btn-sm" data-it-toggle-edit="<?= $cid ?>"><?= $package->i18n('issue_tracker_cancel') ?></button>
                     <button type="submit" class="btn btn-primary it-btn-primary btn-sm"><?= $package->i18n('issue_tracker_save') ?></button>
                 </div>
             </form>
         </div>
         <?php endif; ?>
 
-        <div class="it-msg-body issue-tracker-comment-content" id="comment-content-<?= $cid ?>"><?= $render($comment->getComment(), $cid) ?></div>
+        <div class="it-msg-body issue-tracker-comment-content" id="comment-content-<?= $cid ?>"><?= $render($comment->getComment(), $cid, $currentUser->isAdmin() || $comment->getCreatedBy() === (int) $currentUser->getId()) ?></div>
         <?= $renderAttachments(Attachment::getByComment($cid), 'comment-' . $cid) ?>
 
         <?php if (!$isReply):
@@ -176,7 +177,7 @@ $renderComment = static function ($comment, bool $isReply) use (&$renderComment,
                 <input type="hidden" name="parent_comment_id" value="<?= $cid ?>" />
                 <textarea name="comment" class="form-control" rows="3" placeholder="<?= rex_escape($package->i18n('issue_tracker_reply_placeholder')) ?>" aria-label="<?= rex_escape($package->i18n('issue_tracker_reply')) ?>"></textarea>
                 <div class="it-form-actions">
-                    <button type="button" class="btn btn-default btn-sm" onclick="toggleReplyForm(<?= $cid ?>)"><?= $package->i18n('issue_tracker_cancel') ?></button>
+                    <button type="button" class="btn btn-default btn-sm" data-it-toggle-reply="<?= $cid ?>"><?= $package->i18n('issue_tracker_cancel') ?></button>
                     <button type="submit" class="btn btn-primary it-btn-primary btn-sm"><i class="rex-icon fa-reply" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_send_reply') ?></button>
                 </div>
             </form>
@@ -209,22 +210,9 @@ $relatedIssues = $issue->getDuplicates();
             <a class="it-tb-back it-tb-back--always" href="<?= $listUrl ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_back_to_list') ?></a>
             <?php endif; ?>
             <?php if (!$isKnowledge): ?>
-            <a class="it-tb-btn" href="#it-reply" data-it-reply title="<?= rex_escape($package->i18n('issue_tracker_mail_reply_title')) ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_reply_title') ?></span></a>
+            <a class="it-tb-btn" href="#it-reply" data-it-reply aria-keyshortcuts="R" title="<?= rex_escape($package->i18n('issue_tracker_mail_reply_title') . ' (R)') ?>"><i class="rex-icon fa-reply" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_reply_title') ?></span></a>
 
-            <?php if ($canChangeStatus): ?>
-            <details class="it-menu">
-                <summary class="it-tb-btn" title="<?= rex_escape($package->i18n('issue_tracker_change_status')) ?>"><i class="rex-icon fa-exchange" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_change_status') ?></span></summary>
-                <form class="it-menu-pop" method="post" action="<?= $selfAction ?>">
-                    <input type="hidden" name="change_status" value="1" />
-                    <div class="it-menu-label"><?= $package->i18n('issue_tracker_status') ?></div>
-                    <?php foreach ($statuses as $statusKey => $statusLabel): ?>
-                    <button type="submit" name="status" value="<?= rex_escape($statusKey) ?>" class="it-menu-item<?= $status === $statusKey ? ' is-checked' : '' ?>">
-                        <span class="it-dot it-dot--<?= rex_escape($statusKey) ?>" aria-hidden="true"></span> <?= $package->i18n('issue_tracker_status_' . $statusKey) ?>
-                    </button>
-                    <?php endforeach; ?>
-                </form>
-            </details>
-            <?php endif; ?>
+            <?php // Status wird an der Status-Pill im Kopf geändert (kein eigenes Symbol in der Symbolleiste) ?>
 
             <?php if ($canQuickEdit && $quickToken): ?>
             <details class="it-menu">
@@ -261,10 +249,10 @@ $relatedIssues = $issue->getDuplicates();
 
         <div class="it-tb-group">
             <?php if ($canEdit): ?>
-            <a class="it-tb-btn" data-it-edit href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
+            <a class="it-tb-btn" data-it-edit href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>"<?= $isKnowledge ? ' aria-keyshortcuts="E"' : '' ?> title="<?= rex_escape($package->i18n('issue_tracker_edit') . ($isKnowledge ? ' (E)' : '')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
             <?php endif; ?>
             <?php if ($canChangeStatus && $isKnowledge): ?>
-            <form method="post" action="<?= $selfAction ?>" class="it-tb-form" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_knowledge_remove_confirm')) ?>">
+            <form method="post" action="<?= $selfAction ?>" class="it-tb-form" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_knowledge_remove_confirm')) ?>">
                 <input type="hidden" name="change_status" value="1" />
                 <input type="hidden" name="status" value="closed" />
                 <button type="submit" class="it-tb-btn it-tb-btn--text" title="<?= rex_escape($package->i18n('issue_tracker_mail_knowledge_remove_help')) ?>"><i class="rex-icon fa-book" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_knowledge_remove') ?></button>
@@ -282,9 +270,9 @@ $relatedIssues = $issue->getDuplicates();
             </form>
             <?php endif; ?>
             <?php if (PermissionService::canDelete() && !$isKnowledge): ?>
-            <a class="it-tb-btn it-tb-btn--danger" href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()]) ?>"
-               onclick="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_confirm')) ?>"
-               title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></a>
+            <?php [$delForm, $delFormAttr] = UiHelper::postForm(rex_url::backendPage('issue_tracker/issues/list', [], false), ['func' => 'delete', 'issue_id' => $issue->getId()], $package->i18n('issue_tracker_delete_confirm')); ?>
+            <button type="submit"<?= $delFormAttr ?> class="it-tb-btn it-tb-btn--danger"
+               title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></button><?= $delForm ?>
             <?php endif; ?>
         </div>
 
@@ -307,13 +295,48 @@ $relatedIssues = $issue->getDuplicates();
                 <div class="it-rp-toline"><span class="it-rp-label"><?= $package->i18n('issue_tracker_to') ?>:</span> <?= rex_escape($assigneeName) ?></div>
                 <h2 class="it-rp-subject"><span class="it-rp-id">#<?= $issue->getId() ?></span> <?= rex_escape($issue->getTitle()) ?></h2>
                 <div class="it-rp-badges">
+                    <?php // Status und Priorität direkt an der Pill ändern (gleiche Formulare wie in der Symbolleiste) ?>
+                    <?php if ($canChangeStatus): ?>
+                    <details class="it-menu it-pillmenu">
+                        <summary class="it-pillmenu-btn" title="<?= rex_escape($package->i18n('issue_tracker_change_status')) ?>"><?= UiHelper::statusBadge($status) ?><span class="sr-only"> – <?= $package->i18n('issue_tracker_change_status') ?></span></summary>
+                        <form class="it-menu-pop" method="post" action="<?= $selfAction ?>">
+                            <input type="hidden" name="change_status" value="1" />
+                            <div class="it-menu-label"><?= $package->i18n('issue_tracker_status') ?></div>
+                            <?php foreach ($statuses as $statusKey => $statusLabel): ?>
+                            <button type="submit" name="status" value="<?= rex_escape($statusKey) ?>" class="it-menu-item<?= $status === $statusKey ? ' is-checked' : '' ?>"><span class="it-dot it-dot--<?= rex_escape($statusKey) ?>" aria-hidden="true"></span> <?= $package->i18n('issue_tracker_status_' . $statusKey) ?></button>
+                            <?php endforeach; ?>
+                        </form>
+                    </details>
+                    <?php else: ?>
                     <?= UiHelper::statusBadge($status) ?>
+                    <?php endif; ?>
+                    <?php if ($canQuickEdit && $quickToken): ?>
+                    <details class="it-menu it-pillmenu">
+                        <summary class="it-pillmenu-btn" title="<?= rex_escape($package->i18n('issue_tracker_priority')) ?>"><?= UiHelper::badge($package->i18n('issue_tracker_priority_' . $issue->getPriority()), UiHelper::priorityVariant($issue->getPriority())) ?><span class="sr-only"> – <?= $package->i18n('issue_tracker_priority') ?></span></summary>
+                        <form class="it-menu-pop" method="post" action="<?= $selfAction ?>">
+                            <?= $quickToken->getHiddenField() ?>
+                            <input type="hidden" name="change_priority" value="1" />
+                            <div class="it-menu-label"><?= $package->i18n('issue_tracker_priority') ?></div>
+                            <?php foreach ($priorities as $prioKey => $prioLabel): ?>
+                            <button type="submit" name="priority" value="<?= rex_escape($prioKey) ?>" class="it-menu-item<?= $issue->getPriority() === $prioKey ? ' is-checked' : '' ?>"><i class="rex-icon fa-flag it-prio-<?= rex_escape($prioKey) ?>" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_priority_' . $prioKey) ?></button>
+                            <?php endforeach; ?>
+                        </form>
+                    </details>
+                    <?php else: ?>
                     <?= UiHelper::badge($package->i18n('issue_tracker_priority_' . $issue->getPriority()), UiHelper::priorityVariant($issue->getPriority())) ?>
+                    <?php endif; ?>
                     <?php if ($project): ?>
                     <a class="it-chip it-chip--link" href="<?= rex_url::backendPage('issue_tracker/issues/list', ['filter_status' => '', 'filter_project' => $project->getId()]) ?>"><span class="it-dot it-dot--custom it-dot--sm" style="<?= rex_escape($colorVar($project->getColor())) ?>" aria-hidden="true"></span><?php if ($project->getIsPrivate()): ?><i class="rex-icon fa-lock" aria-hidden="true"></i> <?php endif; ?><?= rex_escape($project->getName()) ?></a>
                     <?php endif; ?>
                     <?php if ($issue->getCategory() !== ''): ?>
                     <span class="it-chip"><i class="rex-icon fa-folder-o" aria-hidden="true"></i> <?= rex_escape($issue->getCategory()) ?></span>
+                    <?php endif; ?>
+                    <?php
+                    $chipArticle = $issue->getArticleId() ? $issue->getAffectedArticle() : null;
+                    if ($chipArticle): ?>
+                    <a class="it-chip it-chip--link" href="#it-affected" title="<?= rex_escape($package->i18n('issue_tracker_affected_page')) ?>"><i class="rex-icon fa-file-text-o" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_affected_page') ?>:</span> <?= rex_escape($chipArticle->getName()) ?></a>
+                    <?php elseif ($issue->getAffectedUrl()): ?>
+                    <a class="it-chip it-chip--link" href="#it-affected" title="<?= rex_escape($package->i18n('issue_tracker_affected_page')) ?>"><i class="rex-icon fa-globe" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_affected_page') ?>:</span> <?= rex_escape(mb_strimwidth((string) preg_replace('#^https?://#i', '', (string) $issue->getAffectedUrl()), 0, 40, '…')) ?></a>
                     <?php endif; ?>
                     <?php if ($issue->getIsPrivate()): ?>
                     <span class="it-badge it-badge--warn"><i class="rex-icon fa-lock" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_private') ?></span>
@@ -328,7 +351,7 @@ $relatedIssues = $issue->getDuplicates();
                         $addableTags = array_filter($allTags, static fn ($t) => !in_array($t->getId(), $currentTagIds, true));
                         if (!empty($addableTags)): ?>
                     <form method="post" action="<?= $selfAction ?>" class="it-chip-form">
-                        <select name="add_tag" onchange="this.form.submit()" class="it-chip-select" aria-label="<?= rex_escape($package->i18n('issue_tracker_tags')) ?>">
+                        <select name="add_tag" data-it-autosubmit class="it-chip-select" aria-label="<?= rex_escape($package->i18n('issue_tracker_tags')) ?>">
                             <option value="">+ Tag</option>
                             <?php foreach ($addableTags as $aTag): ?>
                             <option value="<?= $aTag->getId() ?>"><?= rex_escape($aTag->getName()) ?></option>
@@ -356,12 +379,46 @@ $relatedIssues = $issue->getDuplicates();
                 <progress class="it-progress" max="<?= (int) $clProgress['total'] ?>" value="<?= (int) $clProgress['checked'] ?>"></progress>
             </div>
             <?php endif; ?>
-            <?= $render($issue->getDescription()) ?>
+            <?= $render($issue->getDescription(), null, PermissionService::canEdit($issue)) ?>
         </div>
 
         <?= $renderAttachments($attachments, 'issue-' . $issue->getId()) ?>
 
         <dl class="it-rp-facts">
+            <?php
+            // Betroffene Seite: Artikel aus der Struktur (Ansehen/Bearbeiten) oder freie Adresse
+            $affectedArticleId = $issue->getArticleId();
+            $affectedUrl = $issue->getAffectedUrl();
+            if ($affectedArticleId || $affectedUrl):
+                $affectedArticle = $affectedArticleId ? $issue->getAffectedArticle() : null;
+            ?>
+            <div class="it-rp-fact--wide" id="it-affected"><dt><?= $package->i18n('issue_tracker_affected_page') ?></dt><dd class="it-affected">
+                <?php if ($affectedArticleId && $affectedArticle):
+                    $affClang = $affectedArticle->getClangId();
+                    $affCanEdit = $currentUser->getComplexPerm('clang')->hasPerm($affClang)
+                        && $currentUser->getComplexPerm('structure')->hasCategoryPerm($affectedArticle->getCategoryId());
+                ?>
+                <span class="it-affected-name"><i class="rex-icon fa-file-text-o" aria-hidden="true"></i> <?= rex_escape($affectedArticle->getName()) ?> <span class="it-muted-text">[<?= (int) $affectedArticleId ?>]<?= rex_clang::count() > 1 && rex_clang::get($affClang) ? ' · ' . rex_escape(rex_clang::get($affClang)->getName()) : '' ?></span></span>
+                <a class="it-affected-link" href="<?= rex_escape(rex_getUrl($affectedArticleId, $affClang)) ?>" target="_blank" rel="noopener"><i class="rex-icon fa-external-link" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_affected_view') ?></a>
+                <?php if ($affCanEdit): ?>
+                <a class="it-affected-link" href="<?= rex_url::backendPage('content/edit', ['article_id' => $affectedArticleId, 'clang' => $affClang, 'mode' => 'edit']) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_affected_edit') ?></a>
+                <?php endif; ?>
+                <?php elseif ($affectedArticleId): ?>
+                <span class="it-muted-text"><?= $package->i18n('issue_tracker_affected_missing', (int) $affectedArticleId) ?></span>
+                <?php endif; ?>
+                <?php if ($affectedUrl && !\FriendsOfREDAXO\IssueTracker\Issue::isValidAffectedUrl($affectedUrl)): ?>
+                <span class="it-affected-url"><?= rex_escape($affectedUrl) ?></span>
+                <?php elseif ($affectedUrl): ?>
+                <a class="it-affected-link it-affected-url" href="<?= rex_escape($affectedUrl) ?>" target="_blank" rel="noopener noreferrer"><i class="rex-icon fa-external-link" aria-hidden="true"></i> <?= rex_escape($affectedUrl) ?></a>
+                <?php endif; ?>
+            </dd></div>
+            <?php endif; ?>
+            <?php if ($issue->getSourceUrl()):
+                // Backend-Seite, von der aus gemeldet wurde (nur Adressen dieser Installation, beim Speichern geprüft)
+                $srcUrl = (string) $issue->getSourceUrl();
+                $srcLabel = \FriendsOfREDAXO\IssueTracker\AppShell::sourceLabel($srcUrl, (string) $issue->getSourceTitle()); ?>
+            <div class="it-rp-fact--wide"><dt><?= $package->i18n('issue_tracker_source_page') ?></dt><dd><a class="it-affected-link" href="<?= rex_escape($srcUrl) ?>"><i class="rex-icon fa-map-marker" aria-hidden="true"></i> <?= rex_escape($srcLabel) ?></a></dd></div>
+            <?php endif; ?>
             <?php if ($issue->getAssignedAddon()): ?>
             <div><dt><?= $package->i18n('issue_tracker_addon') ?></dt><dd><?= rex_escape($issue->getAssignedAddon()) ?></dd></div>
             <?php endif; ?>
@@ -444,7 +501,7 @@ $relatedIssues = $issue->getDuplicates();
             <details class="it-disclosure" data-it-sec="pane_reminder"<?= $uiOpen('pane_reminder') ?>>
                 <summary><i class="rex-icon fa-bell" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_reminder_send') ?></summary>
                 <div class="it-disclosure-body">
-                    <form method="post" action="<?= $selfAction ?>" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_reminder_confirm')) ?>" class="it-inline-form">
+                    <form method="post" action="<?= $selfAction ?>" data-confirm="<?= rex_escape($package->i18n('issue_tracker_reminder_confirm')) ?>" class="it-inline-form">
                         <input type="hidden" name="send_reminder" value="1" />
                         <button type="submit" class="btn btn-default btn-sm" <?= $canSendReminder ? '' : 'disabled' ?>><i class="rex-icon fa-bell" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_reminder_send') ?></button>
                         <?php if ($lastReminderAt): ?>

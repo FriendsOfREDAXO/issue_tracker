@@ -1,0 +1,102 @@
+/**
+ * Issue Tracker – Vollbild-App über dem REDAXO-Backend (Einstellung „Als Vollbild öffnen“).
+ * Eigene Kopfleiste, darunter ein Inhaltsbereich mit eigenem Scrollen; im Postfach scrollen
+ * Postfächer, Liste und Lesebereich jeweils für sich. Die Seite dahinter scrollt nie.
+ * Alle Selektoren beginnen mit .it- (bzw. eigener Klasse am <html>) – REDAXO-Kern und Bootstrap bleiben unberührt.
+ */
+
+body {
+    --it-app-bar-bg: #324050;
+    --it-app-bar-text: #fff;
+    --it-app-bar-muted: rgba(255, 255, 255, .82);
+    --it-app-bar-hover: rgba(255, 255, 255, .12);
+    --it-app-bar-active: rgba(255, 255, 255, .2);
+}
+body.rex-theme-dark { --it-app-bar-bg: #151c24; }
+@media (prefers-color-scheme: dark) {
+    body:not(.rex-theme-light) { --it-app-bar-bg: #151c24; }
+}
+
+/* Die App füllt das Fenster der Ebene (.it-ov-host, siehe it-launcher.css); die Seite dahinter sperrt html.it-ov-lock */
+.it-app { position: relative; flex: 1 1 auto; display: flex; height: 100%; flex-direction: column; min-width: 0; background: var(--it-bg); color: var(--it-text); font-size: calc(15px * var(--it-scale, 1)); outline: none; }
+.it-app *, .it-app *::before, .it-app *::after { box-sizing: border-box; }
+
+/* ---------- Kopfleiste ---------- */
+.it-app-bar { display: flex; flex: 0 0 auto; align-items: center; gap: 8px 14px; min-height: 52px; padding: 6px 10px 6px 14px; background: var(--it-app-bar-bg); color: var(--it-app-bar-text); }
+.it-app-brand { display: flex; flex: 0 1 auto; align-items: center; gap: 10px; min-width: 0; }
+.it-app-icon { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; background: #2a6aa8; color: #fff; font-size: calc(15px * var(--it-scale, 1)); }
+.it-app-title { margin: 0; overflow: hidden; color: var(--it-app-bar-text); font-size: calc(16px * var(--it-scale, 1)); font-weight: 600; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
+.it-app-crumb { display: inline-flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; color: var(--it-app-bar-muted); font-size: calc(14px * var(--it-scale, 1)); text-overflow: ellipsis; white-space: nowrap; }
+.it-app-nav { display: flex; flex: 1 1 auto; align-items: center; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.it-app-nav::-webkit-scrollbar { display: none; }
+.it-app a.it-app-tab { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; padding: 6px 11px; border-radius: 8px; color: var(--it-app-bar-muted); font-size: calc(14px * var(--it-scale, 1)); line-height: 20px; text-decoration: none; white-space: nowrap; }
+.it-app a.it-app-tab:hover, .it-app a.it-app-tab:focus-visible { background: var(--it-app-bar-hover); color: var(--it-app-bar-text); }
+.it-app a.it-app-tab.is-active { background: var(--it-app-bar-active); color: var(--it-app-bar-text); font-weight: 600; }
+.it-app-nav > a.it-app-tab:last-child { margin-left: auto; }
+.it-app-badge { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 999px; background: #c4282e; color: #fff; font-size: calc(12px * var(--it-scale, 1)); font-weight: 700; line-height: 18px; text-align: center; }
+.it-app a.it-app-close { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; height: 34px; margin-left: auto; padding: 0 12px; border: 1px solid rgba(255, 255, 255, .45); border-radius: 8px; color: var(--it-app-bar-text); font-size: calc(14px * var(--it-scale, 1)); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.it-app-nav + a.it-app-close { margin-left: 0; }
+/* Vollbild/Fenster umschalten (wie MediaPlace) */
+.it-app button.it-app-max { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 34px; height: 34px; margin-left: auto; padding: 0; border: 1px solid rgba(255, 255, 255, .45); border-radius: 8px; background: transparent; color: var(--it-app-bar-text); font-size: calc(15px * var(--it-scale, 1)); cursor: pointer; }
+.it-app-nav + button.it-app-max { margin-left: 0; }
+.it-app button.it-app-max + a.it-app-close { margin-left: 0; }
+.it-app button.it-app-max:hover, .it-app button.it-app-max:focus-visible { background: var(--it-app-bar-hover); }
+@media (max-width: 1199px) { .it-app button.it-app-max { display: none; } }
+.it-app a.it-app-close:hover, .it-app a.it-app-close:focus-visible { background: var(--it-app-bar-hover); color: var(--it-app-bar-text); }
+.it-app-bar :focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+
+/* Dritte Ebene (z. B. Einstellungen) */
+.it-app-subnav { display: flex; flex: 0 0 auto; gap: 4px; padding: 6px 14px; overflow-x: auto; background: var(--it-bg-soft); border-bottom: 1px solid var(--it-border); }
+.it-app a.it-app-subtab { flex: 0 0 auto; padding: 4px 11px; border-radius: 7px; color: var(--it-text); font-size: calc(14px * var(--it-scale, 1)); line-height: 20px; text-decoration: none; white-space: nowrap; }
+.it-app a.it-app-subtab:hover { background: var(--it-bg-sel); }
+.it-app a.it-app-subtab.is-active { background: var(--it-accent); color: var(--it-accent-text); font-weight: 600; }
+.it-app-subnav :focus-visible { outline: 2px solid var(--it-accent); outline-offset: 1px; }
+
+/* ---------- Inhalt: ein Scrollbereich (Formulare, Einstellungen, Hilfe) ---------- */
+.it-app-body { position: relative; flex: 1 1 auto; min-height: 0; padding: 20px 24px 40px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; background: var(--it-bg-soft); -webkit-overflow-scrolling: touch; }
+.it-app-body > .it-sheet, .it-app-body > .it-settings, .it-app-body > .rex-page-section { margin-left: auto; margin-right: auto; }
+.it-app-body > .rex-page-section { max-width: 1000px; }
+
+/* ---------- Postfach & Co. (.it-mail): füllt die App, Spalten scrollen einzeln ---------- */
+.it-app-body:has(> .it-mail) { display: flex; flex-direction: column; padding: 0; background: var(--it-bg); }
+.it-app-body:has(> .it-mail) > .alert { flex: 0 0 auto; margin: 10px 14px; }
+.it-app .it-mail { flex: 1 0 auto; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
+.it-app .it-mbx { border-radius: 0; }
+
+@media (min-width: 1200px) {
+    .it-app-body:has(> .it-mail) { overflow: hidden; }
+    .it-app .it-mail { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+    .it-app .it-mail > .it-mbx { min-height: 0; overflow-y: auto; overscroll-behavior: contain; border-radius: 0; }
+    /* Liste: Kopf bleibt oben, Einträge scrollen */
+    .it-app .it-mail > .it-ml { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+    .it-app .it-mail .it-ml-bar { position: sticky; top: 0; }
+    /* Lesebereich: Symbolleiste fest oben, Inhalt scrollt */
+    .it-app .it-mail > .it-rp-wrap { display: flex; flex-direction: column; min-height: 0; overflow: hidden; border-radius: 0; }
+    .it-app .it-rp-wrap > .it-rp { flex: 1 1 auto; min-height: 0; }
+    .it-app .it-rp-wrap > .it-rp > .it-rp-toolbar { flex: 0 0 auto; border-radius: 0; }
+    .it-app .it-rp-wrap > .it-rp > .it-rp-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+    .it-app .it-rp-wrap > :not(.it-rp) { flex: 0 0 auto; }
+    .it-app .it-rp-wrap > .it-rp-empty { flex: 1 1 auto; }
+    .it-app .it-mail > .it-rp-wrap--sheet { display: block; overflow-y: auto; overscroll-behavior: contain; }
+    .it-app .it-mail--table .it-table-wrap { overflow: visible; }
+    .it-app .it-rp [id] { scroll-margin-top: 12px; }
+}
+
+/* ---------- Schmal (bis 1199 px): ein Scrollbereich, Schritt für Schritt wie bisher ---------- */
+@media (max-width: 1199px) {
+    .it-app .it-mail .it-rp-toolbar { position: sticky; top: 0; }
+    .it-app .it-mail .it-ml-bar { position: sticky; top: 0; }
+}
+@media (max-width: 991px) {
+    .it-app-crumb { display: none; }
+    .it-app-tab-label { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+    .it-app-bar { gap: 6px 8px; padding-left: 10px; }
+}
+@media (max-width: 767px) {
+    .it-app-body { padding: 12px 10px 32px; }
+    .it-app-body:has(> .it-mail) { padding: 0; }
+    .it-app-close-label { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+    .it-app a.it-app-close { width: 38px; padding: 0; justify-content: center; }
+    .it-app-title { font-size: calc(15px * var(--it-scale, 1)); }
+}
+

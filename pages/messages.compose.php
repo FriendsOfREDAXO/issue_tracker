@@ -80,7 +80,7 @@ if ($forwardMessage && rex_post('forward_send', 'int', 0) === 1) {
 }
 
 // Nachricht senden
-if (rex_post('send', 'int', 0) === 1) {
+if (rex_post('send', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $recipientId = rex_post('recipient_id', 'int', 0);
     $subject = rex_post('subject', 'string', '');
     $messageText = rex_post('message', 'string', '');

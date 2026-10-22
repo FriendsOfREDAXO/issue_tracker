@@ -2,83 +2,91 @@
 
 Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht, Wünsche zu äußern, Probleme zu melden und Vorschläge zu machen. Mit integriertem Projektmanagement und privatem Nachrichtensystem.
 
-**Ab Version 2.0 so vertraut wie Mail auf dem Mac:** Links die Postfächer (Mir zugewiesen, Offen, Projekte, Tags …), in der Mitte die Themenliste mit Vorschau, rechts das Lesefenster mit dem Gesprächsverlauf. Mit ↑/↓ blättern, mit R antworten. Am Handy wie am iPhone. Wer lieber die klassische Tabelle mag, schaltet oben auf „Tabelle“ um. Formulare zeigen nur das Wichtige, alles Weitere liegt aufgeräumt unter „Weitere Angaben“. Hell und dunkel.
+**Ab Version 2.0 so vertraut wie Mail auf dem Mac:** Links die Postfächer (Mir zugewiesen, Offen, Projekte, Tags …), in der Mitte die Themenliste mit Vorschau, rechts das Lesefenster mit dem Gesprächsverlauf. Mit ↑/↓ blättern, mit R antworten, mit T Tags direkt in der Liste setzen, mit ? alle Tastenkürzel anzeigen. Am Handy wie am iPhone. Wer lieber die klassische Tabelle mag, schaltet oben auf „Tabelle“ um. Beim Anlegen stehen Zuständigkeit, Priorität, Kategorie, Tags und die betroffene Seite gleich oben als Leiste bereit, alles Weitere liegt aufgeräumt unter „Weitere Angaben“. Hell und dunkel.
 
 ## Features
 
 ### Kernfunktionen
-- ✅ **Issue-Verwaltung**: Erstellen, Bearbeiten, Löschen und Kommentieren von Issues
-- ✅ **Dashboard**: Übersicht über den aktuellen Status aller Issues mit Statistiken und Widgets
-- ✅ **Status-Tracking**: Offen, In Arbeit, Geplant, Info, Abgelehnt, Erledigt
-- ✅ **Prioritäten**: Niedrig, Normal, Hoch, Dringend
-- ✅ **Kategorien**: Frei konfigurierbare Kategorien in den Einstellungen
-- ✅ **Tags**: Flexible Tag-Verwaltung mit Farbcodierung und Zufallsfarben für neue Tags
-- ✅ **Tags direkt in der Ansicht bearbeiten**: Tags in der Sidebar der Detailansicht hinzufügen/entfernen ohne Edit-Modus
-- ✅ **Standard-Tags**: Bug, Feature, Docs und Good Idea werden bei Installation automatisch angelegt
-- ✅ **Private Issues**: Issues können als privat markiert werden (nur für Ersteller und Admins sichtbar)
-- ✅ **Kommentare**: Diskussion und Feedback zu jedem Issue mit Thread-System
-- ✅ **Interne Kommentare**: Kommentare können als intern markiert werden (nur für Admins sichtbar)
-- ✅ **@mentions**: User per `@login` in Kommentaren erwähnen – Autocomplete-Dropdown direkt im Editor, E-Mail-Benachrichtigung an Erwähnte
-- ✅ **Issue per Kommentar schließen**: Checkbox „Schließen & kommentieren" (GitHub-Stil) – ein Schritt, eine kombinierte E-Mail
-- ✅ **Interaktive Checklisten**: `- [ ] Offene Aufgabe` und `- [x] Erledigte Aufgabe` in Beschreibungen und Kommentaren – per Klick abhaken ohne Seite zu verlassen, Fortschrittsbalken in Liste und Detailansicht
-- ✅ **Zeiterfassung**: `/spent 2h 30m` in einem Kommentar loggt Zeit für das Issue – unterstützt `h`, `m` und `min`, Gesamtzeit im Details-Panel der Detailansicht sichtbar
-- ✅ **#Issue-Referenzen**: `#42` in Kommentaren wird zu klickbarem Link, das referenzierte Issue erhält automatisch einen Cross-Reference-Eintrag im Aktivitätsverlauf
-- ✅ **Zuweisungen**: Issues können Benutzern und AddOns zugeordnet werden
-- ✅ **Versionsverwaltung**: Issues können einer Version zugeordnet werden
-- ✅ **Fälligkeitsdatum**: Issues können mit Deadlines versehen werden, überfällige Issues werden markiert
-- ✅ **Aktivitätsverlauf**: Vollständiges Tracking aller Änderungen an Issues
-- ✅ **Dateianhänge**: Upload von Bildern, Dokumenten und anderen Dateien zu Issues
-- ✅ **Lightbox**: Bilder und Videos direkt in einer Lightbox ansehen
-- ✅ **Gespeicherte Filter**: Häufig verwendete Filtereinstellungen speichern und als Standard festlegen
-- ✅ **Session-Filter**: Filter bleiben während der Sitzung erhalten
-- ✅ **Erweiterte Filter**: Nach Status, Kategorie, Tags, Ersteller und Text durchsuchbar (inkl. "Alle Issues" und "Nur Geschlossene")
-- ✅ **Sortierbare Listen**: Alle Spalten können aufsteigend/absteigend sortiert werden
-- ✅ **Automatisches closed_at**: Beim Schließen eines Issues wird das Datum automatisch gesetzt
+- **Issue-Verwaltung**: Erstellen, Bearbeiten, Löschen und Kommentieren von Issues
+- **Postfach wie Mail**: Postfächer (Mir zugewiesen, Beobachtet, Erwähnt, Überfällig, Kürzlich erledigt, Status, Projekte, Wissen, Tags, gespeicherte Filter), Liste mit Vorschau und Lesebereich; alternativ als Tabelle
+- **Eigenschaften direkt im Lesebereich**: Status und Priorität über die Pill, Zuweisen, Beobachten, Tags, Erledigen – ohne das Formular zu öffnen
+- **Wissen**: Anleitungen und Hinweise als eigene Einträge (Status „Info“), nach Kategorie
+- **Status-Tracking**: Offen, In Arbeit, Geplant, Info, Abgelehnt, Erledigt
+- **Prioritäten**: Niedrig, Normal, Hoch, Dringend
+- **Kategorien**: Frei konfigurierbare Kategorien in den Einstellungen
+- **Tags**: Flexible Tag-Verwaltung mit Farbcodierung und Zufallsfarben für neue Tags
+- **Tags direkt setzen**: im Kopf des Lesebereichs und mit „Quick-Tag“ (Taste T) direkt in der Liste
+- **Standard-Tags**: Bug, Feature, Docs und Good Idea werden bei Installation automatisch angelegt
+- **Private Issues**: Admins können Issues als privat markieren (siehe unten)
+- **Kommentare**: Diskussion und Feedback zu jedem Issue mit Thread-System
+- **Interne Kommentare**: Admins können Kommentare als intern markieren (nur für Admins und Manager sichtbar)
+- **@mentions**: User per `@login` in Kommentaren erwähnen – Autocomplete-Dropdown direkt im Editor, E-Mail-Benachrichtigung an Erwähnte
+- **Antworten und erledigen**: Thema mit der Antwort als erledigt markieren – ein Schritt, eine kombinierte E-Mail
+- **Interaktive Checklisten**: `- [ ] Offene Aufgabe` und `- [x] Erledigte Aufgabe` in Beschreibungen und Kommentaren – per Klick abhaken ohne Seite zu verlassen, Fortschrittsbalken in Liste und Detailansicht
+- **Zeiterfassung**: `/spent 2h 30m` in einem Kommentar loggt Zeit für das Issue – unterstützt `h`, `m` und `min`, Gesamtzeit im Details-Panel der Detailansicht sichtbar
+- **#Issue-Referenzen**: `#42` in Kommentaren wird zu klickbarem Link, das referenzierte Issue erhält automatisch einen Cross-Reference-Eintrag im Aktivitätsverlauf
+- **Zuweisungen**: Issues können Benutzern und AddOns zugeordnet werden
+- **Versionsverwaltung**: Issues können einer Version zugeordnet werden
+- **Fälligkeitsdatum**: Issues können mit Deadlines versehen werden, überfällige Issues werden markiert
+- **Aktivitätsverlauf**: Vollständiges Tracking aller Änderungen an Issues
+- **Dateianhänge**: Upload von Bildern, Dokumenten und anderen Dateien zu Issues
+- **Lightbox**: Bilder und Videos direkt in einer Lightbox ansehen
+- **Gespeicherte Filter**: Häufig verwendete Filtereinstellungen speichern und als Standard festlegen
+- **Session-Filter**: Filter bleiben während der Sitzung erhalten
+- **Erweiterte Filter**: Nach Status, Kategorie, Tags, Ersteller, Zuständig, Projekt und Text
+- **Sortierbare Listen**: im Postfach über das Sortier-Menü, in der Tabelle über die Spaltenköpfe
+- **Automatisches closed_at**: Beim Schließen eines Issues wird das Datum automatisch gesetzt
 
 ### Projektmanagement
-- ✅ **Projekte**: Issues können Projekten zugeordnet werden
-- ✅ **Projekt-Mitglieder**: Benutzer können Projekten zugeordnet werden
-- ✅ **Projektbasierte Sichtbarkeit**: Benutzer sehen nur Projekte, denen sie zugeordnet sind
-- ✅ **Projekt-Übersicht**: Dashboard zeigt Projekte mit Fortschrittsanzeige
-- ✅ **Issue-Gruppierung**: Issues können nach Projekten gefiltert werden
+- **Projekte**: Issues können Projekten zugeordnet werden
+- **Projekt-Mitglieder**: Benutzer können Projekten zugeordnet werden
+- **Projektbasierte Sichtbarkeit**: Benutzer sehen nur Projekte, denen sie zugeordnet sind
+- **Projektordner**: jedes Projekt als Ordner in der Seitenleiste; bearbeiten, Mitglieder, archivieren und löschen
+- **Issue-Gruppierung**: Issues können nach Projekten gefiltert werden
 
 ### Private Nachrichten
-- ✅ **Nachrichtensystem**: Benutzer können sich gegenseitig private Nachrichten senden
-- ✅ **Posteingang & Gesendet**: Übersichtliche Trennung von empfangenen und gesendeten Nachrichten
-- ✅ **Konversationsansicht**: Nachrichten werden als Konversation mit demselben Partner gruppiert
-- ✅ **Weiterleiten, ungelesen markieren, alle als gelesen**: wie in Mail (Tasten F und U)
-- ✅ **Ungelesen-Badge**: Navigation zeigt Anzahl ungelesener Nachrichten
-- ✅ **Postfach**: Ungelesene Nachrichten stehen mit Zahl in der Seitenleiste
-- ✅ **E-Mail-Benachrichtigung**: Optional werden Benutzer per E-Mail über neue Nachrichten informiert
-- ✅ **Volltext-Option**: Nachrichten können optional vollständig in der E-Mail enthalten sein
-- ✅ **Antwort-Funktion**: Direktes Antworten auf Nachrichten möglich
+- **Nachrichtensystem**: Benutzer können sich gegenseitig private Nachrichten senden
+- **Posteingang & Gesendet**: Übersichtliche Trennung von empfangenen und gesendeten Nachrichten
+- **Konversationsansicht**: Nachrichten werden als Konversation mit demselben Partner gruppiert
+- **Weiterleiten, ungelesen markieren, alle als gelesen**: wie in Mail (Tasten F und U)
+- **Ungelesen-Zahl**: Ungelesene Nachrichten stehen mit Zahl in der Seitenleiste und im Menü
+- **E-Mail-Benachrichtigung**: Optional werden Benutzer per E-Mail über neue Nachrichten informiert
+- **Volltext-Option**: Nachrichten können optional vollständig in der E-Mail enthalten sein
+- **Antwort-Funktion**: Direktes Antworten auf Nachrichten möglich
 
 ### E-Mail-Benachrichtigungen
-- ✅ Automatische Benachrichtigungen bei neuen Issues
-- ✅ Benachrichtigungen bei neuen Kommentaren
-- ✅ Benachrichtigungen bei Status-Änderungen
-- ✅ Benachrichtigungen bei Zuweisungen
-- ✅ **@mention-Benachrichtigungen**: E-Mail an erwähnte User (individual abschaltbar)
-- ✅ Benachrichtigungen bei privaten Nachrichten (optional)
-- ✅ **Erinnerungs-Funktion**: Zugewiesene Benutzer per Klick an offene Issues erinnern (mit konfigurierbarem Cooldown)
-- ✅ **Kombinierte Benachrichtigung** beim Schließen via Kommentar: eine E-Mail statt zwei
-- ✅ **HTML E-Mail Templates** mit professionellem Design – anpassbar über die Einstellungen
-- ✅ **Markdown in E-Mails**: Beschreibungen und Kommentare unterstützen `**fett**`, `*kursiv*`, Links und automatische URL-Erkennung
-- ✅ **Deep Links** mit One-Time-Token für Issues und Nachrichten (30 Tage gültig, einmalige Verwendung)
-- ✅ **Konfigurierbare Absender-Adresse**: Eigene Adresse oder Fallback auf PHPMailer-Konfiguration
-- ✅ Mehrsprachige Templates (Deutsch/Englisch)
-- ✅ Broadcast-Nachrichten an alle Benutzer (nur Admins)
-- ✅ Individuelle Benachrichtigungseinstellungen pro Benutzer
+- Automatische Benachrichtigungen bei neuen Issues
+- Benachrichtigungen bei neuen Kommentaren
+- Benachrichtigungen bei Status-Änderungen
+- Benachrichtigungen bei Zuweisungen
+- **@mention-Benachrichtigungen**: E-Mail an erwähnte User (individual abschaltbar)
+- Benachrichtigungen bei privaten Nachrichten (optional)
+- **Erinnerungs-Funktion**: Zugewiesene Benutzer per Klick an offene Issues erinnern (mit konfigurierbarem Cooldown)
+- **Kombinierte Benachrichtigung** beim Schließen via Kommentar: eine E-Mail statt zwei
+- **HTML E-Mail Templates** mit professionellem Design – anpassbar über die Einstellungen
+- **Markdown in E-Mails**: Beschreibungen und Kommentare unterstützen `**fett**`, `*kursiv*`, Links und automatische URL-Erkennung
+- **Deep Links** mit One-Time-Token für Issues und Nachrichten (30 Tage gültig, einmalige Verwendung)
+- **Konfigurierbare Absender-Adresse**: Eigene Adresse oder Fallback auf PHPMailer-Konfiguration
+- Mehrsprachige Templates (Deutsch/Englisch)
+- Broadcast-Nachrichten an alle Benutzer (nur Admins)
+- Individuelle Benachrichtigungseinstellungen pro Benutzer
+
+### Vollbild-App
+- Öffnet sich wie MediaPlace als eigene Ebene über dem Backend – mit eigener Kopfleiste und „Schließen“ (oder Esc), das zur vorherigen Seite zurückführt
+- Aufruf von jeder Backend-Seite: Menüpunkt sowie Knöpfe „Issue Tracker“ und „Neues Thema“ in der Kopfzeile
+- „Neues Thema“ übernimmt die aktuelle Backend-Seite („Gemeldet von Seite“); beim Bearbeiten eines Artikels ist er als betroffene Seite vorbelegt
+- Postfach in voller Fensterhöhe: Postfächer, Liste und Lesebereich scrollen einzeln, die Seite dahinter nie
+- Abschaltbar in den Einstellungen („Als Vollbild öffnen“); dann wie bisher innerhalb der REDAXO-Oberfläche
 
 ### Anpassungen
-- ✅ **Menü-Titel anpassbar**: Der Menüpunkt kann in den Einstellungen umbenannt werden (z.B. "Support", "Tickets", "Anfragen")
-- ✅ **Tag-Duplikate verhindern**: Doppelte Tag-Namen werden erkannt und abgelehnt
-- ✅ **Dark Mode kompatibel**: Styling funktioniert im hellen und dunklen REDAXO-Theme
+- **Menü-Titel anpassbar**: Der Menüpunkt kann in den Einstellungen umbenannt werden (z.B. "Support", "Tickets", "Anfragen")
+- **Tag-Duplikate verhindern**: Doppelte Tag-Namen werden erkannt und abgelehnt
+- **Dark Mode kompatibel**: Styling funktioniert im hellen und dunklen REDAXO-Theme
 
 ### Berechtigungen
 - **issue_tracker[]**: Basis-Berechtigung für Zugriff auf den Issue Tracker (nur lesen)
 - **issue_tracker[issuer]**: Erweiterte Berechtigung für das Erstellen und Kommentieren von Issues
-- **issue_tracker[issue_manager]**: Issue Manager - kann alle Issues bearbeiten (fast wie Admin, ohne Einstellungen)
+- **issue_tracker[issue_manager]**: Issue Manager – kann alle Themen bearbeiten und löschen, Wissen pflegen und Projekte anlegen (fast wie Admin, ohne Einstellungen)
 - **admin**: Vollzugriff inkl. Einstellungen, Löschen, Private Issues erstellen und Broadcast-Nachrichten
 
 ### YRewrite & YForm Integration
@@ -141,45 +149,26 @@ Weitere Details siehe [MEDIA_MANAGER.md](MEDIA_MANAGER.md)
 
 ## Verwendung
 
-### Neues Issue erstellen
+Eine ausführliche Anleitung für Redakteure steht im Backend unter **Hilfe** (Datei [manual.md](manual.md)). Kurz:
 
-1. Klicke auf "Issue Tracker" → "Issues" → "Neues Issue"
-2. Fülle das Formular aus:
-   - **Titel**: Kurze, prägnante Beschreibung
-   - **Beschreibung**: Detaillierte Beschreibung des Problems/Wunsches (Markdown-Unterstützung)
-   - **Kategorie**: Wähle die passende Kategorie
-   - **Status**: Standardmäßig "Offen"
-   - **Priorität**: Setze die Priorität
-   - **Fälligkeit**: Optional Deadline setzen
-   - **Zuweisungen**: Optional User oder AddOn zuweisen
-   - **Tags**: Optional Tags hinzufügen
-   - **Dateianhänge**: Optional Dateien hochladen (Bilder, PDFs, Dokumente)
-   - **Privat** (nur Admins): Markiere das Issue als privat, sodass es nur du und andere Admins sehen können
-3. Klicke auf "Speichern"
+### Neues Thema erstellen
 
-### Private Issues (nur Admins)
+1. **Neu** in der Seitenleiste oder **Neues Thema** in der Kopfzeile des Backends (übernimmt die aktuelle Backend-Seite)
+2. In der **Eigenschaften-Leiste** oben: Zuweisen an (Pflicht), Status, Priorität, Kategorie, Projekt, Fälligkeit, Tags und **Betroffene Seite** (Artikel per Linkmap oder freie Adresse)
+3. **Titel** und **Beschreibung** (Markdown), optional **Dateianhänge** (auch per Ziehen)
+4. Unter **Weitere Angaben**: Privat (nur Admins), AddOn, Version, Domains, YForm-Tabellen
+5. **Thema erstellen**
 
-Admins können Issues als privat markieren. Private Issues sind:
-- Nur für den Ersteller sichtbar
-- Nur für Admins sichtbar
-- In der Liste und Detail-Ansicht geschützt
-- Ideal für sensible Themen oder interne Notizen
+### Private Themen (nur Admins)
 
-### Issue bearbeiten
+Admins können Themen als privat markieren. In den Listen erscheinen private Themen nur für den Ersteller und Admins; öffnen (und exportieren) können sie außerdem die zugewiesene Person und Manager.
 
-1. Klicke in der Liste auf ein Issue oder auf den Bearbeiten-Button
-2. Bearbeite die Felder nach Bedarf
-3. Füge Kommentare hinzu
-4. Ändere den Status
-5. Speichern
+### Im Lesebereich arbeiten
 
-### Kommentare hinzufügen
-
-1. Öffne ein bestehendes Issue
-2. Scrolle zum Kommentar-Bereich
-3. Gib deinen Kommentar ein
-4. Optional: Markiere den Kommentar als "Intern" (nur für Admins sichtbar)
-5. Klicke auf "Kommentar hinzufügen"
+- Status und Priorität über die Pill im Kopf, Tags über „+ Tag“
+- Symbolleiste: Antworten (R), Zuweisen, Priorität, Beobachten, Bearbeiten, Als erledigt markieren/Wieder öffnen, Löschen, Link kopieren, Vollansicht
+- Bereiche für Beobachter, Erinnerung, verwandtes Thema und Aktivitätsverlauf
+- Kommentare: Antworten, Bearbeiten, Anheften, Als Lösung markieren, Löschen; „Antworten und erledigen“ schließt das Thema mit der Antwort; interne Kommentare nur für Admins und Manager sichtbar
 
 ### Interaktive Checklisten
 
@@ -224,68 +213,29 @@ Dieses Problem hängt mit #42 zusammen. Siehe auch #7.
 - Das **referenzierte** Issue (`#42`) erhält automatisch einen Cross-Reference-Eintrag in seinem Aktivitätsverlauf mit Verweis auf das aktuelle Issue
 - Links innerhalb von Code-Blöcken (` ``` ` oder `\``) werden **nicht** ersetzt
 
-### Projekte verwalten
+### Projekte
 
-1. Gehe zu "Issue Tracker" → "Projekte"
-2. Klicke auf "Neues Projekt"
-3. Gib einen Namen und optional eine Beschreibung ein
-4. Wähle die Projekt-Mitglieder aus (wichtig: nur zugewiesene Benutzer sehen das Projekt!)
-5. Issues können anschließend einem Projekt zugeordnet werden
+- Projekte sind Ordner in der Seitenleiste. **Neues Projekt** (Admins und Manager) unter „Projekte“ oder über den Pfeil neben **Neu**.
+- Über **…** am Ordner: Bearbeiten, Mitglieder (Rollen Owner, Mitglied, Beobachter), Archivieren. Löschen unten auf der Seite „Projekt bearbeiten“; die Themen bleiben erhalten.
+- Benutzer sehen nur Projekte, denen sie als Mitglied zugeordnet sind. Admins sehen alle Projekte.
 
-**Hinweis**: Benutzer sehen nur Projekte, denen sie als Mitglied zugeordnet sind. Admins sehen alle Projekte.
+### Nachrichten
 
-### Private Nachrichten senden
+- **Neue Nachricht** über **Neu** im Bereich Nachrichten; Posteingang und Gesendet gruppieren als Gespräch.
+- Antworten direkt unter der Nachricht, **Weiterleiten** (F), **Als ungelesen markieren** (U), **Alle als gelesen markieren**, Löschen (nur für sich selbst).
 
-1. Gehe zu "Issue Tracker" → "Nachrichten"
-2. Klicke auf "Neue Nachricht"
-3. Wähle den Empfänger aus
-4. Gib Betreff und Nachricht ein
-5. Klicke auf "Senden"
+### Rundschreiben (nur Admins)
 
-Nachrichten werden als Konversation gruppiert. In der Inbox siehst du:
-- Den Kommunikationspartner
-- Anzahl ungelesener Nachrichten
-- Die letzte Nachricht in der Konversation
-- Wer zuletzt geantwortet hat
-
-### Broadcast-Nachricht senden (nur Admins)
-
-1. Gehe zu "Issue Tracker" → "Nachrichten" → "Broadcast"
-2. Gib Betreff und Nachricht ein
-3. Wähle die Empfänger:
-   - **Nur Issue-Tracker User** (Standard): Benutzer mit Issue-Tracker-Berechtigung
-   - **Alle REDAXO User**: Alle aktiven Backend-Benutzer (nur per E-Mail)
-4. Wähle die Versandart:
-   - **Internes Nachrichtensystem**: Nachricht erscheint im Posteingang
-   - **Nur per E-Mail**: Nachricht wird per E-Mail versendet
-   - **Nachrichtensystem und E-Mail**: Beides gleichzeitig
-5. Klicke auf "Broadcast senden"
-6. Bestätige die Aktion
-
-## Dashboard
-
-Das Dashboard zeigt:
-- Anzahl offener Issues
-- Anzahl Issues in Arbeit
-- Anzahl geplanter Issues
-- Anzahl erledigter Issues (letzte 30 Tage)
-- Issues nach Kategorie
-- Die 10 neuesten Issues
-- Ungelesene Nachrichten (Widget)
-- Projekte mit Fortschrittsanzeige
+1. Pfeil neben **Neu** → **Rundschreiben senden**
+2. Empfänger: **Nur Issue-Tracker-Benutzer** (Standard) oder **Alle REDAXO-Benutzer** (nur per E-Mail)
+3. Versandart: Nachricht im Posteingang, nur E-Mail oder beides
+4. Betreff und Text eingeben, absenden und bestätigen
 
 ## Filter und Suche
 
-In der Issues-Liste kannst du:
-- Nach Status filtern (Alle aktiven, Alle Issues, Nur Geschlossene, oder einzelner Status)
-- Nach Kategorie filtern
-- Nach Tags filtern
-- Nach Ersteller filtern ("Erstellt von")
-- Nach Titel oder Beschreibung suchen
-- Filter kombinieren und speichern
-- Gespeicherte Filter als Standard festlegen
-
-**Wichtig**: Filter werden in der Session gespeichert und bleiben erhalten, auch wenn du ein Issue öffnest und zurückkehrst. Mit dem "Reset"-Button werden alle Filter zurückgesetzt.
+- Suche in Titel und Beschreibung, Sortierung und Filter (Status, Kategorie, Tag, Ersteller, Zuständig, Projekt) oben in der Liste; **Zurücksetzen** hebt alle Filter auf
+- Filter bleiben beim Öffnen eines Themas erhalten und lassen sich unter **Gespeicherte Filter** speichern, als Standard festlegen und löschen
+- CSV- und PDF-Export (PDF mit dem AddOn PdfOut) berücksichtigen die aktuellen Filter
 
 ## Benachrichtigungen
 
@@ -300,11 +250,12 @@ Benutzer werden automatisch benachrichtigt bei:
 
 ### Benachrichtigungseinstellungen anpassen
 
-Jeder Benutzer kann seine Benachrichtigungen unter "Issue Tracker" → "Benachrichtigungen" individuell konfigurieren:
+Jeder Benutzer kann seine Benachrichtigungen im Zahnrad-Menü unter „Meine Benachrichtigungen“ individuell konfigurieren:
 - E-Mail bei neuen Issues
 - E-Mail bei neuen Kommentaren
 - E-Mail bei Status-Änderungen
 - E-Mail bei Zuweisungen
+- E-Mail bei Erwähnungen
 - E-Mail bei privaten Nachrichten
 - Optional: Vollständiger Nachrichtentext in E-Mails
 
@@ -326,6 +277,9 @@ Jeder Benutzer kann seine Benachrichtigungen unter "Issue Tracker" → "Benachri
 - `rex_issue_tracker_messages`: Private Nachrichten
 - `rex_issue_tracker_email_tokens`: One-Time-Token für E-Mail-Deep-Links
 - `rex_issue_tracker_reminders`: Erinnerungs-Tracking (Cooldown-Verwaltung)
+- `rex_issue_tracker_watchers`: Beobachter je Thema
+- `rex_issue_tracker_mentions`: Erwähnungen
+- `rex_issue_tracker_time_entries`: Zeiteinträge (`/spent`)
 
 ### PHP-Klassen
 
@@ -340,12 +294,17 @@ Jeder Benutzer kann seine Benachrichtigungen unter "Issue Tracker" → "Benachri
 - `FriendsOfREDAXO\IssueTracker\HistoryService`: Aktivitätsverlauf
 - `FriendsOfREDAXO\IssueTracker\SavedFilterService`: Gespeicherte Filter
 - `FriendsOfREDAXO\IssueTracker\PermissionService`: Zentralisierte Berechtigungsprüfungen
+- `FriendsOfREDAXO\IssueTracker\AppShell`: Rahmen der Vollbild-App und Prüfung von Backend-Adressen
+- `FriendsOfREDAXO\IssueTracker\ContentRenderer`: Markdown mit Checklisten und #-Verweisen
 - `rex_api_issue_tracker_link`: API-Klasse für Deep-Link-Token-Verarbeitung
+- `rex_api_issue_tracker_tags`, `rex_api_issue_tracker_export`, `rex_api_issue_tracker_stats`, `rex_api_issue_tracker_generate_token`: Quick-Tags, CSV-Export, Schnittstelle (siehe [api.md](api.md)), API-Token
 
 ### Assets
 
-- `assets/issue_tracker.css`: Styling (Dark Mode kompatibel)
-- `assets/issue_tracker.js`: JavaScript-Funktionalität
+- `assets/issue_tracker.css`, `assets/css/it-*.css`: Stile (eigene Klassen mit Präfix `it-`, Dark Mode)
+- `assets/issue_tracker.js`: Editoren, Kommentare, Checklisten, Lightbox
+- `assets/js/it-mail.js`, `assets/js/it-ui.js`: Postfach, Lesebereich, Quick-Tags, Eigenschaften-Leiste
+- `assets/js/it-app.js`: Vollbild-App (PJAX in der Ebene); `assets/js/it-launcher.js`, `assets/css/it-launcher.css`: kleiner Starter auf den übrigen Backend-Seiten
 
 ## Erweiterungen
 
@@ -363,7 +322,9 @@ E-Mail-Templates können direkt im Backend unter **Einstellungen → E-Mail-Temp
 
 Verfügbare Templates: Neues Issue, Neuer Kommentar, Status-Änderung, Zuweisung, Erinnerung – jeweils in Deutsch und Englisch.
 
-Verfügbare Platzhalter: `{{recipient_name}}`, `{{issue_id}}`, `{{issue_title}}`, `{{issue_category}}`, `{{issue_priority}}`, `{{issue_description}}`, `{{creator_name}}`, `{{comment_text}}`, `{{old_status}}`, `{{new_status}}`, `{{issue_url}}`, `{{sent_by_name}}`, `{{issue_status}}`, `{{due_date}}`
+Verfügbare Platzhalter: `{{recipient_name}}`, `{{issue_id}}`, `{{issue_title}}`, `{{issue_category}}`, `{{issue_priority}}`, `{{issue_description}}`, `{{creator_name}}`, `{{comment_text}}`, `{{old_status}}`, `{{new_status}}`, `{{issue_url}}`, `{{sent_by_name}}`, `{{issue_status}}`, `{{due_date}}`, `{{affected_page}}`
+
+`{{affected_page}}` ergibt eine komplette Zeile „Betroffene Seite: …“ (mit Zeilenumbruch davor) – Titel und absolute Frontend-Adresse des Artikels bzw. die eingegebene Adresse; Empfänger mit Rechten auf Kategorie und Sprache bekommen zusätzlich den Link „Im Backend bearbeiten“. Ist keine Seite gesetzt, bleibt der Platzhalter leer, es entsteht also keine leere Beschriftung. Die mitgelieferten Vorlagen enthalten ihn im Infokasten; beim Update werden unveränderte Standardvorlagen automatisch ergänzt, selbst angepasste Vorlagen bleiben unangetastet (dort bei Bedarf `{{affected_page}}` von Hand einfügen).
 
 In Beschreibungen und Kommentaren wird einfaches Markdown unterstützt:
 - `**fett**`, `*kursiv*`

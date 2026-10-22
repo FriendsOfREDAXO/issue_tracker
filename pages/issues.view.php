@@ -50,6 +50,33 @@ if (!PermissionService::canView($issue)) {
     return;
 }
 
+// CSRF-Schutz für alle Aktionen dieser Ansicht. Die Formulare der Ansicht bekommen den Token automatisch
+// (siehe $itWithToken unten); Formulare mit eigenem Token (Schnellbearbeitung) bleiben unverändert.
+$itViewToken = rex_csrf_token::factory('issue_tracker_view');
+if ('post' === rex_request_method()) {
+    $itViewActions = ['toggle_checklist', 'delete_comment', 'edit_comment', 'toggle_pin', 'toggle_solution', 'add_tag', 'remove_tag',
+        'add_comment', 'change_status', 'send_reminder', 'toggle_watch', 'remove_watcher', 'add_watchers'];
+    $itHasAction = in_array(rex_post('func', 'string', ''), ['mark_related', 'unmark_related'], true);
+    foreach ($itViewActions as $itKey) {
+        $itHasAction = $itHasAction || isset($_POST[$itKey]);
+    }
+    if ($itHasAction && !$itViewToken->isValid()) {
+        echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
+        foreach (array_merge($itViewActions, ['func']) as $itKey) {
+            unset($_POST[$itKey]);
+        }
+    }
+}
+$itWithToken = static function (string $html) use ($itViewToken): string {
+    return (string) preg_replace_callback('/<form\b[^>]*\bmethod=["\']post["\'][^>]*>.*?<\/form>/is', static function (array $m) use ($itViewToken): string {
+        // Formular hat schon einen eigenen Token (z. B. Schnellbearbeitung)? Nur echte Felder zählen, kein Text aus Kommentaren
+        if (preg_match('/<input\b[^>]*\bname=["\']_csrf_token["\']/i', $m[0])) {
+            return $m[0];
+        }
+        return (string) preg_replace('/(<form\b[^>]*>)/i', '$1' . $itViewToken->getHiddenField(), $m[0], 1);
+    }, $html);
+};
+
 // Checklisten-Item umschalten (interaktive Checklisten)
 if (rex_post('toggle_checklist', 'int', 0) === 1) {
     $clSource = rex_post('cl_source', 'string', '');
@@ -407,6 +434,8 @@ if (rex_post('add_comment', 'int', 0) === 1) {
                 NotificationService::notifyNewComment($comment, $issue);
             }
             
+            \FriendsOfREDAXO\IssueTracker\UiHelper::flash(rex_i18n::rawMsg('closed' === $issue->getStatus() && $closeAndComment ? 'issue_tracker_flash_reply_closed' : 'issue_tracker_flash_reply'));
+
             // Redirect zur aktuellen Seite mit Anker zum neuen Kommentar
             $redirectUrl = $itSelfUrl . '#comment-' . $comment->getId();
             header('Location: ' . $redirectUrl);
@@ -675,7 +704,7 @@ $fragment->setVar('quickToken', $itQuickToken);
 $fragment->setVar('canChangeStatus', PermissionService::isAdmin() || PermissionService::canEdit($issue));
 
 if ($itEmbedded) {
-    echo $fragment->parse('issue_tracker_view.php');
+    echo $itWithToken($fragment->parse('issue_tracker_view.php'));
     return;
 }
 
@@ -683,10 +712,11 @@ if ($itEmbedded) {
 $sidebar = new rex_fragment();
 $sidebar->setVar('mode', $itMode);
 ?>
+<?= \FriendsOfREDAXO\IssueTracker\UiHelper::flashToast() ?>
 <div class="it-mail it-mail--full it-mail--sel" data-it-mail data-mode="<?= rex_escape($itMode) ?>" data-mention-users="<?= rex_escape(json_encode(array_values($allIssueTrackerUsers))) ?>">
     <?= $sidebar->parse('issue_tracker_filter.php') ?>
     <section class="it-rp-wrap" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_reading_pane')) ?>" data-it-pane>
-        <?= $fragment->parse('issue_tracker_view.php') ?>
+        <?= $itWithToken($fragment->parse('issue_tracker_view.php')) ?>
     </section>
 </div>
 <?php

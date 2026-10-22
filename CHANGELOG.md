@@ -2,6 +2,114 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [2.0.0] – 2026-10-22
+
+Version 2.0 ist eine komplett neue Oberfläche für den Issue Tracker. Alle Funktionen, Rechte, Daten und Links aus E-Mails bleiben erhalten. Die Einzelheiten stehen in den Abschnitten der Vorabversionen (2.0.0-beta1 bis beta11) weiter unten.
+
+### Was 2.0 gegenüber 1.x bringt
+
+- **Wie Mail auf dem Mac**: Links die Postfächer (Mir zugewiesen, Beobachtet, Erwähnt, Überfällig, Status, Projekte, Wissen, Tags, gespeicherte Filter), in der Mitte die Liste mit Vorschau, rechts der Lesebereich mit dem Gesprächsverlauf. Die klassische Tabelle bleibt umschaltbar. Tastatur wie in Mail (↑/↓, R, T, F, U, ? für alle Kürzel), am Handy Schritt für Schritt wie am iPhone, hell und dunkel. Das Dashboard und die einzelnen Unterseiten sind im Postfach aufgegangen.
+- **Eigenes Fenster über dem Backend**: Der Issue Tracker öffnet sich von jeder Backend-Seite aus (Menüpunkt, Knöpfe „Issue Tracker“ und „Neues Thema“ in der Kopfzeile) als Ebene, wahlweise als Fenster oder Vollbild. Seitenwechsel laufen per PJAX ohne Neuladen; Adresse, Zurück/Vor und Neuladen funktionieren, „Schließen“ oder Esc führen zur vorherigen Seite zurück.
+- **Nachrichten** im selben Postfach: Posteingang, Gesendet, Antworten direkt unter der Nachricht, Weiterleiten, als ungelesen markieren, alle als gelesen markieren, Rundschreiben.
+- **Kürzlich erledigt**: die in den letzten 7 Tagen erledigten Themen mit eigener Zahl.
+- **Eigenschaften-Leiste** beim Anlegen und Bearbeiten (Zuweisen, Status, Priorität, Kategorie, Projekt, Fälligkeit, Tags, betroffene Seite); im Lesebereich Status und Priorität direkt an der Pill ändern.
+- **Quick-Tags**: Tags direkt in der Liste setzen (Taste T), Admins legen neue Tags gleich dort an.
+- **Betroffene Seite**: Artikel aus der Struktur (Linkmap) oder Adresse; „Neues Thema“ übernimmt die Backend-Seite, von der aus es angelegt wird. Auch in E-Mails, CSV- und PDF-Export.
+- **Schriftgröße** (90–140 %) und **Spaltenbreiten** pro Benutzer einstellbar.
+- **Sicherheit**: Alle Aktionen sind gegen CSRF geschützt (Formulare, Aktions-Links, API-Aufrufe), riskante Aktionen fragen vorher nach.
+
+### Hinweise zum Update von 1.x
+
+- Neue Tabellen und Spalten (u. a. betroffene Seite, Herkunftsseite) werden beim Update automatisch angelegt; Daten bleiben erhalten.
+- Unveränderte Standard-Mailvorlagen werden automatisch um den neuen Platzhalter `{{affected_page}}` ergänzt. **Selbst angepasste Vorlagen bleiben unangetastet** – dort `{{affected_page}}` bei Bedarf von Hand einfügen (Einstellungen → E-Mail-Templates).
+- Die Ebene über dem Backend ist standardmäßig an und lässt sich unter Einstellungen → Allgemein mit **„Als Vollbild öffnen“** abschalten; dann erscheint der Issue Tracker wie bisher innerhalb der REDAXO-Oberfläche.
+- Eigene Stile oder Skripte, die sich auf die Klassen der 1.x-Oberfläche bezogen haben, müssen angepasst werden (neue Klassen mit Präfix `it-`).
+
+### Korrekturen seit 2.0.0-beta11 (Prüfung aller Aktionen)
+
+- Fix: Rückfragen vor riskanten Aktionen wurden beim direkten Aufruf einer Seite (Link aus einer E-Mail, Neuladen) übergangen – „Abbrechen“ führte die Aktion trotzdem aus. Betroffen waren u. a. Kommentar löschen, Backup einspielen, Mailvorlagen zurücksetzen, Projekt archivieren, gespeicherten Filter löschen, Erinnerung senden und „Aus Wissen entfernen“. Die Ebene fängt Formulare jetzt erst nach der Rückfrage ab.
+- Fix: „Filter speichern“ verließ die Ebene und lud die ganze Seite neu; das Fenster bleibt jetzt in der Ebene.
+- Fix: CSV- und PDF-Export brachen für Benutzer ohne Admin-Rechte mit einem Datenbankfehler ab (falscher Spaltenname). Exportiert werden jetzt die Themen, die der Benutzer sehen darf (wie in der Ansicht).
+- Fix: Backup: Antworten auf Kommentare wurden ohne Bezug exportiert, und beim Import scheiterten Kommentare (falscher Spaltenname) – das Thema wurde ohne Kommentare angelegt. Ältere Sicherungen bleiben lesbar.
+- Fix: Projekte ließen sich nicht mehr löschen (keine Schaltfläche, die alte Adresse ohne CSRF-Schutz). Neu: „Projekt löschen“ unten auf der Seite „Projekt bearbeiten“, mit Rückfrage und CSRF-Token; die alte Lösch-Adresse ist entfernt.
+- Fix: „Projekt anlegen“ und „Projekt bearbeiten“ waren für Manager (`issue_tracker[issue_manager]`) gesperrt, obwohl das Menü sie anbot (falsches Recht in `package.yml`).
+- Fix: Checklisten in Beschreibungen und Kommentaren, die der Benutzer nicht bearbeiten darf, wirkten anklickbar, die Änderung ging aber verloren. Sie werden jetzt nur angezeigt.
+- Fix: Beim Löschen eines Kommentars blieben seine Antworten unsichtbar in der Datenbank und seine Anhänge als Dateien zurück; Antworten und Anhänge werden jetzt mitgelöscht.
+- Fix: Im Lesebereich zeigten Verweise wie `#50` in Thema 5 auf Thema 5 (die Adresse wurde beim Umschreiben der Checklisten-Ziele mit ersetzt).
+- Fix: Enthielt ein Kommentar oder eine Beschreibung den Text `_csrf_token`, fehlte dem zugehörigen Formular der Token („CSRF-Token ungültig“).
+- Handbuch (Hilfe), README und Installationsanleitung auf die neue Oberfläche aktualisiert.
+
+### Sicherheit
+
+- Keine CSRF-Token mehr in Adressen (Browserverlauf, Referrer, Server-Logs): Thema löschen (Lesebereich und Tabelle), Nachricht löschen, Anhang löschen, Tag löschen und Projektmitglied entfernen sind jetzt kleine POST-Formulare mit verstecktem Token und Rückfrage (`data-confirm`), optisch unverändert. Die Server-Seite führt diese Aktionen nur noch per POST mit Token aus; alte Links mit Token in der Adresse bewirken nichts mehr.
+- API-Aufrufe (Quick-Tags, Tags in der Eigenschaften-Leiste, „Neuen API-Token generieren“) schicken den Token im POST-Body statt in der Adresse; „Neuen API-Token generieren“ nimmt nur noch POST an.
+- Die Ansicht Postfach/Tabelle und „Filter zurücksetzen“ werden nur noch per POST mit Token gespeichert bzw. zurückgesetzt. `view_mode` und `reset_filter` in der Adresse (Lesezeichen, alte Links) wirken nur auf die aktuelle Anzeige und ändern nichts Gespeichertes.
+- Das zuletzt genutzte Postfach wird beim Anzeigen nur vorgemerkt und erst per POST mit Token gespeichert; ein untergeschobener Aufruf (Bild, Iframe) ändert die gespeicherte Einstellung nicht mehr. Die Sortierung im Nachrichtenverlauf akzeptiert nur noch `asc`/`desc`.
+
+## [2.0.0-beta11] – 2026-10-22
+
+- Fix: Antworten auf eine Nachricht (Antwortfeld unter der Nachricht) scheiterte mit „CSRF-Token ungültig“ – das Formular schickt das Token jetzt mit.
+
+## [2.0.0-beta10] – 2026-10-22
+
+- Das Doppelpfeil-Symbol für den Status in der Symbolleiste ist entfernt (wurde leicht mit „Weiterleiten“ verwechselt). Der Status wird an der Status-Pill im Kopf des Themas geändert.
+
+## [2.0.0-beta9] – 2026-10-22
+
+- Fix: „Bearbeiten“ (Stift) und „Antworten“ an einem Kommentar zeigten in manchen Backends nur ein leeres Feld – das Formular wurde per `style.display` statt über das `hidden`-Attribut eingeblendet und blieb bei Stilen mit festem `[hidden]` unsichtbar.
+- **Status und Priorität direkt an der Pill ändern**: Ein Klick auf die Status- bzw. Prioritäts-Pill im Lesebereich öffnet das Auswahlmenü (bisher nur über die Symbole in der Symbolleiste).
+
+## [2.0.0-beta8] – 2026-10-22
+
+- **Vollbild-App ohne iframe**: Die Ebene liegt jetzt direkt in der Backend-Seite; Seitenwechsel im Issue Tracker laufen per PJAX nach REDAXO-Konvention. Anfragen mit `X-PJAX: true` und dem Container `#it-app` rendert REDAXO ohne Backend-Layout (`rex_be_controller`), der Server liefert nur den App-Rahmen samt Inhalt – keine Navigation, kein Seitenkopf, keine erneut ausgeführten Skripte. Nach jedem Wechsel wird wie bei REDAXOs eigenem PJAX `rex:ready` auf dem neuen Inhalt ausgelöst (Auswahllisten, Editoren, Formulare usw. werden darüber neu aufgebaut).
+- **Schneller**: Die Ebene erscheint beim Klick sofort mit einem Platzhalter (Kopfleiste und Spalten), der Inhalt folgt. Beim Zeigen auf den Menüpunkt oder die Knöpfe in der Kopfzeile werden Inhalt und Dateien der App vorab geladen, nach dem Laden einer Backend-Seite holt der Browser die Dateien im Leerlauf in den Cache (versionierte Adressen wie im REDAXO-Seitenkopf, ein gemeinsamer Cache mit den Seiten des Issue Trackers). Lokal gemessen (Median, Klick bis Inhalt sichtbar, beta7 → beta8): Öffnen 94 → 61 ms, mit Vorabladen 17 ms; Postfach wechseln 90 → 56 ms; Quick-Tag 40 → 7 ms. Lesebereich weiterhin nur als Teil nachgeladen. Kleine Aktionen zeigen das Ergebnis sofort (Tags in der Liste, Status-Menü, Beobachten, gelesen/ungelesen) und werden vom Server bestätigt bzw. bei Fehlern zurückgenommen. Statt eines Ladebildschirms erscheint bei längeren Wechseln (ab 150 ms) eine dezente Leiste oben im Fenster. Scrollpositionen von Seitenleiste und Liste sowie Spaltenbreiten bleiben bei Wechseln erhalten.
+- **Adresse und Verlauf**: Solange die Ebene offen ist, steht die Adresse des Issue Trackers in der Adresszeile. Zurück/Vor blättern in der App (Lesebereich ohne Neuladen der Liste), Zurück vor die erste Ansicht schließt die Ebene, Vor öffnet sie wieder. „Schließen“ und Esc stellen die Adresse der Seite darunter wieder her, ohne sie neu zu laden; der Fokus kehrt zum Auslöser zurück. Neuladen und direkte Links (z. B. aus E-Mails) zeigen den Issue Tracker gleich im Fenster über dem Backend; „Schließen“ führt dann zur zuletzt besuchten Backend-Seite (sonst zur Startseite).
+- **Formulare in der Ebene**: Filter (GET), Aktionen (POST mit CSRF-Token), Uploads mit Anhängen (FormData), Weiterleitungen nach dem Speichern und Fehlermeldungen landen in der Ebene. Downloads (CSV, Backup) laden normal herunter, Links zu anderen Backend-Seiten öffnen im ganzen Fenster, `target="_blank"` bleibt unberührt. Linkmap und Medienpool schreiben direkt in die Felder der Ebene (gleiches Dokument). Die Warnung bei ungespeicherten Änderungen gilt jetzt auch beim Schließen der Ebene, bei Wechseln in der App und bei Zurück.
+- **Aufräumen**: Beim Wechsel und beim Schließen werden Editoren (EasyMDE samt Listener), Beobachter, Timer, Tag-Fenster und an `<body>` gehängte Fenster abgebaut; globale Ereignisse sind nur einmal gebunden (keine doppelten Bindungen nach PJAX-Wechseln).
+- **Ohne Inline-Skripte**: `onclick`/`onsubmit`/`onchange`-Attribute und das Inline-Skript für das Nachrichten-Badge sind ersetzt – Rückfragen über REDAXOs `data-confirm`, Antworten/Bearbeiten über `data-it-toggle-reply`/`data-it-toggle-edit`, Sofort-Absenden über `data-it-autosubmit` (jetzt per `requestSubmit`), Badge über `data-it-unread-badge`. Doppelte Rückfragen (Inline-Handler und `data-confirm`) entfallen.
+- `issue_tracker.js` aufgeteilt in einmalige, delegierte Bindungen und eine Initialisierung je Inhalt (`rex:ready` mit Container); neue Hilfe `window.ITEditors` (Editoren anlegen und abbauen). `it-mail.js`, `it-ui.js` initialisieren je Container. „REDAXO-Seite verlinken“ jetzt auch im Antwortfeld des nachgeladenen Lesebereichs.
+- Entfernt: iframe-Rahmen und Brücke zum Elternfenster (`ITLauncher`, `it-app-framed`, `it-app-lock`, `it-ov-frame`, Ladebildschirm); Body-Klasse `it-app-mode`.
+- `AppShell`: neue Methoden `isPjax()`, `overlayStart()`, `overlayEnd()`, `assetUrl()`, `cssFiles()`, `jsFiles()`; der App-Rahmen trägt Schriftgröße und Spaltenbreiten als `data-it-scale`/`data-it-cols`. Das Startskript in der Kopfzeile (`it-launcher.js`) bleibt klein; Inhalt und Dateien lädt es erst beim Öffnen.
+- Fix: Ein Betreff nur aus Leerzeichen wird auch serverseitig abgelehnt.
+
+## [2.0.0-beta7] – 2026-10-21
+
+- **Status als Pill**: In der Liste steht der Status als farbige Pill; beim Anlegen und Bearbeiten ist der Status ein eigener Chip in der Eigenschaften-Leiste.
+- **Vollbild-App (wie MediaPlace)**: Der Issue Tracker öffnet sich als eigene Ebene über dem Backend – mit eigener Kopfleiste (Symbol, „Issue Tracker“, aktueller Bereich, Postfach/Einstellungen/Hilfe und „Schließen“). Im Postfach ist das Fenster so hoch wie der Bildschirm: Postfächer, Liste und Lesebereich scrollen jeweils für sich, die Seite dahinter scrollt nie (kein Durchscrollen). Die Symbolleiste des Lesebereichs und der Listenkopf bleiben oben, „Antworten“ über die Symbolleiste (Taste R). Formulare, Einstellungen und Hilfe haben einen Scrollbereich. Bis 1199 px bleibt die schrittweise Navigation (Postfächer → Liste → Thema), die Kopfleiste mit „Schließen“ steht immer oben.
+- **Von jeder Backend-Seite aus**: Der Menüpunkt „Issue Tracker“ und zwei neue Knöpfe in der Kopfzeile des Backends („Issue Tracker“, „Neues Thema“) öffnen die App als Ebene über der aktuellen Seite. „Schließen“ oder Esc (wenn kein Eingabefeld, Menü oder Fenster offen ist) führt ohne Neuladen dorthin zurück; der Fokus kehrt zum Auslöser zurück. Direkte Links (z. B. aus E-Mails) öffnen die App ebenfalls; „Schließen“ führt dann zur zuletzt besuchten Backend-Seite (sonst zur Startseite). Links zu anderen Backend-Seiten (z. B. „Bearbeiten“ eines Artikels) öffnen im ganzen Fenster. Ohne JavaScript führen Menüpunkt und Knöpfe einfach zur Seite. Nicht auf der Anmeldeseite und in Popups (Linkmap, Medienpool).
+- **Neues Thema zur aktuellen Seite**: „Neues Thema“ (Kopfzeile oder in der App) übernimmt die Backend-Seite, von der aus der Issue Tracker geöffnet wurde: Hinweis „Gemeldet von der Backend-Seite …“ im Formular (abwählbar); wird gerade ein Artikel bearbeitet, ist er als „Betroffene Seite“ vorbelegt. Gespeichert und im Lesebereich unter „Gemeldet von Seite“ verlinkt. Nur Backend-Adressen dieser Installation werden übernommen (Prüfung auf dem Server; keine API-Aufrufe, Abmelde-Links oder CSRF-Token).
+- **Einstellung „Als Vollbild öffnen“** (Allgemein, Standard: an). Ausgeschaltet erscheint der Issue Tracker wie bisher innerhalb der REDAXO-Oberfläche: keine festen Bereiche, keine eigenen Scrollbereiche, die Seite scrollt; keine Knöpfe in der Kopfzeile.
+- Neue Klasse `AppShell` (Rahmen, Prüfung von Backend-Adressen), neue Assets `css/it-app.css`, `js/it-app.js` (nur auf Seiten des Issue Trackers) und `css/it-launcher.css`, `js/it-launcher.js` (klein, auf den übrigen Backend-Seiten für Benutzer mit Zugriff). Die Seite dahinter wird über eine eigene Klasse am `<html>` gesperrt; REDAXO-Stile bleiben unberührt.
+- Datenbank: neue Spalten `source_url` (varchar 500, NULL) und `source_title` (varchar 255, NULL) in `rex_issue_tracker_issues`; neue Methoden `Issue::getSourceUrl()`, `getSourceTitle()`, `setSource()`. Auch im Backup-Export/-Import enthalten (beim Import erneut geprüft).
+- **Fenster oder Vollbild** (wie MediaPlace): Der Issue Tracker öffnet als großes Fenster über der abgedunkelten Backend-Seite; der Knopf neben „Schließen“ vergrößert auf die ganze Fläche und zurück. Die Wahl merkt sich der Browser. Auf schmalen Bildschirmen immer ganze Fläche.
+
+## [2.0.0-beta6] – 2026-10-21
+
+- **Kürzlich erledigt**: neues Postfach unter „Themen“ mit den in den letzten 7 Tagen erledigten Themen und einer auffälligen grünen Zahl. Die Liste zeigt das Datum des Erledigens und sortiert die zuletzt erledigten nach oben.
+- Postfach-Spalte standardmäßig etwas breiter, damit die Beschriftungen nicht abgeschnitten werden.
+- **Fenster ohne feste Höhe**: Das Postfach folgt dem normalen Seitenfluss und die Seite scrollt wie jede REDAXO-Seite. Postfächer und Liste bleiben unter dem REDAXO-Kopf stehen (sticky) und scrollen nur selbst, wenn sie höher als das Fenster sind; die Symbolleiste des Lesebereichs bleibt oben, „Antworten“ bleibt am unteren Fensterrand erreichbar. Spaltenhintergrund und Trennlinien laufen neben langen Themen durch.
+- **Eigenschaften-Leiste beim Anlegen und Bearbeiten**: Zuweisen an, Priorität, Kategorie, Projekt, Fälligkeit, Tags und betroffene Seite stehen als Chips oben im Formular (wie im Lesebereich) und werden mit dem neuen Thema gespeichert. Die bisherigen Einzelfelder dafür entfallen (keine doppelten Felder); Status, Privat, AddOn, Version usw. bleiben unter „Weitere Angaben“. Pflichtfeld „Zuweisen an“ wird vor dem Absenden geprüft, die Prüfung auf dem Server bleibt. Admins können in der Leiste direkt ein neues Tag anlegen.
+- **Schnelles Tagging in der Liste**: Tag-Symbol in jeder Zeile (bei Zeigen, Fokus und in der ausgewählten Zeile) und in der Tabelle sowie Taste **T** öffnen ein kleines Fenster mit Suche und ankreuzbaren Tags; Änderungen gelten sofort, die Tag-Pillen der Zeile und der Lesebereich werden aktualisiert. „Neues Tag anlegen“ nur für Benutzer, die Tags verwalten dürfen. Neue API-Funktion `issue_tracker_tags` (nur Backend, CSRF-Token, Rechte wie beim Bearbeiten des Themas).
+- **Betroffene Seite**: Optional einen Artikel aus der Struktur über das REDAXO-Link-Widget (Linkmap) wählen oder eine Adresse eingeben (https://… oder Pfad ab „/“, andere Schemata werden abgelehnt). Im Lesebereich und in der Vollansicht als Chip und unter den Angaben mit „Seite ansehen“ (Frontend) und „Bearbeiten“ (nur mit Rechten auf Kategorie und Sprache). Auch im Backup-Export/-Import enthalten.
+- Datenbank: neue Spalten `article_id`, `clang_id` (int, NULL) und `affected_url` (varchar 500, NULL) in `rex_issue_tracker_issues` (per `rex_sql_table::ensureColumn`, läuft beim Update automatisch).
+- Neue Methoden in `Issue`: `getArticleId()`, `getClangId()`, `setAffectedArticle()`, `getAffectedUrl()`, `setAffectedUrl()`, `getAffectedArticle()`, `isValidAffectedUrl()`.
+- **Sicherheit**: Alle Aktionen der Themenansicht (Kommentare, Status, Tags, Beobachter, Checklisten, Verknüpfungen) sind jetzt gegen CSRF geschützt; bisher hatten nur die Schnellbearbeitung von Priorität und Zuweisung einen Token.
+- **Betroffene Seite in E-Mails und Exporten**: Neuer Platzhalter `{{affected_page}}` für die E-Mail-Vorlagen – eine komplette Zeile „Betroffene Seite: …“ mit Titel und absoluter Frontend-Adresse (bzw. der eingegebenen Adresse), für Empfänger mit Rechten auf Kategorie und Sprache zusätzlich „Im Backend bearbeiten“. Ohne betroffene Seite bleibt er leer (keine leere Beschriftung). Die Standardvorlagen enthalten ihn; beim Update werden unveränderte Standardvorlagen automatisch ergänzt, angepasste bleiben unangetastet. Auch die Text-Mails (Erwähnung, Antworten und erledigen) nennen die Seite. Im PDF-Export steht sie als Zeile unter dem Titel, im CSV-Export als eigene Spalte. In der Vorlagen-Seite als anklickbarer Platzhalter mit Vorschau.
+- CSV-Export brach bei Themen mit leeren Feldern (z. B. ohne Kategorie) mit einem Fehler ab – behoben.
+- Neue Methoden: `Issue::toAbsoluteUrl()`, `Issue::getAffectedPageSummary()`, `NotificationService::buildAffectedPageHtml()` / `buildAffectedPageText()`.
+- **Weitere laden** ohne Neuladen der Seite: Die nächsten 50 Einträge werden angehängt; Auswahl, Lesebereich, Scrollposition und Tastaturbedienung bleiben erhalten, der Fokus springt auf den ersten neuen Eintrag, ↑/↓ blättert von dort weiter, die Adresse merkt sich den Umfang. Anzeige „50 von 120“ und Ansage für Screenreader. Ohne JavaScript bleibt die Auswahl beim Nachladen ebenfalls erhalten.
+- **Sicherheit (CSRF)**: Gespeicherte Filter (speichern, als Standard festlegen – bisher ein GET-Link –, löschen) sowie alle übrigen Formulare und Aktions-Links des AddOns prüfen jetzt einen Token: Thema anlegen/bearbeiten, Anhang löschen (zusätzlich nur mit Bearbeitungsrecht für das Thema), Thema und Nachricht löschen, Nachricht und Rundschreiben senden, Projekt anlegen/bearbeiten, Mitglieder hinzufügen/entfernen, eigene Einstellungen, Einstellungen, Tags, E-Mail-Vorlagen (speichern, testen, zurücksetzen), Backup-Import und API-Token erzeugen (jetzt POST).
+- **Bedienung**:
+  - Warnung vor dem Verlassen mit ungespeicherten Eingaben (Abbrechen, andere Links, Fenster schließen) beim Anlegen/Bearbeiten von Themen und beim Schreiben von Nachrichten.
+  - Kurze Einblendung nach dem Speichern („Thema #12 wurde angelegt.“, „Ihre Antwort wurde gespeichert.“), verschwindet nach einigen Sekunden, bleibt bei Maus oder Fokus stehen.
+  - Betroffene Seite: ungültige Adresse wird schon beim Verlassen des Feldes gemeldet (gleiche Regel wie auf dem Server), das Absenden öffnet dann das Feld; neuer Knopf **Keine Seite** entfernt Artikel und Adresse.
+  - Schnell-Tags: leerer Zustand mit Hinweis („Noch keine Tags vorhanden …“), ohne Tags und ohne Recht zum Anlegen kein leeres Suchfeld.
+  - **Tastaturkürzel-Übersicht** über die Taste **?** oder das Zahnrad-Menü; Kürzel stehen auch in den Tooltips und als `aria-keyshortcuts`. ↑/↓ blättert vom fokussierten Eintrag aus weiter.
+  - Menüs der Seitenleiste (z. B. … bei Projekten) öffnen sich bei wenig Platz nach oben statt unten abgeschnitten zu werden (z. B. 1280 × 720).
+  - Leere Postfächer erklären, warum sie leer sind (Erwähnt, Beobachtet, Überfällig, Kürzlich erledigt, Mir zugewiesen, Von mir erstellt); im Wissen ohne Recht kein „Neu“-Knopf.
+  - Einheitliche Begriffe: „Thema“ statt „Issue“ und „erledigt“ statt „geschlossen“ in der deutschen Oberfläche (z. B. „Antworten und erledigen“, „Mit verwandtem Thema verknüpfen“), Anrede überall „Sie“; Hinweis der Eigenschaften-Leiste klarer formuliert.
+- API `issue_tracker_comment_action` (Pinnen/Lösung): nur noch per POST mit CSRF-Token (`rex_csrf_token::factory('issue_tracker_comment_action')`) und mit denselben Rechten wie in der Themenansicht.
+
 ## [2.0.0-beta5] – 2026-10-19
 
 - **Spaltenbreite ziehen**: Die Trennlinien zwischen Postfächern, Liste und Lesebereich lassen sich ziehen (auch per Pfeiltasten), begrenzt auf sinnvolle Breiten; Doppelklick stellt die Standardbreite wieder her. Die Breite wird pro Benutzer gespeichert.

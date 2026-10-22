@@ -19,8 +19,9 @@ class ContentRenderer
      * @param string $text       Roh-Markdown
      * @param int    $issueId    ID des aktuellen Issues (für Checklist-Toggle-URL)
      * @param int|null $commentId ID des Kommentars (null = Beschreibung)
+     * @param bool     $interactive Checklisten umschaltbar (false = nur anzeigen, z. B. ohne Bearbeitungsrecht)
      */
-    public static function render(string $text, int $issueId, ?int $commentId = null): string
+    public static function render(string $text, int $issueId, ?int $commentId = null, bool $interactive = true): string
     {
         // /spent-Befehl aus der Anzeige entfernen
         $displayText = self::stripSpentCommand($text);
@@ -31,7 +32,7 @@ class ContentRenderer
         $html = self::linkIssueRefs($html);
 
         // 2. Deaktivierte Checkboxen aus ParsedownExtra interaktiv machen
-        $html = self::makeCheckboxesInteractive($html, $issueId, $commentId);
+        $html = self::makeCheckboxesInteractive($html, $issueId, $commentId, $interactive);
 
         return $html;
     }
@@ -77,7 +78,7 @@ class ContentRenderer
      * Ersetzt Checklist-Items aus ParsedownExtra (rendert `- [ ]` als `<li>[ ] ...</li>`)
      * mit interaktiven Formularen zum Umschalten.
      */
-    private static function makeCheckboxesInteractive(string $html, int $issueId, ?int $commentId): string
+    private static function makeCheckboxesInteractive(string $html, int $issueId, ?int $commentId, bool $interactive = true): string
     {
         $source = $commentId !== null ? 'comment_' . $commentId : 'description';
         // rex_url::backendPage() gibt bereits HTML-kodierte URL zurück (mit &amp;) – kein rex_escape() nötig
@@ -87,10 +88,16 @@ class ContentRenderer
         // ParsedownExtra rendert `- [ ] Task` als `<li>[ ] Task</li>` und `- [x] Done` als `<li>[x] Done</li>`
         return preg_replace_callback(
             '/<li>\s*\[([x ]?)\](.*?)<\/li>/si',
-            static function (array $m) use ($url, $source, &$checklistIndex): string {
+            static function (array $m) use ($url, $source, $interactive, &$checklistIndex): string {
                 $checked = strtolower(trim($m[1])) === 'x';
                 $labelHtml = trim($m[2]);
                 $index = $checklistIndex++;
+
+                // Ohne Recht zum Umschalten: nur anzeigen (der Server würde die Änderung ohnehin verwerfen)
+                if (!$interactive) {
+                    return '<li class="it-task-item"><input type="checkbox" disabled' . ($checked ? ' checked' : '')
+                        . ' style="margin:0 4px 0 0;vertical-align:middle;"> ' . $labelHtml . '</li>';
+                }
 
                 return sprintf(
                     '<li class="it-task-item">'
@@ -98,7 +105,7 @@ class ContentRenderer
                     . '<input type="hidden" name="toggle_checklist" value="1">'
                     . '<input type="hidden" name="cl_source" value="%s">'
                     . '<input type="hidden" name="cl_index" value="%d">'
-                    . '<input type="checkbox" %s onchange="this.form.submit()" style="cursor:pointer;vertical-align:middle;"> %s'
+                    . '<input type="checkbox" %s data-it-autosubmit style="cursor:pointer;vertical-align:middle;"> %s'
                     . '</form>'
                     . '</li>',
                     \rex_escape($url),

@@ -60,6 +60,10 @@ Folgende Platzhalter stehen in den Templates zur Verfügung:
 - `{{old_status}}` - Alter Status (bei Status-Änderungen)
 - `{{new_status}}` - Neuer Status (bei Status-Änderungen)
 - `{{issue_url}}` - Einmaliger Deep-Link zum Issue (30 Tage gültig)
+- `{{sent_by_name}}` - Wer die Erinnerung ausgelöst hat (nur Erinnerung)
+- `{{issue_status}}` - Status (nur Erinnerung)
+- `{{due_date}}` - Zeile „Fällig am …“ inkl. Beschriftung, leer ohne Fälligkeit (nur Erinnerung)
+- `{{affected_page}}` - Zeile „Betroffene Seite: …“ inkl. Beschriftung: Titel und absolute Frontend-Adresse des Artikels bzw. die eingegebene Adresse, für Empfänger mit Rechten zusätzlich „Im Backend bearbeiten“. Leer, wenn keine Seite gesetzt ist. Steht in den Standardvorlagen am Ende des Infokastens; unveränderte Standardvorlagen werden beim Update automatisch ergänzt, angepasste Vorlagen nicht.
 
 ## Technische Details
 

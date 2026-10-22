@@ -7,6 +7,8 @@
  */
 
 use FriendsOfREDAXO\IssueTracker\Comment;
+use FriendsOfREDAXO\IssueTracker\Issue;
+use FriendsOfREDAXO\IssueTracker\PermissionService;
 
 class rex_api_issue_tracker_comment_action extends rex_api_function
 {
@@ -21,8 +23,13 @@ class rex_api_issue_tracker_comment_action extends rex_api_function
             return new rex_api_result(false, 'Nicht eingeloggt');
         }
 
-        $commentId = rex_request('comment_id', 'int', 0);
-        $action = rex_request('action', 'string', '');
+        // Nur per POST mit CSRF-Token (Token: rex_csrf_token::factory('issue_tracker_comment_action'))
+        if ('post' !== rex_request_method() || !rex_csrf_token::factory('issue_tracker_comment_action')->isValid()) {
+            return new rex_api_result(false, rex_i18n::msg('csrf_token_invalid'));
+        }
+
+        $commentId = rex_post('comment_id', 'int', 0);
+        $action = rex_post('action', 'string', '');
 
         if ($commentId === 0 || !in_array($action, ['toggle_pin', 'toggle_solution'])) {
             return new rex_api_result(false, 'Ungültige Parameter');
@@ -31,6 +38,13 @@ class rex_api_issue_tracker_comment_action extends rex_api_function
         $comment = Comment::get($commentId);
         if (!$comment) {
             return new rex_api_result(false, 'Kommentar nicht gefunden');
+        }
+
+        // Rechte wie in der Themenansicht: Moderation oder Ersteller des Themas
+        $issue = Issue::get($comment->getIssueId());
+        if (!$issue || !PermissionService::canView($issue)
+            || !(PermissionService::canModerateComments() || $issue->getCreatedBy() === PermissionService::getUserId())) {
+            return new rex_api_result(false, 'Keine Berechtigung');
         }
 
         // Aktion ausführen

@@ -41,6 +41,11 @@ class Issue
     private ?int $projectId = null;
     private ?int $duplicateOf = null;
     private int $sortOrder = 0;
+    private ?int $articleId = null;
+    private ?int $clangId = null;
+    private ?string $affectedUrl = null;
+    private ?string $sourceUrl = null;
+    private ?string $sourceTitle = null;
 
     /**
      * Lädt ein Issue aus der Datenbank.
@@ -146,6 +151,20 @@ class Issue
             $issue->sortOrder = (int) $sql->getValue('sort_order');
         }
 
+        // Betroffene Seite (Artikel + Sprache oder freie Adresse)
+        if ($sql->hasValue('article_id') && $sql->getValue('article_id')) {
+            $issue->articleId = (int) $sql->getValue('article_id');
+            $issue->clangId = $sql->hasValue('clang_id') && $sql->getValue('clang_id') ? (int) $sql->getValue('clang_id') : null;
+        }
+        if ($sql->hasValue('affected_url') && $sql->getValue('affected_url')) {
+            $issue->affectedUrl = (string) $sql->getValue('affected_url');
+        }
+        // Backend-Seite, von der aus das Thema gemeldet wurde
+        if ($sql->hasValue('source_url') && $sql->getValue('source_url')) {
+            $issue->sourceUrl = (string) $sql->getValue('source_url');
+            $issue->sourceTitle = $sql->hasValue('source_title') && $sql->getValue('source_title') ? (string) $sql->getValue('source_title') : null;
+        }
+
         return $issue;
     }
 
@@ -173,6 +192,11 @@ class Issue
         $sql->setValue('project_id', $this->projectId);
         $sql->setValue('duplicate_of', $this->duplicateOf);
         $sql->setValue('sort_order', $this->sortOrder);
+        $sql->setValue('article_id', $this->articleId);
+        $sql->setValue('clang_id', $this->articleId ? $this->clangId : null);
+        $sql->setValue('affected_url', $this->affectedUrl);
+        $sql->setValue('source_url', $this->sourceUrl);
+        $sql->setValue('source_title', $this->sourceUrl ? $this->sourceTitle : null);
         $sql->setValue('closed_at', $this->closedAt ? $this->closedAt->format('Y-m-d H:i:s') : null);
         $sql->setValue('updated_at', date('Y-m-d H:i:s'));
 
@@ -499,6 +523,140 @@ class Issue
     public function setSortOrder(int $sortOrder): void
     {
         $this->sortOrder = $sortOrder;
+    }
+
+    /**
+     * Betroffene Seite: Artikel-ID aus der Struktur (oder null).
+     */
+    public function getArticleId(): ?int
+    {
+        return $this->articleId;
+    }
+
+    public function getClangId(): ?int
+    {
+        return $this->clangId;
+    }
+
+    /**
+     * Setzt den betroffenen Artikel (null entfernt ihn samt Sprache).
+     */
+    public function setAffectedArticle(?int $articleId, ?int $clangId = null): void
+    {
+        $this->articleId = $articleId && $articleId > 0 ? $articleId : null;
+        $this->clangId = $this->articleId ? ($clangId && $clangId > 0 ? $clangId : null) : null;
+    }
+
+    /**
+     * Freie Adresse der betroffenen Seite (z. B. außerhalb von REDAXO).
+     */
+    public function getAffectedUrl(): ?string
+    {
+        return $this->affectedUrl;
+    }
+
+    public function setAffectedUrl(?string $url): void
+    {
+        $url = null === $url ? '' : trim($url);
+        $this->affectedUrl = '' === $url ? null : mb_substr($url, 0, 500);
+    }
+
+    /**
+     * Backend-Seite dieser Installation, von der aus das Thema gemeldet wurde (relativ, „index.php?page=…“).
+     */
+    public function getSourceUrl(): ?string
+    {
+        return $this->sourceUrl;
+    }
+
+    public function getSourceTitle(): ?string
+    {
+        return $this->sourceTitle;
+    }
+
+    /**
+     * Setzt die meldende Backend-Seite; nur gültige Backend-Adressen dieser Installation werden übernommen.
+     */
+    public function setSource(?string $url, ?string $title = null): void
+    {
+        $url = null === $url ? null : AppShell::normalizeBackendUrl($url);
+        $this->sourceUrl = $url;
+        $title = null === $title ? '' : trim((string) preg_replace('/\s+/u', ' ', strip_tags($title)));
+        // Browser-Titel „Seite · Website · REDAXO CMS“: nur den Seitennamen behalten
+        $title = trim(explode(' · ', $title)[0]);
+        $this->sourceTitle = null !== $url && '' !== $title ? mb_substr($title, 0, 255) : null;
+    }
+
+    /**
+     * Gibt den betroffenen Artikel zurück (null, wenn keiner gesetzt ist oder er nicht mehr existiert).
+     */
+    public function getAffectedArticle(): ?\rex_article
+    {
+        if (null === $this->articleId || !class_exists(\rex_article::class)) {
+            return null;
+        }
+        $clangId = $this->clangId && \rex_clang::exists($this->clangId) ? $this->clangId : \rex_clang::getStartId();
+        return \rex_article::get($this->articleId, $clangId);
+    }
+
+    /**
+     * Macht eine (relative) Frontend-Adresse absolut (für E-Mails und Exporte).
+     */
+    public static function toAbsoluteUrl(string $url): string
+    {
+        if (preg_match('#^https?://#i', $url)) {
+            return $url;
+        }
+        $server = (string) \rex::getServer();
+        if (str_starts_with($url, '/')) {
+            // Pfad ab Domain-Wurzel: nur Schema + Host (+ Port) der Server-Adresse verwenden
+            $parts = parse_url($server);
+            if (isset($parts['scheme'], $parts['host'])) {
+                return $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '') . $url;
+            }
+            return rtrim($server, '/') . $url;
+        }
+        return rtrim($server, '/') . '/' . preg_replace('#^(\.\./|\./)+#', '', $url);
+    }
+
+    /**
+     * Betroffene Seite als einzeiliger Text (Titel [ID] + absolute Adresse), z. B. für PDF/CSV.
+     * Leer, wenn nichts gesetzt ist.
+     */
+    public function getAffectedPageSummary(): string
+    {
+        $parts = [];
+        if (null !== $this->articleId) {
+            $article = $this->getAffectedArticle();
+            if ($article) {
+                $parts[] = trim((string) $article->getName()) . ' [' . $this->articleId . '] '
+                    . self::toAbsoluteUrl((string) rex_getUrl($this->articleId, (int) $article->getClangId()));
+            } else {
+                $parts[] = \rex_i18n::rawMsg('issue_tracker_affected_missing', $this->articleId);
+            }
+        }
+        if (null !== $this->affectedUrl) {
+            $parts[] = self::isValidAffectedUrl($this->affectedUrl) ? self::toAbsoluteUrl($this->affectedUrl) : $this->affectedUrl;
+        }
+        return implode(' · ', $parts);
+    }
+
+    /**
+     * Prüft eine frei eingegebene Adresse: http(s)-URL oder Pfad ab „/“.
+     */
+    public static function isValidAffectedUrl(string $url): bool
+    {
+        $url = trim($url);
+        if ('' === $url) {
+            return true;
+        }
+        if (mb_strlen($url) > 500 || preg_match('/\s/', $url)) {
+            return false;
+        }
+        if (str_starts_with($url, '/') && !str_starts_with($url, '//')) {
+            return true;
+        }
+        return false !== filter_var($url, FILTER_VALIDATE_URL) && (bool) preg_match('#^https?://#i', $url);
     }
 
     /**

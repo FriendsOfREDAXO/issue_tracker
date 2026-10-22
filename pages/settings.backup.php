@@ -11,7 +11,7 @@ $package = rex_addon::get('issue_tracker');
 echo \FriendsOfREDAXO\IssueTracker\UiHelper::settingsStart('backup');
 
 // JSON Import
-if (rex_post('import', 'int', 0) === 1 && !empty($_FILES['import_file']['tmp_name'])) {
+if (rex_post('import', 'int', 0) === 1 && !empty($_FILES['import_file']['tmp_name']) && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $jsonContent = file_get_contents($_FILES['import_file']['tmp_name']);
     $data = json_decode($jsonContent, true);
     
@@ -77,6 +77,12 @@ if (rex_post('import', 'int', 0) === 1 && !empty($_FILES['import_file']['tmp_nam
                 $sql->setValue('created_at', $issueData['created_at']);
                 $sql->setValue('updated_at', $issueData['updated_at']);
                 $sql->setValue('closed_at', $issueData['closed_at'] ?? null);
+                $sql->setValue('article_id', isset($issueData['article_id']) && (int) $issueData['article_id'] > 0 ? (int) $issueData['article_id'] : null);
+                $sql->setValue('clang_id', isset($issueData['clang_id']) && (int) $issueData['clang_id'] > 0 ? (int) $issueData['clang_id'] : null);
+                $sql->setValue('affected_url', isset($issueData['affected_url']) && '' !== (string) $issueData['affected_url'] ? mb_substr((string) $issueData['affected_url'], 0, 500) : null);
+                $importSource = isset($issueData['source_url']) ? \FriendsOfREDAXO\IssueTracker\AppShell::normalizeBackendUrl((string) $issueData['source_url']) : null;
+                $sql->setValue('source_url', $importSource);
+                $sql->setValue('source_title', null !== $importSource && isset($issueData['source_title']) ? mb_substr((string) $issueData['source_title'], 0, 255) : null);
                 
                 // Projekt-ID mappen (wenn vorhanden)
                 $oldProjectId = $issueData['project_id'] ?? null;
@@ -103,8 +109,8 @@ if (rex_post('import', 'int', 0) === 1 && !empty($_FILES['import_file']['tmp_nam
                     $commentSql->setValue('created_at', $commentData['created_at']);
                     $commentSql->setValue('updated_at', $commentData['updated_at'] ?? null);
                     
-                    // Parent-ID wird später gesetzt
-                    $commentSql->setValue('parent_id', null);
+                    // Antwort-Bezug (parent_comment_id) wird nach dem Import aller Kommentare gesetzt
+                    $commentSql->setValue('parent_comment_id', null);
                     $commentSql->insert();
                     
                     $commentIdMap[$commentData['id']] = (int) $commentSql->getLastId();
@@ -119,7 +125,7 @@ if (rex_post('import', 'int', 0) === 1 && !empty($_FILES['import_file']['tmp_nam
                         $updateSql = rex_sql::factory();
                         $updateSql->setTable(rex::getTable('issue_tracker_comments'));
                         $updateSql->setWhere(['id' => $newCommentId]);
-                        $updateSql->setValue('parent_id', $newParentId);
+                        $updateSql->setValue('parent_comment_id', $newParentId);
                         $updateSql->update();
                     }
                 }
@@ -263,7 +269,8 @@ if (rex_request('export', 'string', '') === 'json') {
                 'is_internal' => (bool) $commentRow->getValue('is_internal'),
                 'is_pinned' => (bool) $commentRow->getValue('is_pinned'),
                 'is_solution' => (bool) $commentRow->getValue('is_solution'),
-                'parent_id' => $commentRow->getValue('parent_id') ? (int) $commentRow->getValue('parent_id') : null,
+                // Schlüssel „parent_id“ im JSON bleibt (Format früherer Sicherungen), Spalte heißt parent_comment_id
+                'parent_id' => $commentRow->getValue('parent_comment_id') ? (int) $commentRow->getValue('parent_comment_id') : null,
                 'created_by' => (int) $commentRow->getValue('created_by'),
                 'created_at' => $commentRow->getValue('created_at'),
                 'updated_at' => $commentRow->getValue('updated_at'),
@@ -325,6 +332,11 @@ if (rex_request('export', 'string', '') === 'json') {
             'created_at' => $issueRow->getValue('created_at'),
             'updated_at' => $issueRow->getValue('updated_at'),
             'closed_at' => $issueRow->getValue('closed_at'),
+            'article_id' => $issueRow->getValue('article_id') ? (int) $issueRow->getValue('article_id') : null,
+            'clang_id' => $issueRow->getValue('clang_id') ? (int) $issueRow->getValue('clang_id') : null,
+            'affected_url' => $issueRow->getValue('affected_url'),
+            'source_url' => $issueRow->getValue('source_url'),
+            'source_title' => $issueRow->getValue('source_title'),
             'comments' => $comments,
             'tags' => $tags,
             'attachments' => $attachments,
@@ -412,6 +424,7 @@ $advancedHtml = '<div class="it-group">'
     </div>
     <form method="post" enctype="multipart/form-data" data-confirm="<?= rex_escape($t('issue_tracker_ui_backup_import_confirm')) ?>">
         <input type="hidden" name="import" value="1" />
+        <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
         <?= \FriendsOfREDAXO\IssueTracker\UiHelper::field(
             $t('issue_tracker_ui_bk_import_file'),
             '<input type="file" id="it-import-file" name="import_file" accept=".json" class="form-control it-file" required />'

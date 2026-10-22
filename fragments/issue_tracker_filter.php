@@ -26,6 +26,7 @@ $defaults = [
     'filter_watched' => 0,
     'filter_mentioned' => 0,
     'filter_overdue' => 0,
+    'filter_recent_closed' => 0,
     'search' => '',
 ];
 $mode = (string) $this->getVar('mode', 'issues');
@@ -80,6 +81,7 @@ $fav = rex_sql::factory()->getArray(
     . ' (SELECT COUNT(DISTINCT i.id) FROM ' . $t('issues') . ' i INNER JOIN ' . $t('mentions') . " m ON m.issue_id = i.id AND m.mentioned_user_id = $userId AND m.read_at IS NULL WHERE $vis) AS mentioned_unread,"
     . ' (SELECT COUNT(*) FROM ' . $t('issues') . " i WHERE $vis AND $active AND i.due_date IS NOT NULL AND i.due_date < NOW()) AS overdue,"
     . ' (SELECT COUNT(*) FROM ' . $t('issues') . " i WHERE $vis AND i.due_date IS NOT NULL) AS with_due,"
+    . ' (SELECT COUNT(*) FROM ' . $t('issues') . " i WHERE $vis AND i.status = 'closed' AND i.closed_at >= " . rex_sql::factory()->escape(date('Y-m-d H:i:s', time() - 7 * 86400)) . ') AS recent_closed,'
     . ' (SELECT COUNT(*) FROM ' . $t('issues') . " i WHERE $vis) AS all_issues"
 )[0] ?? [];
 $byKnowledgeCategory = $count('SELECT i.category AS k, COUNT(*) AS c FROM ' . $t('issues') . " i WHERE $vis AND i.status = 'info' GROUP BY i.category");
@@ -106,13 +108,13 @@ $statusDot = static fn (string $status): string => '<span class="it-dot it-dot--
 /**
  * @param array<string, int|string> $params
  */
-$item = static function (string $label, array $params, string $icon, ?int $cnt = null, string $extraClass = '', string $title = '') use ($url, $isActive): string {
+$item = static function (string $label, array $params, string $icon, ?int $cnt = null, string $extraClass = '', string $title = '', string $countClass = '') use ($url, $isActive): string {
     $active = $isActive($params);
     return '<li><a class="it-mbx-item' . ($active ? ' is-active' : '') . $extraClass . '" href="' . $url($params) . '"'
         . ($active ? ' aria-current="page"' : '') . ($title !== '' ? ' title="' . rex_escape($title) . '"' : '') . '>'
         . $icon
         . '<span class="it-mbx-label">' . rex_escape($label) . '</span>'
-        . ($cnt !== null && $cnt > 0 ? '<span class="it-mbx-count">' . $cnt . '</span>' : '')
+        . ($cnt !== null && $cnt > 0 ? '<span class="it-mbx-count' . $countClass . '">' . $cnt . '</span>' : '')
         . '</a></li>';
 };
 $fa = static fn (string $name): string => '<i class="it-mbx-icon rex-icon ' . $name . '" aria-hidden="true"></i>';
@@ -160,8 +162,9 @@ $section = static function (string $key, string $title, ?int $count, bool $defau
         . (null !== $count ? '<span class="it-mbx-seccount">' . $count . '</span>' : '') . '</summary>' . $inner . '</details>';
 };
 $stateToken = rex_csrf_token::factory('issue_tracker_ui_state');
+$savedFilterTokenField = rex_csrf_token::factory('issue_tracker_saved_filter')->getHiddenField();
 ?>
-<nav class="it-mbx" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_mailboxes')) ?>" data-it-state-url="<?= rex_escape(rex_url::backendPage('issue_tracker/issues/list', [], false)) ?>" data-it-state-token="<?= rex_escape($stateToken->getValue()) ?>" data-it-cols-label="<?= rex_escape($package->i18n('issue_tracker_mail_col_resize')) ?>">
+<nav class="it-mbx" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_mailboxes')) ?>" data-it-state-url="<?= rex_escape(rex_url::backendPage('issue_tracker/issues/list', [], false)) ?>" data-it-state-token="<?= rex_escape($stateToken->getValue()) ?>"<?= rex_session('issue_tracker_last_box_pending', 'array', []) !== [] ? ' data-it-last-box="1"' : '' ?> data-it-cols-label="<?= rex_escape($package->i18n('issue_tracker_mail_col_resize')) ?>">
     <div class="it-mbx-head">
         <div class="it-newbtn">
             <a class="it-newbtn-main" href="<?= $primary[2] ?>" data-it-new="<?= $primaryKey ?>" title="<?= rex_escape($primary[0]) ?>"><i class="rex-icon <?= $primary[1] ?>" aria-hidden="true"></i> <span aria-hidden="true"><?= $package->i18n('issue_tracker_mail_new') ?></span><span class="sr-only"><?= rex_escape($primary[0]) ?></span></a>
@@ -182,6 +185,7 @@ $stateToken = rex_csrf_token::factory('issue_tracker_ui_state');
                 <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/settings') ?>"><i class="rex-icon fa-wrench" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_settings') ?></a>
                 <?php endif; ?>
                 <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/help') ?>"><i class="rex-icon fa-question-circle" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_help') ?></a>
+                <button type="button" class="it-menu-item" data-toggle="modal" data-target="#it-shortcuts-modal" aria-keyshortcuts="Shift+?"><i class="rex-icon fa-keyboard-o" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_shortcuts') ?> <kbd class="it-kbd it-menu-kbd" aria-hidden="true">?</kbd></button>
                 <div class="it-menu-label" id="it-fontsize-label"><?= $package->i18n('issue_tracker_mail_font_size') ?></div>
                 <div class="it-fontsize" role="group" aria-labelledby="it-fontsize-label" data-it-fontsize>
                     <button type="button" class="it-fontsize-btn" data-it-fontsize-step="-1" title="<?= rex_escape($package->i18n('issue_tracker_mail_font_smaller')) ?>"><span aria-hidden="true">A−</span><span class="sr-only"><?= $package->i18n('issue_tracker_mail_font_smaller') ?></span></button>
@@ -202,6 +206,7 @@ $stateToken = rex_csrf_token::factory('issue_tracker_ui_state');
             <?php if ((int) ($fav['with_due'] ?? 0) > 0): ?>
             <?= $item($package->i18n('issue_tracker_overdue'), ['filter_overdue' => 1], $fa('fa-calendar-times-o'), (int) ($fav['overdue'] ?? 0)) ?>
             <?php endif; ?>
+            <?= $item($package->i18n('issue_tracker_mail_recent_closed'), ['filter_recent_closed' => 1], $fa('fa-check-circle-o'), (int) ($fav['recent_closed'] ?? 0), '', $package->i18n('issue_tracker_mail_recent_closed_title'), ' it-mbx-count--done') ?>
         </ul>
         <?php ob_start(); ?>
         <ul class="it-mbx-list">
@@ -243,7 +248,7 @@ $stateToken = rex_csrf_token::factory('issue_tracker_ui_state');
                         <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_edit') ?></a>
                         <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>#it-members"><i class="rex-icon fa-users" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_members') ?></a>
                         <?php if ($project->getStatus() !== 'archived'): ?>
-                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_archive_confirm')) ?>">
+                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_archive_confirm')) ?>">
                             <?= rex_csrf_token::factory('issue_tracker_project_archive')->getHiddenField() ?>
                             <input type="hidden" name="archive_project" value="1" />
                             <button type="submit" class="it-menu-item"><i class="rex-icon fa-archive" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_archive') ?></button>
@@ -279,7 +284,7 @@ $stateToken = rex_csrf_token::factory('issue_tracker_ui_state');
                         <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_edit') ?></a>
                         <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>#it-members"><i class="rex-icon fa-users" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_members') ?></a>
                         <?php if ($project->getStatus() !== 'archived'): ?>
-                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_archive_confirm')) ?>">
+                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $pid]) ?>" data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_archive_confirm')) ?>">
                             <?= rex_csrf_token::factory('issue_tracker_project_archive')->getHiddenField() ?>
                             <input type="hidden" name="archive_project" value="1" />
                             <button type="submit" class="it-menu-item"><i class="rex-icon fa-archive" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_archive') ?></button>
@@ -334,9 +339,14 @@ $stateToken = rex_csrf_token::factory('issue_tracker_ui_state');
                     <summary class="it-mbx-more" title="<?= rex_escape($package->i18n('issue_tracker_actions')) ?>"><i class="rex-icon fa-ellipsis-h" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_actions') ?>: <?= rex_escape($savedFilter['name']) ?></span></summary>
                     <div class="it-menu-pop">
                         <?php if (!$savedFilter['is_default']): ?>
-                        <a class="it-menu-item" href="<?= rex_url::backendPage('issue_tracker/issues/list', ['set_default_filter' => $savedFilter['id']]) ?>"><i class="rex-icon fa-star" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_set_as_default') ?></a>
+                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/issues/list') ?>">
+                            <?= $savedFilterTokenField ?>
+                            <input type="hidden" name="set_default_filter" value="<?= (int) $savedFilter['id'] ?>" />
+                            <button type="submit" class="it-menu-item"><i class="rex-icon fa-star" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_set_as_default') ?></button>
+                        </form>
                         <?php endif; ?>
-                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/issues/list') ?>" onsubmit="return confirm(this.getAttribute('data-confirm'))" data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_filter')) ?>?">
+                        <form method="post" action="<?= rex_url::backendPage('issue_tracker/issues/list') ?>" data-confirm="<?= rex_escape(rex_i18n::rawMsg('issue_tracker_delete_filter_confirm', (string) $savedFilter['name'])) ?>">
+                            <?= $savedFilterTokenField ?>
                             <input type="hidden" name="delete_filter" value="<?= (int) $savedFilter['id'] ?>" />
                             <button type="submit" class="it-menu-item it-menu-item--danger"><i class="rex-icon fa-trash" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_delete') ?></button>
                         </form>
@@ -354,12 +364,36 @@ $stateToken = rex_csrf_token::factory('issue_tracker_ui_state');
     <?= $section('saved', $package->i18n('issue_tracker_mail_saved_filters'), count($savedFilters), false, (string) ob_get_clean()) ?>
 </nav>
 
+<!-- Tastaturkürzel (Zahnrad-Menü oder Taste „?“) -->
+<div class="modal fade" id="it-shortcuts-modal" tabindex="-1" role="dialog" aria-labelledby="it-shortcuts-title">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"><?= $package->i18n('issue_tracker_close') ?></span></button>
+                <h4 class="modal-title" id="it-shortcuts-title"><?= $package->i18n('issue_tracker_shortcuts') ?></h4>
+            </div>
+            <div class="modal-body">
+                <p class="it-muted-text"><?= $package->i18n('issue_tracker_shortcuts_intro') ?></p>
+                <dl class="it-shortcuts">
+                    <?php foreach ([['↑ ↓', 'updown'], ['Enter', 'enter'], ['R', 'reply'], ['T', 'tags'], ['E', 'edit'], ['F', 'forward'], ['U', 'unread'], ['Esc', 'esc'], ['?', 'help']] as [$keys, $scKey]): ?>
+                    <div><dt><?php foreach (explode(' ', $keys) as $k): ?><kbd class="it-kbd"><?= rex_escape($k) ?></kbd> <?php endforeach; ?></dt><dd><?= $package->i18n('issue_tracker_sc_' . $scKey) ?></dd></div>
+                    <?php endforeach; ?>
+                </dl>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><?= $package->i18n('issue_tracker_close') ?></button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal zum Filter speichern -->
 <div class="modal fade" id="save-filter-modal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="post" action="<?= rex_url::backendPage('issue_tracker/issues/list') ?>">
                 <input type="hidden" name="save_filter" value="1" />
+                <?= $savedFilterTokenField ?>
                 <?php foreach ($state as $key => $value): ?>
                 <input type="hidden" name="<?= rex_escape($key) ?>" value="<?= rex_escape((string) $value) ?>" />
                 <?php endforeach; ?>

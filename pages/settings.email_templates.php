@@ -21,7 +21,7 @@ if (!PermissionService::canManageSettings()) {
 echo \FriendsOfREDAXO\IssueTracker\UiHelper::settingsStart('email_templates');
 
 // Test-E-Mail senden
-if (rex_post('test_template', 'string', '') !== '') {
+if (rex_post('test_template', 'string', '') !== '' && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $testUser = rex::getUser();
     $testEmail = $testUser->getValue('email');
     
@@ -55,6 +55,7 @@ if (rex_post('test_template', 'string', '') !== '') {
                 'old_status' => 'open',
                 'new_status' => 'in_progress',
                 'issue_url' => rex::getServer() . rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => 42]),
+                'affected_page' => '<br><strong>' . rex_i18n::rawMsgInLocale('issue_tracker_affected_page', 'en' === $lang ? 'en_gb' : 'de_de') . ':</strong> <a href="' . rex_escape(rex::getServer()) . '">' . rex_escape((string) rex::getServerName()) . '</a> ' . rex_escape(rex::getServer()),
             ];
             
             // Platzhalter ersetzen
@@ -92,13 +93,13 @@ if (rex_post('test_template', 'string', '') !== '') {
 }
 
 // Templates auf Standard zurücksetzen
-if (1 === rex_post('reset_templates', 'int', 0)) {
+if (1 === rex_post('reset_templates', 'int', 0) && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $count = EmailTemplateService::resetToDefaults();
     echo rex_view::success($package->i18n('issue_tracker_templates_reset_success', $count));
 }
 
 // Templates speichern
-if (1 === rex_post('save_templates', 'int', 0)) {
+if (1 === rex_post('save_templates', 'int', 0) && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $languages = ['de', 'en'];
     $templates = ['new_issue', 'new_comment', 'status_change', 'assignment', 'reminder'];
 
@@ -156,11 +157,13 @@ $placeholders = [
     'old_status' => rex_i18n::rawMsg('issue_tracker_status_open'),
     'new_status' => rex_i18n::rawMsg('issue_tracker_status_in_progress'),
     'due_date' => '<br><strong>Fällig am:</strong> 01.02.2026',
+    'affected_page' => '<br><strong>' . rex_i18n::rawMsg('issue_tracker_affected_page') . ':</strong> <a href="#">Kontakt</a> https://www.example.org/kontakt/',
 ];
 ?>
 
 <form method="post" class="it-tpl-form">
     <input type="hidden" name="save_templates" value="1" />
+    <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
 
     <div class="it-tpl" data-it-tpl data-it-sample="<?= rex_escape(json_encode($placeholders, JSON_UNESCAPED_UNICODE)) ?>">
         <div class="it-tpl-side">
@@ -221,7 +224,7 @@ $placeholders = [
 </form>
 
 <!-- Verstecktes Formular für Test-E-Mails (die Knöpfe oben senden test_template über form="…") -->
-<form method="post" id="test-email-form" hidden></form>
+<form method="post" id="test-email-form" hidden><?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?></form>
 
 <h3 class="it-group-title it-danger-title"><?= rex_escape($t('issue_tracker_ui_danger_zone')) ?></h3>
 <div class="it-group it-danger-zone">
@@ -233,6 +236,7 @@ $placeholders = [
         <div class="it-row-control">
             <form method="post" class="it-inline-form" data-confirm="<?= rex_escape($t('issue_tracker_ui_tpl_reset_confirm')) ?>">
                 <input type="hidden" name="reset_templates" value="1" />
+                <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
                 <button type="submit" class="btn btn-default it-btn-danger">
                     <i class="rex-icon fa-undo" aria-hidden="true"></i> <?= rex_escape($t('issue_tracker_ui_tpl_reset_button')) ?>
                 </button>

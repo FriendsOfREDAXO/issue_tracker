@@ -25,11 +25,14 @@ if (!$currentUser) {
 }
 
 // Attachment löschen
-if (rex_request('delete_attachment', 'int', 0) > 0) {
-    $attachmentId = rex_request('delete_attachment', 'int', 0);
+// Attachment löschen nur per POST mit CSRF-Token im Formular
+if (rex_post('delete_attachment', 'int', 0) > 0 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
+    $attachmentId = rex_post('delete_attachment', 'int', 0);
     $attachment = Attachment::get($attachmentId);
-    
-    if ($attachment && $attachment->delete()) {
+    $attachmentIssue = $attachment && $attachment->getIssueId() ? Issue::get((int) $attachment->getIssueId()) : null;
+
+    // Nur wer das Thema bearbeiten darf, darf seine Anhänge löschen
+    if ($attachment && $attachmentIssue && \FriendsOfREDAXO\IssueTracker\PermissionService::canEdit($attachmentIssue) && $attachment->delete()) {
         echo rex_view::success($package->i18n('issue_tracker_attachment_deleted'));
     }
 }
@@ -88,10 +91,20 @@ if (!$issue) {
             $issue->setProjectId($projectIdFromRequest);
         }
     }
+
+    // Gemeldet von einer Backend-Seite (Knopf „Neues Thema“ in der Kopfzeile): nur Backend-Adressen dieser Installation.
+    // Beim Bearbeiten eines Artikels wird dieser als betroffene Seite vorgeschlagen.
+    if (rex_post('save', 'int', 0) !== 1) {
+        $issue->setSource(rex_get('it_src', 'string', ''), rex_get('it_src_title', 'string', ''));
+        $sourceArticle = $issue->getSourceUrl() ? \FriendsOfREDAXO\IssueTracker\AppShell::articleFromBackendUrl($issue->getSourceUrl()) : null;
+        if ($sourceArticle && !$issue->getArticleId()) {
+            $issue->setAffectedArticle($sourceArticle[0], $sourceArticle[1]);
+        }
+    }
 }
 
 // Speichern
-if (rex_post('save', 'int', 0) === 1) {
+if (rex_post('save', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $oldIssue = null;
     if (!$isNew) {
         // Altes Issue für History speichern
@@ -100,7 +113,7 @@ if (rex_post('save', 'int', 0) === 1) {
     
     $oldStatus = $issue->getStatus();
     
-    $issue->setTitle(rex_post('title', 'string', ''));
+    $issue->setTitle(trim(rex_post('title', 'string', '')));
     $issue->setDescription(rex_post('description', 'string', ''));
     $issue->setCategory(rex_post('category', 'string', ''));
 
@@ -122,8 +135,31 @@ if (rex_post('save', 'int', 0) === 1) {
     $issue->setVersion(rex_post('version', 'string', null));
     $issue->setIsPrivate(rex_post('is_private', 'int', 0) === 1);
 
-    // Pflichtfeld: Zugewiesener User oder gemeinsame Zuständigkeit (Alle)
-    if ('all' !== $assignedUserSelection && !$issue->getAssignedUserId()) {
+    // Betroffene Seite: Artikel aus der Struktur (nur existierende) oder freie Adresse (http/https oder Pfad)
+    $affectedArticleId = rex_post('article_id', 'int', 0);
+    $affectedClangId = rex_post('clang_id', 'int', 0);
+    if ($affectedArticleId > 0 && class_exists('rex_article')) {
+        if (!rex_clang::exists($affectedClangId)) {
+            $affectedClangId = rex_clang::getStartId();
+        }
+        if (!rex_article::get($affectedArticleId, $affectedClangId)) {
+            $affectedArticleId = 0;
+        }
+    }
+    $issue->setAffectedArticle($affectedArticleId > 0 ? $affectedArticleId : null, $affectedArticleId > 0 ? $affectedClangId : null);
+    $affectedUrl = trim(rex_post('affected_url', 'string', ''));
+    $affectedUrlValid = Issue::isValidAffectedUrl($affectedUrl);
+    $issue->setAffectedUrl($affectedUrlValid ? $affectedUrl : null);
+    if ($isNew) {
+        $issue->setSource(rex_post('source_url', 'string', ''), rex_post('source_title', 'string', ''));
+    }
+
+    // Pflichtfeld: Zugewiesener User oder gemeinsame Zuständigkeit (Alle); Adresse muss gültig sein
+    $titleMissing = '' === $issue->getTitle();
+    if ($titleMissing) {
+        echo rex_view::error($package->i18n('issue_tracker_title_required'));
+    }
+    if (('all' !== $assignedUserSelection && !$issue->getAssignedUserId()) || !$affectedUrlValid || $titleMissing) {
         // Formular erneut anzeigen (weiter unten) – die Fehlermeldung steht im Formular direkt am Feld und in der Zusammenfassung
     } else {
     
@@ -248,9 +284,9 @@ if (rex_post('save', 'int', 0) === 1) {
         
         echo rex_view::success($package->i18n($isNew ? 'issue_tracker_issue_created' : 'issue_tracker_issue_updated'));
         
-        // LocalStorage-Draft löschen (zentrale Funktion)
-        echo '<script>issueTrackerClearDraft();</script>';
-        
+        // Rückmeldung nach der Weiterleitung als Einblendung
+        \FriendsOfREDAXO\IssueTracker\UiHelper::flash(rex_i18n::rawMsg($isNew ? 'issue_tracker_flash_created' : 'issue_tracker_flash_updated', $issue->getId()));
+
         // Redirect zur Liste
         header('Location: ' . rex_url::backendPage('issue_tracker/issues/list', ['issue_id' => $issue->getId()], false));
         exit;
@@ -261,7 +297,7 @@ if (rex_post('save', 'int', 0) === 1) {
 }
 
 // Kommentar hinzufügen
-if (!$isNew && rex_post('add_comment', 'int', 0) === 1) {
+if (!$isNew && rex_post('add_comment', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $comment = new Comment();
     $comment->setIssueId($issue->getId());
     $comment->setComment(rex_post('comment', 'string', ''));

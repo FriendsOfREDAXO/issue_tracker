@@ -118,6 +118,14 @@ class Comment
             return false;
         }
 
+        // Antworten und Anhänge mitlöschen – sonst bleiben unsichtbare Antworten ohne Bezug und verwaiste Dateien zurück
+        foreach ($this->getReplies() as $reply) {
+            $reply->delete();
+        }
+        foreach (Attachment::getByComment($this->id) as $attachment) {
+            $attachment->delete();
+        }
+
         $sql = rex_sql::factory();
         $sql->setQuery('DELETE FROM ' . rex::getTable('issue_tracker_comments') . ' WHERE id = ?', [$this->id]);
 

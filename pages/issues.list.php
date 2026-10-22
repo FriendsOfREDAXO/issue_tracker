@@ -54,6 +54,13 @@ if (rex_post('it_ui_state', 'int', 0) === 1) {
         if (in_array($scale, [90, 100, 110, 120, 130, 140], true)) {
             rex_config::set('issue_tracker', 'font_scale_' . $currentUserId, $scale);
         }
+    } elseif ('last_box' === $key) {
+        // Zuletzt genutztes Postfach: nur den beim Anzeigen vorgemerkten Stand übernehmen (kein Wert vom Aufrufer)
+        $pending = rex_session('issue_tracker_last_box_pending', 'array', []);
+        rex_unset_session('issue_tracker_last_box_pending');
+        if (isset($pending['box']) && in_array($pending['box'], ['', 'inbox', 'sent'], true)) {
+            rex_config::set('issue_tracker', 'last_box_' . $currentUserId, $pending);
+        }
     } elseif (preg_match('/^[a-z_]{1,40}$/', $key)) {
         $state = rex_config::get('issue_tracker', 'sidebar_state_' . $currentUserId, []);
         $state = is_array($state) ? $state : [];
@@ -64,19 +71,36 @@ if (rex_post('it_ui_state', 'int', 0) === 1) {
     exit;
 }
 
-// Ansicht (Postfach | Tabelle) pro Benutzer merken
+// Ansicht (Postfach | Tabelle) pro Benutzer merken – nur per POST mit CSRF-Token.
+// Ein view_mode in der Adresse (Lesezeichen, alte Links) gilt nur für diese Antwort und wird nicht gespeichert.
 $viewModeKey = 'view_mode_' . $currentUserId;
-$requestedViewMode = rex_request('view_mode', 'string', '');
-if (in_array($requestedViewMode, ['mail', 'table'], true)) {
-    rex_config::set('issue_tracker', $viewModeKey, $requestedViewMode);
+if (rex_post('set_view_mode', 'int', 0) === 1) {
+    $postedViewMode = rex_post('view_mode', 'string', '');
+    if (\FriendsOfREDAXO\IssueTracker\UiHelper::csrfPostValid() && in_array($postedViewMode, ['mail', 'table'], true)) {
+        rex_config::set('issue_tracker', $viewModeKey, $postedViewMode);
+        rex_response::sendRedirect(rex_url::backendPage('issue_tracker/issues/list', ['screen' => 'list'], false));
+    }
+    echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
 }
 $viewMode = (string) rex_config::get('issue_tracker', $viewModeKey, 'mail');
+$requestedViewMode = rex_get('view_mode', 'string', '');
+if (in_array($requestedViewMode, ['mail', 'table'], true)) {
+    $viewMode = $requestedViewMode;
+}
 if (!in_array($viewMode, ['mail', 'table'], true)) {
     $viewMode = 'mail';
 }
 
+// Gespeicherte Filter (speichern, löschen, als Standard) nur mit gültigem CSRF-Token
+$savedFilterToken = rex_csrf_token::factory('issue_tracker_saved_filter');
+$savedFilterAction = rex_post('save_filter', 'int', 0) === 1 || rex_post('delete_filter', 'int', 0) > 0 || rex_post('set_default_filter', 'int', 0) > 0;
+$savedFilterTokenOk = !$savedFilterAction || $savedFilterToken->isValid();
+if (!$savedFilterTokenOk) {
+    echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
+}
+
 // Filter speichern
-if (rex_post('save_filter', 'int', 0) === 1) {
+if ($savedFilterTokenOk && rex_post('save_filter', 'int', 0) === 1) {
     $filterName = rex_post('filter_name', 'string', '');
     $isDefault = rex_post('is_default', 'int', 0) === 1;
 
@@ -91,6 +115,7 @@ if (rex_post('save_filter', 'int', 0) === 1) {
             'filter_watched' => rex_post('filter_watched', 'int', 0),
             'filter_mentioned' => rex_post('filter_mentioned', 'int', 0),
             'filter_overdue' => rex_post('filter_overdue', 'int', 0),
+            'filter_recent_closed' => rex_post('filter_recent_closed', 'int', 0),
             'search' => rex_post('search', 'string', ''),
         ];
 
@@ -111,15 +136,15 @@ if (rex_post('save_filter', 'int', 0) === 1) {
 }
 
 // Filter löschen
-if (rex_post('delete_filter', 'int', 0) > 0) {
+if ($savedFilterTokenOk && rex_post('delete_filter', 'int', 0) > 0) {
     $filterId = rex_post('delete_filter', 'int', 0);
     \FriendsOfREDAXO\IssueTracker\SavedFilterService::delete($filterId, $currentUserId);
     echo rex_view::success($package->i18n('issue_tracker_filter_deleted'));
 }
 
 // Filter als Default setzen
-if (rex_request('set_default_filter', 'int', 0) > 0) {
-    $filterId = rex_request('set_default_filter', 'int', 0);
+if ($savedFilterTokenOk && rex_post('set_default_filter', 'int', 0) > 0) {
+    $filterId = rex_post('set_default_filter', 'int', 0);
     \FriendsOfREDAXO\IssueTracker\SavedFilterService::setDefault($filterId, $currentUserId);
     echo rex_view::success($package->i18n('issue_tracker_filter_saved'));
 }
@@ -127,18 +152,22 @@ if (rex_request('set_default_filter', 'int', 0) > 0) {
 // Session-Key für Filter
 $sessionKey = 'issue_tracker_filter';
 $filterKeys = ['filter_status' => 'string', 'filter_category' => 'string', 'filter_tag' => 'int', 'filter_created_by' => 'int', 'filter_assigned' => 'int',
-    'filter_project' => 'int', 'filter_watched' => 'int', 'filter_mentioned' => 'int', 'filter_overdue' => 'int', 'search' => 'string'];
+    'filter_project' => 'int', 'filter_watched' => 'int', 'filter_mentioned' => 'int', 'filter_overdue' => 'int', 'filter_recent_closed' => 'int', 'search' => 'string'];
 // Zuletzt genutztes Postfach pro Benutzer (wird beim nächsten Öffnen wiederhergestellt)
 $lastBoxKey = 'last_box_' . $currentUserId;
 
-// Reset-Button
-if (rex_request('reset_filter', 'int', 0) === 1) {
-    rex_set_session($sessionKey, null);
-    rex_config::remove('issue_tracker', $lastBoxKey);
-    // Redirect ohne Parameter
-    header('Location: ' . rex_url::backendPage('issue_tracker/issues/list', ['screen' => 'list'], false));
-    exit;
+// „Filter zurücksetzen“: gemerkte Filter und zuletzt genutztes Postfach löschen – nur per POST mit CSRF-Token.
+// reset_filter in der Adresse (alte Links) zeigt nur diese Antwort ohne Filter und ändert nichts Gespeichertes.
+if (rex_post('reset_filter', 'int', 0) === 1) {
+    if (\FriendsOfREDAXO\IssueTracker\UiHelper::csrfPostValid()) {
+        rex_set_session($sessionKey, null);
+        rex_unset_session('issue_tracker_last_box_pending');
+        rex_config::remove('issue_tracker', $lastBoxKey);
+        rex_response::sendRedirect(rex_url::backendPage('issue_tracker/issues/list', ['screen' => 'list'], false));
+    }
+    echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
 }
+$resetOnce = rex_get('reset_filter', 'int', 0) === 1;
 
 // Bereich: Themen (Standard) oder Nachrichten (box=inbox|sent)
 $box = rex_request('box', 'string', '');
@@ -151,7 +180,7 @@ foreach ($filterKeys as $key => $type) {
         $hasFilterParams = true;
     }
 }
-$isFreshVisit = !$hasFilterParams && $box === '' && $_POST === []
+$isFreshVisit = !$hasFilterParams && !$resetOnce && $box === '' && $_POST === []
     && rex_request('issue_id', 'int', 0) === 0 && rex_request('screen', 'string', '') === '' && rex_request('func', 'string', '') === ''
     && rex_request('view_mode', 'string', '') === '' && rex_request('sort', 'string', '') === '' && rex_request('show', 'int', 0) === 0;
 $lastBox = rex_config::get('issue_tracker', $lastBoxKey, null);
@@ -171,16 +200,24 @@ if ($hasFilterParams) {
     }
     rex_set_session($sessionKey, $filterState);
 } else {
-    // Filter aus Session laden
-    $sessionFilter = rex_session($sessionKey, 'array', []);
+    // Filter aus Session laden (bei reset_filter in der Adresse nur für diese Antwort ohne Filter)
+    $sessionFilter = $resetOnce ? [] : rex_session($sessionKey, 'array', []);
     foreach ($filterKeys as $key => $type) {
         $filterState[$key] = 'int' === $type ? (int) ($sessionFilter[$key] ?? 0) : (string) ($sessionFilter[$key] ?? '');
     }
 }
+// Zuletzt genutztes Postfach nur vormerken; gespeichert wird es per POST mit CSRF-Token (it-mail.js, it_ui_state key=last_box).
+// So kann ein untergeschobener Aufruf (Bild, Iframe) nichts dauerhaft ändern.
+$lastBoxPending = null;
 if ($box !== '') {
-    rex_config::set('issue_tracker', $lastBoxKey, ['box' => $box]);
+    $lastBoxPending = ['box' => $box];
 } elseif ($hasFilterParams) {
-    rex_config::set('issue_tracker', $lastBoxKey, ['box' => '', 'filters' => $filterState]);
+    $lastBoxPending = ['box' => '', 'filters' => $filterState];
+}
+if (null !== $lastBoxPending && $lastBoxPending !== $lastBox) {
+    rex_set_session('issue_tracker_last_box_pending', $lastBoxPending);
+} else {
+    $lastBoxPending = null;
 }
 $filterStatus = $filterState['filter_status'];
 $filterCategory = $filterState['filter_category'];
@@ -191,6 +228,7 @@ $filterProject = $filterState['filter_project'];
 $filterWatched = $filterState['filter_watched'];
 $filterMentioned = $filterState['filter_mentioned'];
 $filterOverdue = $filterState['filter_overdue'];
+$filterRecentClosed = (int) ($filterState['filter_recent_closed'] ?? 0);
 $searchTerm = $filterState['search'];
 
 // Modus: Themen, Projekt-Ordner, Wissen (Status „Info“) oder Nachrichten
@@ -205,7 +243,7 @@ if ($box !== '') {
 
 // Bildschirm auf schmalen Geräten: Postfächer → Liste → Detail (wie Mail auf dem iPhone)
 $screen = 'mailboxes';
-if ($box !== '' || $hasFilterParams || rex_request('screen', 'string', '') === 'list' || rex_request('show', 'int', 0) > 0 || rex_request('sort', 'string', '') !== '' || rex_request('view_mode', 'string', '') !== '') {
+if ($box !== '' || $hasFilterParams || $resetOnce || rex_request('screen', 'string', '') === 'list' || rex_request('show', 'int', 0) > 0 || rex_request('sort', 'string', '') !== '' || rex_request('view_mode', 'string', '') !== '') {
     $screen = 'list';
 }
 
@@ -234,9 +272,10 @@ if ($mode === 'messages') {
         }
     }
 
+    // Löschen nur per POST mit CSRF-Token im Formular
     $func = rex_request('func', 'string');
-    if ($func === 'delete' && rex_request('message_id', 'int', 0) > 0) {
-        $delMessage = \FriendsOfREDAXO\IssueTracker\Message::get(rex_request('message_id', 'int', 0));
+    if (rex_post('func', 'string', '') === 'delete' && rex_post('message_id', 'int', 0) > 0 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
+        $delMessage = \FriendsOfREDAXO\IssueTracker\Message::get(rex_post('message_id', 'int', 0));
         if ($delMessage && $delMessage->hasAccess($currentUserId)) {
             if ($delMessage->delete($currentUserId)) {
                 echo rex_view::success($package->i18n('issue_tracker_message_deleted'));
@@ -295,8 +334,9 @@ if ($mode === 'messages') {
 // Löschaktion (Admin oder Issue-Manager)
 $func = rex_request('func', 'string', '');
 
-if ($func === 'delete' && PermissionService::canDelete()) {
-    $issueId = rex_request('issue_id', 'int', 0);
+// Löschen nur per POST mit CSRF-Token im Formular
+if (rex_post('func', 'string', '') === 'delete' && rex_post('issue_id', 'int', 0) > 0 && PermissionService::canDelete() && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
+    $issueId = rex_post('issue_id', 'int', 0);
     $issue = Issue::get($issueId);
 
     if ($issue) {
@@ -382,7 +422,10 @@ if ($sortColumn === 'priority') {
 $where = [];
 $joins = '';
 
-if ($filterStatus === '_all_') {
+if ($filterRecentClosed === 1) {
+    // Kürzlich geschlossen: in den letzten 7 Tagen (Uhrzeit aus PHP, nicht aus der Datenbank)
+    $where[] = "i.status = 'closed' AND i.closed_at >= " . $escapeSql->escape(date('Y-m-d H:i:s', time() - 7 * 86400));
+} elseif ($filterStatus === '_all_') {
     // Alle Issues anzeigen, kein Status-Filter
 } elseif ($filterStatus !== '') {
     $where[] = 'i.status = ' . $escapeSql->escape($filterStatus);
@@ -439,6 +482,12 @@ if (!PermissionService::isAdmin()) {
 }
 
 $whereClause = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : '';
+
+// Kürzlich geschlossen: zuletzt geschlossene zuerst, solange nicht ausdrücklich anders sortiert
+if ($filterRecentClosed === 1 && '' === rex_request('sort', 'string', '')) {
+    $orderExpr = 'i.closed_at';
+    $sortOrder = 'DESC';
+}
 
 // Gesamtzahl
 $countSql = rex_sql::factory();
@@ -530,6 +579,7 @@ foreach ($mentionUsersSql as $row) {
 
 $rootClass = 'it-mail' . ($viewMode === 'table' ? ' it-mail--table' : '') . ($selectedIssueId > 0 ? ' it-mail--sel' : '') . ($screen === 'list' ? ' it-mail--list' : '');
 ?>
+<?= \FriendsOfREDAXO\IssueTracker\UiHelper::flashToast() ?>
 <div class="<?= $rootClass ?>" data-it-mail data-mode="<?= $mode ?>" data-mention-users="<?= rex_escape(json_encode($mentionUsers)) ?>"
      data-pane-url="<?= rex_escape(rex_url::backendPage('issue_tracker/issues/list', ['it_pane' => 1], false)) ?>"
      data-list-url="<?= rex_escape(rex_url::backendPage('issue_tracker/issues/list', [], false)) ?>"

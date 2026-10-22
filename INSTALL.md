@@ -15,9 +15,14 @@
    - Speichern
 
 3. **Erste Schritte**
-   - Gehe zu "Issue Tracker" im Hauptmenü
-   - Klicke auf "Neues Issue erstellen"
+   - Öffne den Issue Tracker über den Menüpunkt oder den Knopf „Issue Tracker“ in der Kopfzeile
+   - Klicke auf „Neu“ (oder „Neues Thema“ in der Kopfzeile)
    - Fülle das Formular aus und speichere
+
+4. **Update von 1.x**
+   - Neue Tabellen und Spalten legt das Update automatisch an
+   - Eigene E-Mail-Vorlagen bleiben unverändert; den Platzhalter `{{affected_page}}` bei Bedarf von Hand ergänzen
+   - Die Ebene über dem Backend lässt sich unter Einstellungen → Allgemein („Als Vollbild öffnen“) abschalten
 
 ## Datenbank-Tabellen
 
@@ -29,6 +34,7 @@ Bei der Installation werden folgende Tabellen erstellt:
 - `rex_issue_tracker_issue_tags` - Zuordnung Issues ↔ Tags
 - `rex_issue_tracker_notifications` - Benachrichtigungseinstellungen
 - `rex_issue_tracker_settings` - Globale Einstellungen
+- weitere Tabellen für Anhänge, Verlauf, gespeicherte Filter, Projekte, Nachrichten, E-Mail-Token, Erinnerungen, Beobachter, Erwähnungen und Zeiteinträge (siehe README)
 
 ## Standard-Einstellungen
 
@@ -46,6 +52,7 @@ Nach der Installation sind folgende Einstellungen aktiv:
 - Offen
 - In Arbeit
 - Geplant
+- Info (Wissenseinträge)
 - Abgelehnt
 - Erledigt
 
@@ -65,8 +72,7 @@ Nach der Installation sind folgende Einstellungen aktiv:
 Basis-Berechtigung für den Zugriff auf den Issue Tracker.
 Benutzer mit dieser Berechtigung können:
 - Issues ansehen
-- Dashboard nutzen
-- Filter verwenden
+- Postfach, Filter und Nachrichten nutzen
 
 ### issue_tracker[issuer]
 Erweiterte Berechtigung zum Erstellen und Kommentieren.
@@ -75,6 +81,9 @@ Benutzer mit dieser Berechtigung können zusätzlich:
 - Issues bearbeiten
 - Kommentare hinzufügen
 - Status ändern
+
+### issue_tracker[issue_manager]
+Manager: alle Themen bearbeiten und löschen, Wissenseinträge pflegen, Projekte anlegen und verwalten, interne Kommentare und Aktivitätsverlauf sehen.
 
 ### admin
 Vollzugriff auf alle Funktionen.

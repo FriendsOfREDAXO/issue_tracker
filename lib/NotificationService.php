@@ -182,7 +182,7 @@ class NotificationService
 
         foreach ($userMap as $user) {
             $body = sprintf(
-                "Hallo %s,\n\n%s hat Issue #%d \"%s\" kommentiert und gleichzeitig geschlossen.\n\nKommentar:\n%s\n\nStatus: %s → %s\n\nZum Issue:\n%s\n\n---\nDiese E-Mail wurde automatisch vom REDAXO Issue Tracker generiert.",
+                "Hallo %s,\n\n%s hat Issue #%d \"%s\" kommentiert und gleichzeitig geschlossen.\n\nKommentar:\n%s\n\nStatus: %s → %s\n\n%sZum Issue:\n%s\n\n---\nDiese E-Mail wurde automatisch vom REDAXO Issue Tracker generiert.",
                 $user->getName(),
                 $creator ? $creator->getName() : 'Unbekannt',
                 $issue->getId(),
@@ -190,6 +190,7 @@ class NotificationService
                 $comment->getComment(),
                 $oldStatus,
                 $issue->getStatus(),
+                self::buildAffectedPageText($issue, $user),
                 $url,
             );
 
@@ -229,12 +230,13 @@ class NotificationService
         $context = $commentId !== null ? 'einem Kommentar' : 'der Beschreibung';
 
         $body = sprintf(
-            "Hallo %s,\n\n%s hat Sie in %s zu Issue #%d \"%s\" erwähnt.\n\nZum Issue:\n%s\n\n---\nDiese E-Mail wurde automatisch vom REDAXO Issue Tracker generiert.",
+            "Hallo %s,\n\n%s hat Sie in %s zu Issue #%d \"%s\" erwähnt.\n\n%sZum Issue:\n%s\n\n---\nDiese E-Mail wurde automatisch vom REDAXO Issue Tracker generiert.",
             $mentionedUser->getName(),
             $mentioner->getName(),
             $context,
             $issue->getId(),
             $issue->getTitle(),
+            self::buildAffectedPageText($issue, $mentionedUser),
             $url,
         );
 
@@ -835,6 +837,7 @@ class NotificationService
             'issue_description' => $issue->getDescription(),
             'creator_name' => $creatorName,
             'issue_url' => $url,
+            'affected_page' => self::buildAffectedPageHtml($issue, $recipient),
         ]);
     }
 
@@ -856,6 +859,7 @@ class NotificationService
             'creator_name' => $creatorName,
             'comment_text' => $comment->getComment(),
             'issue_url' => $url,
+            'affected_page' => self::buildAffectedPageHtml($issue, $recipient),
         ]);
     }
 
@@ -876,6 +880,7 @@ class NotificationService
             'old_status' => $oldStatus,
             'new_status' => $newStatus,
             'issue_url' => $url,
+            'affected_page' => self::buildAffectedPageHtml($issue, $recipient),
         ]);
     }
 
@@ -897,6 +902,7 @@ class NotificationService
             'issue_priority' => $issue->getPriority(),
             'issue_description' => $issue->getDescription(),
             'issue_url' => $url,
+            'affected_page' => self::buildAffectedPageHtml($issue, $assignedUser),
         ]);
     }
 
@@ -951,6 +957,91 @@ class NotificationService
             $template = str_replace('{{' . $key . '}}', $value, $template);
         }
         return $template;
+    }
+
+    /**
+     * Ermittelt die Sprache des Empfängers für E-Mail-Texte (de oder en).
+     */
+    private static function getRecipientLang(rex_user $user): string
+    {
+        $userLang = (string) $user->getValue('language');
+        if ('' === $userLang) {
+            $userLang = (string) rex::getProperty('lang', 'de_de');
+        }
+        return str_starts_with($userLang, 'en') ? 'en' : 'de';
+    }
+
+    /**
+     * HTML-Zeile „Betroffene Seite“ für den Platzhalter {{affected_page}}.
+     *
+     * Leer, wenn keine Seite gesetzt ist (Vorlagen brauchen dann keine eigene Beschriftung).
+     * Enthält Titel und absolute Frontend-Adresse; Benutzer mit Rechten auf Kategorie und
+     * Sprache erhalten zusätzlich einen Link zum Bearbeiten im Backend.
+     */
+    public static function buildAffectedPageHtml(Issue $issue, rex_user $recipient): string
+    {
+        $articleId = $issue->getArticleId();
+        $affectedUrl = $issue->getAffectedUrl();
+        if (!$articleId && !$affectedUrl) {
+            return '';
+        }
+
+        $locale = 'en' === self::getRecipientLang($recipient) ? 'en_gb' : 'de_de';
+        $linkStyle = ' style="color: #0b5cad;"';
+        $parts = [];
+
+        if ($articleId) {
+            $article = $issue->getAffectedArticle();
+            if ($article) {
+                $clangId = (int) $article->getClangId();
+                $frontendUrl = Issue::toAbsoluteUrl((string) rex_getUrl($articleId, $clangId));
+                $part = '<a href="' . rex_escape($frontendUrl) . '"' . $linkStyle . '>' . rex_escape(trim((string) $article->getName())) . '</a>';
+                if (\rex_clang::count() > 1 && \rex_clang::get($clangId)) {
+                    $part .= ' (' . rex_escape(\rex_clang::get($clangId)->getName()) . ')';
+                }
+                $part .= ' <span style="color: #555;">' . rex_escape($frontendUrl) . '</span>';
+
+                $canEdit = $recipient->isAdmin() || (
+                    $recipient->getComplexPerm('clang')?->hasPerm($clangId)
+                    && $recipient->getComplexPerm('structure')?->hasCategoryPerm((int) $article->getCategoryId())
+                );
+                if ($canEdit) {
+                    $backendUrl = rtrim((string) rex::getServer(), '/') . '/' . basename(rtrim(\rex_path::backend(), '/\\'))
+                        . '/index.php?' . http_build_query(['page' => 'content/edit', 'article_id' => $articleId, 'clang' => $clangId, 'mode' => 'edit'], '', '&');
+                    $part .= ' &middot; <a href="' . rex_escape($backendUrl) . '"' . $linkStyle . '>' . \rex_i18n::msgInLocale('issue_tracker_mail_affected_edit', $locale) . '</a>';
+                }
+                $parts[] = $part;
+            } else {
+                $parts[] = \rex_i18n::msgInLocale('issue_tracker_affected_missing', $locale, (int) $articleId);
+            }
+        }
+
+        if ($affectedUrl) {
+            if (Issue::isValidAffectedUrl($affectedUrl)) {
+                $abs = Issue::toAbsoluteUrl($affectedUrl);
+                $parts[] = '<a href="' . rex_escape($abs) . '"' . $linkStyle . '>' . rex_escape($abs) . '</a>';
+            } else {
+                $parts[] = rex_escape($affectedUrl);
+            }
+        }
+
+        return '<br><strong>' . \rex_i18n::msgInLocale('issue_tracker_affected_page', $locale) . ':</strong> ' . implode('<br>', $parts);
+    }
+
+    /**
+     * Textzeile „Betroffene Seite“ für Text-E-Mails (leer, wenn keine Seite gesetzt ist).
+     */
+    public static function buildAffectedPageText(Issue $issue, rex_user $recipient): string
+    {
+        $html = self::buildAffectedPageHtml($issue, $recipient);
+        if ('' === $html) {
+            return '';
+        }
+        // Links als „Text <URL>“ ausschreiben
+        $text = preg_replace('#<span style="color: \#555;">.*?</span>#', '', $html);
+        $text = preg_replace_callback('#<a href="([^"]*)"[^>]*>(.*?)</a>#', static fn (array $m): string => $m[1] === $m[2] ? $m[1] : $m[2] . ' (' . $m[1] . ')', (string) $text);
+        $text = preg_replace('/\s*&middot;\s*/', ' - ', str_replace('<br>', "\n", (string) $text));
+        return trim(html_entity_decode(strip_tags($text), ENT_QUOTES, 'UTF-8')) . "\n\n";
     }
 
     /**
@@ -1353,6 +1444,7 @@ class NotificationService
             'sent_by_name' => $sentByName,
             'due_date' => $dueDateHtml,
             'issue_url' => $url,
+            'affected_page' => self::buildAffectedPageHtml($issue, $assignedUser),
         ]);
 
         $result = self::sendMail($assignedUser->getValue('email'), $subject, $body);

@@ -16,6 +16,83 @@ final class UiHelper
     /** Avatar-Farben mit ausreichendem Kontrast zu weißer Schrift */
     private const AVATAR_COLORS = ['blue', 'green', 'red', 'purple', 'indigo', 'pink', 'teal'];
 
+    private const FLASH_KEY = 'issue_tracker_flash';
+
+    /**
+     * Gemeinsamer CSRF-Token für Formulare und Aktions-Links des Issue Trackers.
+     */
+    public static function csrf(): \rex_csrf_token
+    {
+        return \rex_csrf_token::factory('issue_tracker_action');
+    }
+
+    /**
+     * Prüft den CSRF-Token einer angeforderten Aktion; bei ungültigem Token Fehlermeldung ausgeben.
+     * Aktionen laufen nur per POST mit dem Token im Formular (nie in der Adresse, damit er nicht in
+     * Verlauf, Referrer oder Server-Logs landet).
+     */
+    public static function csrfCheck(): bool
+    {
+        if (self::csrfPostValid()) {
+            return true;
+        }
+        echo \rex_view::error(rex_i18n::msg('csrf_token_invalid'));
+        return false;
+    }
+
+    /**
+     * POST-Anfrage mit gültigem Token im Formular (nicht in der Adresse); ohne Fehlermeldung.
+     */
+    public static function csrfPostValid(?\rex_csrf_token $token = null): bool
+    {
+        return 'post' === rex_request_method()
+            && null !== rex_post(\rex_csrf_token::PARAM, 'string', null)
+            && ($token ?? self::csrf())->isValid();
+    }
+
+    /**
+     * Aktion per POST mit CSRF-Token, ohne das Layout zu verändern: Das Formular ist leer und versteckt,
+     * der Knopf an der Stelle des früheren Links verweist per form-Attribut darauf.
+     * Die Rückfrage (data-confirm) steht am Formular, damit sie vor dem Absenden läuft (REDAXO, auch in der Ebene).
+     *
+     * @param array<string, scalar> $fields versteckte Felder
+     * @return array{0: string, 1: string} [Formular-HTML, Attribut für den Knopf (mit führendem Leerzeichen)]
+     */
+    public static function postForm(string $action, array $fields, string $confirm = ''): array
+    {
+        $id = 'it-pf-' . bin2hex(random_bytes(5));
+        $html = '<form method="post" action="' . rex_escape($action) . '" id="' . $id . '" hidden'
+            . ('' !== $confirm ? ' data-confirm="' . rex_escape($confirm) . '"' : '') . '>'
+            . self::csrf()->getHiddenField();
+        foreach ($fields as $name => $value) {
+            $html .= '<input type="hidden" name="' . rex_escape((string) $name) . '" value="' . rex_escape((string) $value) . '">';
+        }
+        return [$html . '</form>', ' form="' . $id . '"'];
+    }
+
+    /**
+     * Rückmeldung für die nächste Seite merken (nach einer Weiterleitung als kurze Einblendung).
+     */
+    public static function flash(string $message): void
+    {
+        rex_set_session(self::FLASH_KEY, $message);
+    }
+
+    /**
+     * Gemerkte Rückmeldung als Einblendung ausgeben (einmalig).
+     */
+    public static function flashToast(): string
+    {
+        $message = rex_session(self::FLASH_KEY, 'string', '');
+        if ('' === $message) {
+            return '';
+        }
+        rex_unset_session(self::FLASH_KEY);
+        return '<div class="it-toast" role="status" aria-live="polite" data-it-toast><i class="rex-icon fa-check-circle" aria-hidden="true"></i> <span>'
+            . rex_escape($message) . '</span><button type="button" class="it-toast-close" data-it-toast-close title="' . rex_escape(rex_i18n::msg('issue_tracker_close')) . '">'
+            . '<span aria-hidden="true">&times;</span><span class="sr-only">' . rex_escape(rex_i18n::msg('issue_tracker_close')) . '</span></button></div>';
+    }
+
     public static function initials(string $name): string
     {
         $parts = preg_split('/[\s._-]+/u', trim($name), -1, PREG_SPLIT_NO_EMPTY) ?: [];

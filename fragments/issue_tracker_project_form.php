@@ -120,6 +120,7 @@ $privateField = UiHelper::field(
 <div class="issue-tracker-project-form">
     <form method="post" action="<?= rex_url::currentBackendPage() ?>" novalidate>
         <input type="hidden" name="save" value="1" />
+        <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
         <?php if (!$isNew): ?>
         <input type="hidden" name="project_id" value="<?= $project->getId() ?>" />
         <?php endif; ?>

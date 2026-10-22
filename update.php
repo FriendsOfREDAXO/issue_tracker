@@ -50,6 +50,33 @@ foreach ($defaultTemplates as $key => $value) {
     }
 }
 
+// 2.0.0: Platzhalter {{affected_page}} (betroffene Seite) in unveränderte Standardvorlagen einfügen.
+// Hier ist noch die ALTE Klasse geladen – $defaultTemplates sind also die bisherigen Standardtexte.
+// Selbst angepasste Vorlagen bleiben unangetastet (der Platzhalter kann dort von Hand ergänzt werden).
+$normalizeTpl = static fn (string $tpl): string => trim((string) preg_replace('/\s+/u', ' ', $tpl));
+foreach ($defaultTemplates as $key => $value) {
+    if (str_contains((string) $value, '{{affected_page}}')) {
+        continue;
+    }
+    $sql = rex_sql::factory();
+    $sql->setQuery('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = ?', [$key]);
+    if (1 !== $sql->getRows()) {
+        continue;
+    }
+    $stored = (string) $sql->getValue('setting_value');
+    if (str_contains($stored, '{{affected_page}}') || $normalizeTpl($stored) !== $normalizeTpl((string) $value)) {
+        continue;
+    }
+    $upgraded = preg_replace('#(<div class="info-box"[^>]*>.*?)(\n\s*</div>)#s', "$1\n    {{affected_page}}$2", $stored, 1);
+    if (is_string($upgraded) && $upgraded !== $stored) {
+        rex_sql::factory()
+            ->setTable(rex::getTable('issue_tracker_settings'))
+            ->setWhere(['setting_key' => $key])
+            ->setValue('setting_value', $upgraded)
+            ->update();
+    }
+}
+
 // Standard-Tags nachrüsten (Bug, Feature, Docs, Good Idea) – nur falls noch nicht vorhanden
 $defaultTagsList = [
     ['name' => 'Bug',       'color' => '#dc3545'],

@@ -41,6 +41,8 @@ if ((int) ($state['filter_mentioned'] ?? 0) === 1) {
     $mailboxTitle = $package->i18n('issue_tracker_mail_assigned_to_me');
 } elseif ((int) ($state['filter_created_by'] ?? 0) === $userId && $userId > 0) {
     $mailboxTitle = $package->i18n('issue_tracker_mail_created_by_me');
+} elseif ((int) ($state['filter_recent_closed'] ?? 0) === 1) {
+    $mailboxTitle = $package->i18n('issue_tracker_mail_recent_closed');
 } elseif ((int) ($state['filter_overdue'] ?? 0) === 1) {
     $mailboxTitle = $package->i18n('issue_tracker_overdue');
 } elseif ((int) ($state['filter_project'] ?? 0) > 0) {
@@ -141,6 +143,24 @@ if ($isProject && $projectCard) {
 }
 $searchPlaceholder = $package->i18n($isKnowledge ? 'issue_tracker_mail_search_knowledge' : ($isProject ? 'issue_tracker_mail_search_project' : 'issue_tracker_mail_search_issues'));
 $emptyText = $package->i18n($isKnowledge ? 'issue_tracker_mail_empty_knowledge' : ($isProject ? 'issue_tracker_mail_empty_project' : 'issue_tracker_mail_empty_issues'));
+// Eigene Hinweise für die festen Postfächer, damit klar ist, warum die Liste leer ist
+if (!$isKnowledge && !$isProject) {
+    if ((int) ($state['filter_mentioned'] ?? 0) === 1) {
+        $emptyText = $package->i18n('issue_tracker_mail_empty_mentioned');
+    } elseif ((int) ($state['filter_watched'] ?? 0) === 1) {
+        $emptyText = $package->i18n('issue_tracker_mail_empty_watched');
+    } elseif ((int) ($state['filter_overdue'] ?? 0) === 1) {
+        $emptyText = $package->i18n('issue_tracker_mail_empty_overdue');
+    } elseif ((int) ($state['filter_recent_closed'] ?? 0) === 1) {
+        $emptyText = $package->i18n('issue_tracker_mail_empty_recent_closed');
+    } elseif ((int) ($state['filter_assigned'] ?? 0) === $userId) {
+        $emptyText = $package->i18n('issue_tracker_mail_empty_assigned');
+    } elseif ((int) ($state['filter_created_by'] ?? 0) === $userId) {
+        $emptyText = $package->i18n('issue_tracker_mail_empty_created');
+    }
+}
+// Ohne Recht auf Wissenseinträge kein „Neu“-Knopf im leeren Wissen
+$showEmptyNew = !$isKnowledge || PermissionService::isAdminOrManager();
 if (($state['search'] ?? '') !== '') {
     $emptyText = $package->i18n('issue_tracker_mail_empty_search');
 }
@@ -157,6 +177,43 @@ $exportParams = $exportFilter + ['rex-api-call' => 'issue_tracker_export', 'form
 $hasPdf = \rex_addon::exists('pdfout') && \rex_addon::get('pdfout')->isAvailable();
 $pdfParams = $exportFilter + ['export_pdf' => 1];
 
+// Schnelles Tagging (Liste + Tabelle): Daten für das Tag-Fenster in it-mail.js
+$quickTagTags = [];
+foreach ($allTags as $tag) {
+    $quickTagTags[] = ['id' => $tag->getId(), 'name' => $tag->getName(), 'color' => $tag->getColor()];
+}
+// Token im Formular-Body (nicht in der Adresse), siehe postApi() in it-mail.js
+$quickTagAttrs = ' data-it-qtag-api="' . rex_escape(rex_url::backendPage('issue_tracker/issues/list', ['rex-api-call' => 'issue_tracker_tags'], false)) . '"'
+    . ' data-it-qtag-token="' . rex_escape(rex_csrf_token::factory(rex_api_issue_tracker_tags::class)->getValue()) . '"'
+    . ' data-it-qtag-tags="' . rex_escape(json_encode($quickTagTags)) . '"'
+    . ' data-it-qtag-create="' . (PermissionService::canManageTags() ? '1' : '0') . '"'
+    . ' data-it-qtag-labels="' . rex_escape(json_encode([
+        'for' => $package->i18n('issue_tracker_quicktag_for', '{0}'),
+        'new' => $package->i18n('issue_tracker_quicktag_new', '{0}'),
+        'error' => $package->i18n('issue_tracker_quicktag_error'),
+        'saved' => $package->i18n('issue_tracker_quicktag_saved'),
+        'search' => $package->i18n('issue_tracker_qbar_search'),
+        'none' => $package->i18n('issue_tracker_qbar_no_match'),
+        'empty' => $package->i18n(PermissionService::canManageTags() ? 'issue_tracker_quicktag_empty_create' : 'issue_tracker_quicktag_empty'),
+        'close' => $package->i18n('issue_tracker_close'),
+    ])) . '"';
+// Tag-Pillen einer Zeile (auch für die Aktualisierung per JS gleich aufgebaut)
+$renderRowTags = static function (array $tags, int $max) use ($colorVar): string {
+    $out = '';
+    foreach ($max > 0 ? array_slice($tags, 0, $max) : $tags as $tag) {
+        $out .= '<span class="it-chip"><span class="it-dot it-dot--custom it-dot--sm" style="' . rex_escape($colorVar($tag->getColor())) . '" aria-hidden="true"></span>' . rex_escape($tag->getName()) . '</span>';
+    }
+    if ($max > 0 && count($tags) > $max) {
+        $out .= '<span class="it-chip">+' . (count($tags) - $max) . '</span>';
+    }
+    return $out;
+};
+$quickTagButton = static function (int $issueId, string $title, array $tagIds) use ($package): string {
+    return '<button type="button" class="it-qtag-btn" data-it-qtag data-issue-id="' . $issueId . '" data-tag-ids="' . rex_escape(implode(',', $tagIds)) . '"'
+        . ' data-issue-title="' . rex_escape($title) . '" aria-haspopup="dialog" aria-keyshortcuts="T" title="' . rex_escape($package->i18n('issue_tracker_quicktag_title')) . '">'
+        . '<i class="rex-icon fa-tag" aria-hidden="true"></i><span class="sr-only">' . rex_escape($package->i18n('issue_tracker_quicktag')) . ': #' . $issueId . ' ' . rex_escape($title) . '</span></button>';
+};
+
 $activeFilterCount = 0;
 foreach ($state as $k => $v) {
     if ($k !== 'search' && $v !== '' && $v !== 0 && $v !== '0') {
@@ -164,7 +221,7 @@ foreach ($state as $k => $v) {
     }
 }
 ?>
-<section class="it-ml<?= $viewMode === 'table' ? ' it-ml--table' : '' ?>" aria-label="<?= rex_escape($mailboxTitle) ?>">
+<section class="it-ml<?= $viewMode === 'table' ? ' it-ml--table' : '' ?>" aria-label="<?= rex_escape($mailboxTitle) ?>"<?= $quickTagAttrs ?>>
     <header class="it-ml-bar">
         <a class="it-tb-back it-tb-back--list" href="<?= $listUrl() ?>"><i class="rex-icon fa-angle-left" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_mail_mailboxes') ?></a>
         <div class="it-ml-head">
@@ -173,10 +230,15 @@ foreach ($state as $k => $v) {
                 <span class="it-ml-total"><?= $package->i18n('issue_tracker_mail_count', $totalIssues) ?></span>
             </div>
             <div class="it-ml-head-actions">
+                <?php
+                // Ansicht wechseln und pro Benutzer merken: kleines POST-Formular mit CSRF-Token (kein Link mit Zustandsänderung)
+                [$viewModeForm, $viewModeFormAttr] = \FriendsOfREDAXO\IssueTracker\UiHelper::postForm(rex_url::backendPage('issue_tracker/issues/list', ['screen' => 'list'], false), ['set_view_mode' => 1]);
+                ?>
                 <div class="it-seg" role="group" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_view_switch')) ?>">
-                    <a class="it-seg-btn<?= $viewMode === 'mail' ? ' is-active' : '' ?>" href="<?= $listUrl(['view_mode' => 'mail']) ?>"<?= $viewMode === 'mail' ? ' aria-current="true"' : '' ?>><?= $package->i18n('issue_tracker_mail_view_mailbox') ?></a>
-                    <a class="it-seg-btn<?= $viewMode === 'table' ? ' is-active' : '' ?>" href="<?= $listUrl(['view_mode' => 'table']) ?>"<?= $viewMode === 'table' ? ' aria-current="true"' : '' ?>><?= $package->i18n('issue_tracker_mail_view_table') ?></a>
+                    <button type="submit"<?= $viewModeFormAttr ?> name="view_mode" value="mail" class="it-seg-btn<?= $viewMode === 'mail' ? ' is-active' : '' ?>"<?= $viewMode === 'mail' ? ' aria-current="true"' : '' ?>><?= $package->i18n('issue_tracker_mail_view_mailbox') ?></button>
+                    <button type="submit"<?= $viewModeFormAttr ?> name="view_mode" value="table" class="it-seg-btn<?= $viewMode === 'table' ? ' is-active' : '' ?>"<?= $viewMode === 'table' ? ' aria-current="true"' : '' ?>><?= $package->i18n('issue_tracker_mail_view_table') ?></button>
                 </div>
+                <?= $viewModeForm ?>
                 <a class="it-tb-btn it-tb-btn--accent" href="<?= $newHref ?>" title="<?= rex_escape($newLabel) ?>">
                     <i class="rex-icon fa-pencil-square-o" aria-hidden="true"></i><span class="sr-only"><?= rex_escape($newLabel) ?></span>
                 </a>
@@ -211,7 +273,7 @@ foreach ($state as $k => $v) {
                 <div class="it-menu-pop it-menu-pop--right it-menu-pop--form">
                     <form method="get" action="<?= rex_url::backendController() ?>">
                         <input type="hidden" name="page" value="issue_tracker/issues/list" />
-                        <?php foreach (['filter_tag', 'filter_assigned', 'filter_project', 'filter_watched', 'filter_mentioned', 'filter_overdue', 'search'] as $key): ?>
+                        <?php foreach (['filter_tag', 'filter_assigned', 'filter_project', 'filter_watched', 'filter_mentioned', 'filter_overdue', 'filter_recent_closed', 'search'] as $key): ?>
                         <input type="hidden" name="<?= $key ?>" value="<?= rex_escape((string) ($state[$key] ?? '')) ?>" />
                         <?php endforeach; ?>
                         <?php if ($isKnowledge): ?>
@@ -244,10 +306,12 @@ foreach ($state as $k => $v) {
                             </select>
                         </label>
                         <div class="it-menu-actions">
-                            <a class="btn btn-default btn-sm" href="<?= $listUrl(['reset_filter' => 1]) ?>"><?= $package->i18n('issue_tracker_filter_reset') ?></a>
+                            <?php [$resetForm, $resetFormAttr] = \FriendsOfREDAXO\IssueTracker\UiHelper::postForm(rex_url::backendPage('issue_tracker/issues/list', ['screen' => 'list'], false), ['reset_filter' => 1]); ?>
+                            <button type="submit"<?= $resetFormAttr ?> class="btn btn-default btn-sm"><?= $package->i18n('issue_tracker_filter_reset') ?></button>
                             <button type="submit" class="btn btn-primary it-btn-primary btn-sm"><?= $package->i18n('issue_tracker_filter_apply') ?></button>
                         </div>
                     </form>
+                    <?= $resetForm ?>
                 </div>
             </details>
 
@@ -315,7 +379,7 @@ foreach ($state as $k => $v) {
         <div class="it-empty">
             <i class="rex-icon <?= $isKnowledge ? 'fa-book' : 'fa-inbox' ?>" aria-hidden="true"></i>
             <?= rex_escape($emptyText) ?>
-            <?php if (($state['search'] ?? '') === ''): ?>
+            <?php if (($state['search'] ?? '') === '' && $showEmptyNew): ?>
             <p><a class="btn btn-default btn-sm" href="<?= $newHref ?>"><?= rex_escape($newLabel) ?></a></p>
             <?php endif; ?>
         </div>
@@ -335,8 +399,9 @@ foreach ($state as $k => $v) {
                 $cCount = $commentCounts[$iid] ?? 0;
                 $aCount = $attachmentCounts[$iid] ?? 0;
                 $text = $preview($issue->getDescription());
+                $canQuickTag = !$isKnowledge && PermissionService::canEdit($issue);
             ?>
-            <li>
+            <li<?= $canQuickTag ? ' class="has-qtag"' : '' ?>>
                 <a class="it-ml-row<?= $isSel ? ' is-selected' : '' ?><?= $unread ? ' is-unread' : '' ?>" href="<?= $listUrl($carry + ['issue_id' => $iid]) ?>"
                    data-issue-id="<?= $iid ?>" data-view-href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $iid]) ?>"<?= $isSel ? ' aria-current="true"' : '' ?>>
                     <span class="it-ml-mark">
@@ -351,7 +416,7 @@ foreach ($state as $k => $v) {
                     <span class="it-ml-main">
                         <span class="it-ml-line1">
                             <span class="it-ml-subject"><?= rex_escape($issue->getTitle()) ?></span>
-                            <?php $rowDate = $isKnowledge ? ($issue->getUpdatedAt() ?? $issue->getCreatedAt()) : $issue->getCreatedAt(); ?>
+                            <?php $rowDate = $isKnowledge ? ($issue->getUpdatedAt() ?? $issue->getCreatedAt()) : ((int) ($state['filter_recent_closed'] ?? 0) === 1 ? ($issue->getClosedAt() ?? $issue->getCreatedAt()) : $issue->getCreatedAt()); ?>
                             <time class="it-ml-date" datetime="<?= $rowDate ? $rowDate->format('c') : '' ?>"><?= rex_escape(UiHelper::relDate($rowDate)) ?></time>
                         </span>
                         <?php if ($isKnowledge): ?>
@@ -368,7 +433,7 @@ foreach ($state as $k => $v) {
                         <?php if (!$isKnowledge): ?>
                         <span class="it-ml-meta">
                             <span class="it-ml-id">#<?= $iid ?></span>
-                            <span class="it-ml-status"><?= $package->i18n('issue_tracker_status_' . $issue->getStatus()) ?></span>
+                            <span class="it-chip it-ml-status"><span class="it-dot it-dot--sm it-dot--<?= rex_escape(preg_replace('/[^a-z_]/', '', (string) $issue->getStatus())) ?>" aria-hidden="true"></span><?= $package->i18n('issue_tracker_status_' . $issue->getStatus()) ?></span>
                             <?php if (in_array($prio, ['urgent', 'critical'], true)): ?>
                             <span class="it-ml-flag it-ml-flag--danger" title="<?= rex_escape($package->i18n('issue_tracker_priority_' . $prio)) ?>"><i class="rex-icon fa-flag" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_priority') ?>: <?= $package->i18n('issue_tracker_priority_' . $prio) ?></span></span>
                             <?php elseif ($prio === 'high'): ?>
@@ -389,22 +454,21 @@ foreach ($state as $k => $v) {
                             <?php if ($cCount > 0): ?>
                             <span class="it-ml-icon" title="<?= rex_escape($package->i18n('issue_tracker_comments')) ?>"><i class="rex-icon fa-comment-o" aria-hidden="true"></i> <?= $cCount ?></span>
                             <?php endif; ?>
-                            <?php foreach (array_slice($tags, 0, 2) as $tag): ?>
-                            <span class="it-chip"><span class="it-dot it-dot--custom it-dot--sm" style="<?= rex_escape($colorVar($tag->getColor())) ?>" aria-hidden="true"></span><?= rex_escape($tag->getName()) ?></span>
-                            <?php endforeach; ?>
-                            <?php if (count($tags) > 2): ?><span class="it-chip">+<?= count($tags) - 2 ?></span><?php endif; ?>
+                            <span class="it-ml-tags" data-it-row-tags="<?= $iid ?>" data-max="2"><?= $renderRowTags($tags, 2) ?></span>
                         </span>
                         <?php endif; ?>
                     </span>
                 </a>
+                <?php if ($canQuickTag): ?><?= $quickTagButton($iid, $issue->getTitle(), array_map(static fn ($t) => $t->getId(), $tags)) ?><?php endif; ?>
             </li>
             <?php endforeach; ?>
         </ul>
         <?php if (count($issues) < $totalIssues): ?>
         <div class="it-ml-more">
-            <a class="it-ml-more-link" href="<?= $listUrl(['show' => $showCount + $pageSize] + $carry) ?>"><?= $package->i18n('issue_tracker_mail_load_more') ?> (<?= count($issues) ?>/<?= $totalIssues ?>)</a>
+            <a class="it-ml-more-link" data-it-more href="<?= $listUrl(['show' => $showCount + $pageSize] + $carry + ($selectedIssueId > 0 ? ['issue_id' => $selectedIssueId] : [])) ?>"><?= $package->i18n('issue_tracker_mail_load_more') ?> <span class="it-ml-more-count">(<?= $package->i18n('issue_tracker_mail_shown_of', count($issues), $totalIssues) ?>)</span></a>
         </div>
         <?php endif; ?>
+        <p class="sr-only" role="status" aria-live="polite" data-it-more-status data-msg="<?= rex_escape(rex_i18n::rawMsg('issue_tracker_mail_loaded_status', count($issues), $totalIssues)) ?>"></p>
     <?php else: ?>
         <div class="it-group it-table-wrap">
             <table class="table table-hover it-table">
@@ -465,13 +529,7 @@ foreach ($state as $k => $v) {
                                     <?php endif; ?>
                                 </small>
                             <?php endif; ?>
-                            <?php if (!empty($tags)): ?>
-                                <div class="it-chips">
-                                <?php foreach ($tags as $tag): ?>
-                                    <span class="it-chip"><span class="it-dot it-dot--custom it-dot--sm" style="<?= rex_escape($colorVar($tag->getColor())) ?>" aria-hidden="true"></span><?= rex_escape($tag->getName()) ?></span>
-                                <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
+                            <div class="it-chips" data-it-row-tags="<?= $issue->getId() ?>" data-max="0"><?= $renderRowTags($tags, 0) ?></div>
                             <?php if ($clProgress['total'] > 0): ?>
                                 <div class="it-progress-mini"><small class="it-muted-text"><i class="rex-icon fa-check-square-o" aria-hidden="true"></i> <?= $clProgress['checked'] ?>/<?= $clProgress['total'] ?></small>
                                 <progress class="it-progress" max="<?= (int) $clProgress['total'] ?>" value="<?= (int) $clProgress['checked'] ?>"></progress></div>
@@ -506,10 +564,12 @@ foreach ($state as $k => $v) {
                         </td>
                         <td class="it-col-actions">
                             <a href="<?= rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $issue->getId()]) ?>" class="it-tb-btn it-tb-btn--sm" title="<?= rex_escape($package->i18n('issue_tracker_view')) ?>"><i class="rex-icon fa-eye" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_view') ?></span></a>
+                            <?php if (PermissionService::canEdit($issue)): ?><?= $quickTagButton($issue->getId(), $issue->getTitle(), array_map(static fn ($t) => $t->getId(), $tags)) ?><?php endif; ?>
                             <a href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>" class="it-tb-btn it-tb-btn--sm" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
                             <?php if (PermissionService::canDelete()): ?>
-                            <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()]) ?>" class="it-tb-btn it-tb-btn--sm it-tb-btn--danger"
-                               title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>" onclick="return confirm('<?= rex_escape($package->i18n('issue_tracker_delete_confirm')) ?>')"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></a>
+                            <?php [$delForm, $delFormAttr] = \FriendsOfREDAXO\IssueTracker\UiHelper::postForm(rex_url::backendPage('issue_tracker/issues/list', [], false), ['func' => 'delete', 'issue_id' => $issue->getId()], $package->i18n('issue_tracker_delete_confirm')); ?>
+                            <button type="submit"<?= $delFormAttr ?> class="it-tb-btn it-tb-btn--sm it-tb-btn--danger"
+                               title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></button><?= $delForm ?>
                             <?php endif; ?>
                         </td>
                     </tr>
