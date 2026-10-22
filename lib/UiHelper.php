@@ -28,14 +28,46 @@ final class UiHelper
 
     /**
      * Prüft den CSRF-Token einer angeforderten Aktion; bei ungültigem Token Fehlermeldung ausgeben.
+     * Aktionen laufen nur per POST mit dem Token im Formular (nie in der Adresse, damit er nicht in
+     * Verlauf, Referrer oder Server-Logs landet).
      */
     public static function csrfCheck(): bool
     {
-        if (self::csrf()->isValid()) {
+        if (self::csrfPostValid()) {
             return true;
         }
         echo \rex_view::error(rex_i18n::msg('csrf_token_invalid'));
         return false;
+    }
+
+    /**
+     * POST-Anfrage mit gültigem Token im Formular (nicht in der Adresse); ohne Fehlermeldung.
+     */
+    public static function csrfPostValid(?\rex_csrf_token $token = null): bool
+    {
+        return 'post' === rex_request_method()
+            && null !== rex_post(\rex_csrf_token::PARAM, 'string', null)
+            && ($token ?? self::csrf())->isValid();
+    }
+
+    /**
+     * Aktion per POST mit CSRF-Token, ohne das Layout zu verändern: Das Formular ist leer und versteckt,
+     * der Knopf an der Stelle des früheren Links verweist per form-Attribut darauf.
+     * Die Rückfrage (data-confirm) steht am Formular, damit sie vor dem Absenden läuft (REDAXO, auch in der Ebene).
+     *
+     * @param array<string, scalar> $fields versteckte Felder
+     * @return array{0: string, 1: string} [Formular-HTML, Attribut für den Knopf (mit führendem Leerzeichen)]
+     */
+    public static function postForm(string $action, array $fields, string $confirm = ''): array
+    {
+        $id = 'it-pf-' . bin2hex(random_bytes(5));
+        $html = '<form method="post" action="' . rex_escape($action) . '" id="' . $id . '" hidden'
+            . ('' !== $confirm ? ' data-confirm="' . rex_escape($confirm) . '"' : '') . '>'
+            . self::csrf()->getHiddenField();
+        foreach ($fields as $name => $value) {
+            $html .= '<input type="hidden" name="' . rex_escape((string) $name) . '" value="' . rex_escape((string) $value) . '">';
+        }
+        return [$html . '</form>', ' form="' . $id . '"'];
     }
 
     /**

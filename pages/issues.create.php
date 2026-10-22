@@ -25,8 +25,9 @@ if (!$currentUser) {
 }
 
 // Attachment löschen
-if (rex_request('delete_attachment', 'int', 0) > 0 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
-    $attachmentId = rex_request('delete_attachment', 'int', 0);
+// Attachment löschen nur per POST mit CSRF-Token im Formular
+if (rex_post('delete_attachment', 'int', 0) > 0 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
+    $attachmentId = rex_post('delete_attachment', 'int', 0);
     $attachment = Attachment::get($attachmentId);
     $attachmentIssue = $attachment && $attachment->getIssueId() ? Issue::get((int) $attachment->getIssueId()) : null;
 

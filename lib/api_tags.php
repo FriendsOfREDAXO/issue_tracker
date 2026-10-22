@@ -7,7 +7,8 @@
  * - toggle: Tag an einem Thema setzen/entfernen (issue_id, tag_id, on=1|0) – nur wer das Thema bearbeiten darf
  * - create: neues Tag anlegen (name) und optional gleich setzen (issue_id) – nur wer Tags verwalten darf
  *
- * Aufruf nur im Backend mit CSRF-Token (getUrlParams()).
+ * Aufruf nur im Backend per POST; den CSRF-Token (rex_csrf_token::factory(self::class)) im Formular-Body
+ * als _csrf_token mitschicken, nicht in der Adresse.
  *
  * @package issue_tracker
  */

@@ -39,6 +39,13 @@ Version 2.0 ist eine komplett neue Oberfläche für den Issue Tracker. Alle Funk
 - Fix: Enthielt ein Kommentar oder eine Beschreibung den Text `_csrf_token`, fehlte dem zugehörigen Formular der Token („CSRF-Token ungültig“).
 - Handbuch (Hilfe), README und Installationsanleitung auf die neue Oberfläche aktualisiert.
 
+### Sicherheit
+
+- Keine CSRF-Token mehr in Adressen (Browserverlauf, Referrer, Server-Logs): Thema löschen (Lesebereich und Tabelle), Nachricht löschen, Anhang löschen, Tag löschen und Projektmitglied entfernen sind jetzt kleine POST-Formulare mit verstecktem Token und Rückfrage (`data-confirm`), optisch unverändert. Die Server-Seite führt diese Aktionen nur noch per POST mit Token aus; alte Links mit Token in der Adresse bewirken nichts mehr.
+- API-Aufrufe (Quick-Tags, Tags in der Eigenschaften-Leiste, „Neuen API-Token generieren“) schicken den Token im POST-Body statt in der Adresse; „Neuen API-Token generieren“ nimmt nur noch POST an.
+- Die Ansicht Postfach/Tabelle und „Filter zurücksetzen“ werden nur noch per POST mit Token gespeichert bzw. zurückgesetzt. `view_mode` und `reset_filter` in der Adresse (Lesezeichen, alte Links) wirken nur auf die aktuelle Anzeige und ändern nichts Gespeichertes.
+- Das zuletzt genutzte Postfach wird beim Anzeigen nur vorgemerkt und erst per POST mit Token gespeichert; ein untergeschobener Aufruf (Bild, Iframe) ändert die gespeicherte Einstellung nicht mehr. Die Sortierung im Nachrichtenverlauf akzeptiert nur noch `asc`/`desc`.
+
 ## [2.0.0-beta11] – 2026-10-22
 
 - Fix: Antworten auf eine Nachricht (Antwortfeld unter der Nachricht) scheiterte mit „CSRF-Token ungültig“ – das Formular schickt das Token jetzt mit.

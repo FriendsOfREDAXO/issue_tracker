@@ -77,7 +77,8 @@ if ($selectedArticle > 0) {
     $pageLabel = $selectedUrl;
 }
 // Neues Tag direkt in der Leiste anlegen (nur wer Tags verwalten darf)
-$tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tracker/issues/list', rex_api_issue_tracker_tags::getUrlParams(), false) : '';
+// Tag-Schnittstelle: Token im Formular-Body (data-it-tag-token), nicht in der Adresse
+$tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tracker/issues/list', ['rex-api-call' => 'issue_tracker_tags'], false) : '';
 ?>
 <?php $itTbLabels = ['bold' => $package->i18n('issue_tracker_mail_tb_bold'), 'italic' => $package->i18n('issue_tracker_mail_tb_italic'), 'unordered-list' => $package->i18n('issue_tracker_mail_tb_list'), 'ordered-list' => $package->i18n('issue_tracker_mail_tb_olist'), 'link' => $package->i18n('issue_tracker_mail_tb_link'), 'image' => $package->i18n('issue_tracker_mail_tb_image'), 'preview' => $package->i18n('issue_tracker_mail_tb_preview'), 'rex-link' => $package->i18n('issue_tracker_mail_tb_page')]; ?>
 <div class="issue-tracker-form it-sheet" data-it-tb-labels="<?= rex_escape(json_encode($itTbLabels)) ?>"<?= !empty($mentionUsers) ? ' data-mention-users="' . rex_escape(json_encode(array_values($mentionUsers))) . '"' : '' ?>>
@@ -128,7 +129,7 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
 
         <!-- Eigenschaften-Leiste: wie die Chips im Lesebereich – Werte gelten sofort beim neuen Thema -->
         <div class="it-qbar-row<?= $assignError || $urlError ? ' has-error' : '' ?>">
-            <div class="it-qbar" role="group" aria-label="<?= rex_escape($package->i18n('issue_tracker_qbar_label')) ?>"<?= $tagApiUrl !== '' ? ' data-it-tag-api="' . rex_escape($tagApiUrl) . '"' : '' ?> data-it-qbar-labels="<?= rex_escape(json_encode(['new' => $package->i18n('issue_tracker_quicktag_new', '{0}'), 'error' => $package->i18n('issue_tracker_quicktag_error'), 'assign' => $package->i18n('issue_tracker_mail_err_assign'), 'url' => rex_i18n::rawMsg('issue_tracker_affected_url_invalid')])) ?>">
+            <div class="it-qbar" role="group" aria-label="<?= rex_escape($package->i18n('issue_tracker_qbar_label')) ?>"<?= $tagApiUrl !== '' ? ' data-it-tag-api="' . rex_escape($tagApiUrl) . '" data-it-tag-token="' . rex_escape(rex_csrf_token::factory(rex_api_issue_tracker_tags::class)->getValue()) . '"' : '' ?> data-it-qbar-labels="<?= rex_escape(json_encode(['new' => $package->i18n('issue_tracker_quicktag_new', '{0}'), 'error' => $package->i18n('issue_tracker_quicktag_error'), 'assign' => $package->i18n('issue_tracker_mail_err_assign'), 'url' => rex_i18n::rawMsg('issue_tracker_affected_url_invalid')])) ?>">
                 <!-- Zuweisen (Pflicht) -->
                 <details class="it-menu it-qchip<?= $assignError ? ' has-error' : '' ?>" data-it-qchip="single" data-it-qchip-required>
                     <summary class="it-qchip-btn" id="issue-assigned-user" aria-describedby="issue-qbar-help">
@@ -438,7 +439,8 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
                 <div class="col-sm-6 col-md-4">
                     <?= $attachment->renderCard([
                         'maxHeight' => 150,
-                        'deleteUrl' => rex_url::currentBackendPage(['issue_id' => $issue->getId(), 'delete_attachment' => $attachment->getId()] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()),
+                        'deleteUrl' => rex_url::currentBackendPage(['issue_id' => $issue->getId()], false),
+                        'deleteFields' => ['delete_attachment' => $attachment->getId()],
                     ]) ?>
                 </div>
                 <?php endforeach; ?>

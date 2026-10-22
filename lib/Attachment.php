@@ -547,7 +547,8 @@ class Attachment
      * Zentralisiert das Markup, damit Bild/Video/PDF-Vorschau und Lightbox-Anbindung
      * überall identisch und konsistent sind.
      *
-     * @param array{maxHeight?: int, deleteUrl?: string|null, compact?: bool} $options
+     * @param array{maxHeight?: int, deleteUrl?: string|null, deleteFields?: array<string, scalar>, compact?: bool} $options
+     *        deleteUrl ist das Ziel des POST-Formulars (ohne Token); deleteFields die versteckten Felder
      */
     public function renderCard(array $options = []): string
     {
@@ -582,10 +583,14 @@ class Attachment
             . '<i class="rex-icon fa-download"></i>' . ($compact ? '' : ' ' . $downloadLabel)
             . '</a>';
 
+        // Löschen per POST mit CSRF-Token (verstecktes Formular hinter der Knopfgruppe, damit die Gruppe gleich aussieht)
+        $deleteForm = '';
         if (null !== $deleteUrl) {
-            $confirmMsg = \rex_escape($package->i18n('issue_tracker_delete_attachment_confirm'));
-            $actions .= ' <a href="' . $deleteUrl . '" class="btn btn-xs btn-danger" data-confirm="' . $confirmMsg . '">'
-                . '<i class="rex-icon fa-trash"></i></a>';
+            $deleteFields = $options['deleteFields'] ?? ['delete_attachment' => $this->getId()];
+            [$deleteForm, $deleteFormAttr] = UiHelper::postForm($deleteUrl, $deleteFields, $package->i18n('issue_tracker_delete_attachment_confirm'));
+            $deleteLabel = \rex_escape($package->i18n('issue_tracker_delete'));
+            $actions .= ' <button type="submit"' . $deleteFormAttr . ' class="btn btn-xs btn-danger" title="' . $deleteLabel . '">'
+                . '<i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only">' . $deleteLabel . ': ' . $name . '</span></button>';
         }
 
         return '<div class="thumbnail issue-attachment-thumb' . ($compact ? ' is-compact' : '') . '">'
@@ -594,6 +599,7 @@ class Attachment
             . '<h5 title="' . $name . '">' . $name . '</h5>'
             . '<p class="text-muted issue-attachment-size">' . \rex_escape($this->getFormattedFilesize()) . '</p>'
             . '<div class="btn-group btn-group-xs">' . $actions . '</div>'
+            . $deleteForm
             . '</div></div>';
     }
 

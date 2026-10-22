@@ -51,8 +51,9 @@ if (rex_post('save_tag', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelp
 }
 
 // Tag löschen
-if ($func === 'delete_tag' && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
-    $tagId = rex_request('tag_id', 'int', 0);
+// Tag löschen nur per POST mit CSRF-Token im Formular
+if (rex_post('func', 'string', '') === 'delete_tag' && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
+    $tagId = rex_post('tag_id', 'int', 0);
     $tag = \FriendsOfREDAXO\IssueTracker\Tag::get($tagId);
     
     if ($tag) {

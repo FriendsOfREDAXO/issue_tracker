@@ -23,6 +23,7 @@ $partnerName = $partner ? ($partner->getName() ?: $partner->getLogin()) : 'Unbek
 // Sortierung aus Session oder Request
 $sortOrder = rex_request('msg_sort', 'string', $_SESSION['issue_tracker_msg_sort'] ?? 'asc');
 $sortOrder = $sortOrder === 'desc' ? 'desc' : 'asc';
+$sortOrder = 'desc' === $sortOrder ? 'desc' : 'asc';
 $_SESSION['issue_tracker_msg_sort'] = $sortOrder;
 
 // Konversation sortieren
@@ -75,9 +76,9 @@ $replySubject = 'Re: ' . preg_replace('/^(Re:\s*)+/i', '', $message->getSubject(
             <a class="it-tb-btn" href="<?= rex_url::backendPage('issue_tracker/messages/compose', ['recipient_id' => $partnerId]) ?>" title="<?= rex_escape($package->i18n('issue_tracker_new_message_to', $partnerName)) ?>"><i class="rex-icon fa-pencil-square-o" aria-hidden="true"></i><span class="sr-only"><?= rex_escape($package->i18n('issue_tracker_new_message_to', $partnerName)) ?></span></a>
         </div>
         <div class="it-tb-group">
-            <a class="it-tb-btn it-tb-btn--danger" href="<?= rex_url::backendPage($listPage, ['box' => $box, 'func' => 'delete', 'message_id' => $message->getId()] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()) ?>"
-               data-confirm="<?= rex_escape($package->i18n('issue_tracker_mail_delete_message_confirm')) ?>"
-               title="<?= rex_escape($package->i18n('issue_tracker_mail_delete_conversation')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_delete_conversation') ?></span></a>
+            <?php [$delForm, $delFormAttr] = \FriendsOfREDAXO\IssueTracker\UiHelper::postForm(rex_url::backendPage($listPage, ['box' => $box], false), ['func' => 'delete', 'message_id' => $message->getId()], $package->i18n('issue_tracker_mail_delete_message_confirm')); ?>
+            <button type="submit"<?= $delFormAttr ?> class="it-tb-btn it-tb-btn--danger"
+               title="<?= rex_escape($package->i18n('issue_tracker_mail_delete_conversation')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_mail_delete_conversation') ?></span></button><?= $delForm ?>
         </div>
         <div class="it-tb-group it-tb-group--end">
             <a class="it-tb-btn" href="<?= rex_url::backendPage($listPage, ['box' => $box, 'message_id' => $message->getId(), 'msg_sort' => $sortOrder === 'asc' ? 'desc' : 'asc']) ?>"

@@ -148,9 +148,10 @@
         }
         $btn.prop('disabled', true).find('i').removeClass('fa-refresh').addClass('fa-spinner fa-spin');
         $.ajax({
-            // URL mit CSRF-Token aus dem Knopf (Fallback für alte Markups)
-            url: $btn.data('url') || 'index.php?rex-api-call=issue_tracker_generate_token',
+            // CSRF-Token im Body (data-token), nicht in der Adresse
+            url: $btn.attr('data-url') || 'index.php?rex-api-call=issue_tracker_generate_token',
             method: 'POST',
+            data: { _csrf_token: $btn.attr('data-token') || '' },
             dataType: 'json',
             success: function(response) {
                 if (response.success) {

@@ -182,7 +182,9 @@ $quickTagTags = [];
 foreach ($allTags as $tag) {
     $quickTagTags[] = ['id' => $tag->getId(), 'name' => $tag->getName(), 'color' => $tag->getColor()];
 }
-$quickTagAttrs = ' data-it-qtag-api="' . rex_escape(rex_url::backendPage('issue_tracker/issues/list', rex_api_issue_tracker_tags::getUrlParams(), false)) . '"'
+// Token im Formular-Body (nicht in der Adresse), siehe postApi() in it-mail.js
+$quickTagAttrs = ' data-it-qtag-api="' . rex_escape(rex_url::backendPage('issue_tracker/issues/list', ['rex-api-call' => 'issue_tracker_tags'], false)) . '"'
+    . ' data-it-qtag-token="' . rex_escape(rex_csrf_token::factory(rex_api_issue_tracker_tags::class)->getValue()) . '"'
     . ' data-it-qtag-tags="' . rex_escape(json_encode($quickTagTags)) . '"'
     . ' data-it-qtag-create="' . (PermissionService::canManageTags() ? '1' : '0') . '"'
     . ' data-it-qtag-labels="' . rex_escape(json_encode([
@@ -228,10 +230,15 @@ foreach ($state as $k => $v) {
                 <span class="it-ml-total"><?= $package->i18n('issue_tracker_mail_count', $totalIssues) ?></span>
             </div>
             <div class="it-ml-head-actions">
+                <?php
+                // Ansicht wechseln und pro Benutzer merken: kleines POST-Formular mit CSRF-Token (kein Link mit Zustandsänderung)
+                [$viewModeForm, $viewModeFormAttr] = \FriendsOfREDAXO\IssueTracker\UiHelper::postForm(rex_url::backendPage('issue_tracker/issues/list', ['screen' => 'list'], false), ['set_view_mode' => 1]);
+                ?>
                 <div class="it-seg" role="group" aria-label="<?= rex_escape($package->i18n('issue_tracker_mail_view_switch')) ?>">
-                    <a class="it-seg-btn<?= $viewMode === 'mail' ? ' is-active' : '' ?>" href="<?= $listUrl(['view_mode' => 'mail']) ?>"<?= $viewMode === 'mail' ? ' aria-current="true"' : '' ?>><?= $package->i18n('issue_tracker_mail_view_mailbox') ?></a>
-                    <a class="it-seg-btn<?= $viewMode === 'table' ? ' is-active' : '' ?>" href="<?= $listUrl(['view_mode' => 'table']) ?>"<?= $viewMode === 'table' ? ' aria-current="true"' : '' ?>><?= $package->i18n('issue_tracker_mail_view_table') ?></a>
+                    <button type="submit"<?= $viewModeFormAttr ?> name="view_mode" value="mail" class="it-seg-btn<?= $viewMode === 'mail' ? ' is-active' : '' ?>"<?= $viewMode === 'mail' ? ' aria-current="true"' : '' ?>><?= $package->i18n('issue_tracker_mail_view_mailbox') ?></button>
+                    <button type="submit"<?= $viewModeFormAttr ?> name="view_mode" value="table" class="it-seg-btn<?= $viewMode === 'table' ? ' is-active' : '' ?>"<?= $viewMode === 'table' ? ' aria-current="true"' : '' ?>><?= $package->i18n('issue_tracker_mail_view_table') ?></button>
                 </div>
+                <?= $viewModeForm ?>
                 <a class="it-tb-btn it-tb-btn--accent" href="<?= $newHref ?>" title="<?= rex_escape($newLabel) ?>">
                     <i class="rex-icon fa-pencil-square-o" aria-hidden="true"></i><span class="sr-only"><?= rex_escape($newLabel) ?></span>
                 </a>
@@ -299,10 +306,12 @@ foreach ($state as $k => $v) {
                             </select>
                         </label>
                         <div class="it-menu-actions">
-                            <a class="btn btn-default btn-sm" href="<?= $listUrl(['reset_filter' => 1]) ?>"><?= $package->i18n('issue_tracker_filter_reset') ?></a>
+                            <?php [$resetForm, $resetFormAttr] = \FriendsOfREDAXO\IssueTracker\UiHelper::postForm(rex_url::backendPage('issue_tracker/issues/list', ['screen' => 'list'], false), ['reset_filter' => 1]); ?>
+                            <button type="submit"<?= $resetFormAttr ?> class="btn btn-default btn-sm"><?= $package->i18n('issue_tracker_filter_reset') ?></button>
                             <button type="submit" class="btn btn-primary it-btn-primary btn-sm"><?= $package->i18n('issue_tracker_filter_apply') ?></button>
                         </div>
                     </form>
+                    <?= $resetForm ?>
                 </div>
             </details>
 
@@ -558,8 +567,9 @@ foreach ($state as $k => $v) {
                             <?php if (PermissionService::canEdit($issue)): ?><?= $quickTagButton($issue->getId(), $issue->getTitle(), array_map(static fn ($t) => $t->getId(), $tags)) ?><?php endif; ?>
                             <a href="<?= rex_url::backendPage('issue_tracker/issues/edit', ['issue_id' => $issue->getId()]) ?>" class="it-tb-btn it-tb-btn--sm" title="<?= rex_escape($package->i18n('issue_tracker_edit')) ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_edit') ?></span></a>
                             <?php if (PermissionService::canDelete()): ?>
-                            <a href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()) ?>" class="it-tb-btn it-tb-btn--sm it-tb-btn--danger"
-                               title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>" data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_confirm')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></a>
+                            <?php [$delForm, $delFormAttr] = \FriendsOfREDAXO\IssueTracker\UiHelper::postForm(rex_url::backendPage('issue_tracker/issues/list', [], false), ['func' => 'delete', 'issue_id' => $issue->getId()], $package->i18n('issue_tracker_delete_confirm')); ?>
+                            <button type="submit"<?= $delFormAttr ?> class="it-tb-btn it-tb-btn--sm it-tb-btn--danger"
+                               title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></button><?= $delForm ?>
                             <?php endif; ?>
                         </td>
                     </tr>

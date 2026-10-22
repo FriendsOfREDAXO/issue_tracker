@@ -390,6 +390,18 @@
         fetch(nav.getAttribute('data-it-state-url'), { method: 'POST', body: body, credentials: 'same-origin' }).catch(function () {});
     }
 
+    // Zuletzt genutztes Postfach: Der Server merkt es beim Anzeigen nur vor, gespeichert wird per POST mit Token
+    function saveLastBox(scope) {
+        var nav = (scope.matches && scope.matches('[data-it-last-box]')) ? scope : scope.querySelector('[data-it-last-box]');
+        if (!nav || !window.fetch) { return; }
+        nav.removeAttribute('data-it-last-box');
+        var body = new FormData();
+        body.append('it_ui_state', '1');
+        body.append('key', 'last_box');
+        body.append('_csrf_token', nav.getAttribute('data-it-state-token'));
+        fetch(nav.getAttribute('data-it-state-url'), { method: 'POST', body: body, credentials: 'same-origin' }).catch(function () {});
+    }
+
     // Schriftgröße (90–140 %) – Klasse am body, gespeichert pro Benutzer
     var FONT_STEPS = [90, 100, 110, 120, 130, 140];
     function currentFontScale() {
@@ -531,9 +543,11 @@
     function parseJson(str, fallback) {
         try { return JSON.parse(str || ''); } catch (e) { return fallback; }
     }
-    function postApi(url, data) {
+    // API-Aufruf per POST; der CSRF-Token steht im Formular-Body (data-…-token), nie in der Adresse
+    function postApi(url, data, token) {
         var body = new FormData();
         Object.keys(data).forEach(function (k) { body.append(k, data[k]); });
+        if (token) { body.append('_csrf_token', token); }
         return fetch(url, { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
             .then(function (res) {
                 return res.text().then(function (txt) {
@@ -575,6 +589,7 @@
         var form = closest(bar, 'form');
         var labels = parseJson(bar.getAttribute('data-it-qbar-labels'), {});
         var tagApi = bar.getAttribute('data-it-tag-api') || '';
+        var tagApiToken = bar.getAttribute('data-it-tag-token') || '';
         var help = form ? form.querySelector('.it-qbar-help') : null;
         var helpDefault = help ? help.innerHTML : '';
         var chips = Array.prototype.slice.call(bar.querySelectorAll('[data-it-qchip]'));
@@ -711,7 +726,7 @@
             var search = chip.querySelector('[data-it-qchip-search]');
             var name = search ? search.value.trim() : '';
             if (!name || !tagApi) { return; }
-            postApi(tagApi, { action: 'create', name: name }).then(function (json) {
+            postApi(tagApi, { action: 'create', name: name }, tagApiToken).then(function (json) {
                 var list = chip.querySelector('[data-it-qchip-list]');
                 var existing = list.querySelector('input[value="' + parseInt(json.tag.id, 10) + '"]');
                 if (existing) { existing.checked = true; } else { list.appendChild(tagOption(json.tag, true, 'checkbox', 'tags[]')); }
@@ -838,6 +853,7 @@
         var ml = closest(btn, '[data-it-qtag-api]');
         if (!ml) { return; }
         var api = ml.getAttribute('data-it-qtag-api');
+        var apiToken = ml.getAttribute('data-it-qtag-token') || '';
         var allTags = parseJson(ml.getAttribute('data-it-qtag-tags'), []);
         var canCreate = ml.getAttribute('data-it-qtag-create') === '1';
         var labels = parseJson(ml.getAttribute('data-it-qtag-labels'), {});
@@ -901,7 +917,7 @@
             renderRowTags(issueId, localTags());
             msg.textContent = '';
             pending++;
-            postApi(api, { action: 'toggle', issue_id: issueId, tag_id: input.value, on: input.checked ? '1' : '0' })
+            postApi(api, { action: 'toggle', issue_id: issueId, tag_id: input.value, on: input.checked ? '1' : '0' }, apiToken)
                 .then(function (json) {
                     pending--;
                     // Erst nach der letzten Antwort den Serverstand übernehmen (schnelles Mehrfachklicken)
@@ -915,7 +931,7 @@
         function create() {
             var name = search.value.trim();
             if (!name) { return; }
-            postApi(api, { action: 'create', name: name, issue_id: issueId }).then(function (json) {
+            postApi(api, { action: 'create', name: name, issue_id: issueId }, apiToken).then(function (json) {
                 if (!allTags.some(function (t) { return String(t.id) === String(json.tag.id); })) {
                     allTags.push(json.tag);
                     ml.setAttribute('data-it-qtag-tags', JSON.stringify(allTags));
@@ -997,6 +1013,7 @@
         setStickyTop();
         initToasts(scope);
         initFontSize(scope);
+        saveLastBox(scope);
         Array.prototype.forEach.call(scope.querySelectorAll('[data-it-mail]'), initColumns);
         restoreSections(scope);
         Array.prototype.forEach.call(scope.querySelectorAll('[data-it-mail]'), initRoot);

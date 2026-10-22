@@ -270,9 +270,9 @@ $relatedIssues = $issue->getDuplicates();
             </form>
             <?php endif; ?>
             <?php if (PermissionService::canDelete() && !$isKnowledge): ?>
-            <a class="it-tb-btn it-tb-btn--danger" href="<?= rex_url::backendPage('issue_tracker/issues/list', ['func' => 'delete', 'issue_id' => $issue->getId()] + \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getUrlParams()) ?>"
-               data-confirm="<?= rex_escape($package->i18n('issue_tracker_delete_confirm')) ?>"
-               title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></a>
+            <?php [$delForm, $delFormAttr] = UiHelper::postForm(rex_url::backendPage('issue_tracker/issues/list', [], false), ['func' => 'delete', 'issue_id' => $issue->getId()], $package->i18n('issue_tracker_delete_confirm')); ?>
+            <button type="submit"<?= $delFormAttr ?> class="it-tb-btn it-tb-btn--danger"
+               title="<?= rex_escape($package->i18n('issue_tracker_delete')) ?>"><i class="rex-icon fa-trash" aria-hidden="true"></i><span class="sr-only"><?= $package->i18n('issue_tracker_delete') ?></span></button><?= $delForm ?>
             <?php endif; ?>
         </div>
 
