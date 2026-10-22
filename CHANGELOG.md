@@ -2,6 +2,10 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [2.0.0-beta11] – 2026-10-22
+
+- Fix: Antworten auf eine Nachricht (Antwortfeld unter der Nachricht) scheiterte mit „CSRF-Token ungültig“ – das Formular schickt das Token jetzt mit.
+
 ## [2.0.0-beta10] – 2026-10-22
 
 - Das Doppelpfeil-Symbol für den Status in der Symbolleiste ist entfernt (wurde leicht mit „Weiterleiten“ verwechselt). Der Status wird an der Status-Pill im Kopf des Themas geändert.

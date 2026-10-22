@@ -120,6 +120,7 @@ $replySubject = 'Re: ' . preg_replace('/^(Re:\s*)+/i', '', $message->getSubject(
         <section class="it-compose" id="it-reply">
             <h3 class="it-compose-title"><i class="rex-icon fa-reply" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_reply') ?> <span class="it-muted-text">– <?= $package->i18n('issue_tracker_to') ?> <?= rex_escape($partnerName) ?></span></h3>
             <form method="post" action="<?= rex_url::backendPage('issue_tracker/messages/compose') ?>" data-it-quickreply>
+                <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
                 <input type="hidden" name="send" value="1" />
                 <input type="hidden" name="recipient_id" value="<?= $partnerId ?>" />
                 <input type="hidden" name="subject" value="<?= rex_escape($replySubject) ?>" />
