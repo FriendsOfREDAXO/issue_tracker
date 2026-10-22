@@ -182,8 +182,9 @@ class rex_api_issue_tracker_export extends rex_api_function
         }
         
         // Sichtbarkeits-Filter (private Issues)
-        if (!PermissionService::isAdmin()) {
-            $where[] = '(private_issue = 0 OR created_by = ' . $userId . ' OR assigned_user_id = ' . $userId . ')';
+        // wie PermissionService::canView(): private Themen nur für Admins/Manager, Ersteller und Zugewiesene
+        if (!PermissionService::isAdminOrManager()) {
+            $where[] = '(i.is_private = 0 OR i.created_by = ' . (int) $userId . ' OR i.assigned_user_id = ' . (int) $userId . ')';
         }
         
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';

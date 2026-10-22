@@ -732,6 +732,8 @@ issue_tracker_ui_project_form_intro = Set the name, color and members of the new
 issue_tracker_ui_group_project = Project
 issue_tracker_ui_group_access = Members and visibility
 issue_tracker_ui_remove_member = Remove member
+issue_tracker_ui_delete_project = Delete project
+issue_tracker_ui_delete_project_help = The issues of the project are kept; they only lose their assignment to the project.
 issue_tracker_ui_add_member = Add member
 issue_tracker_ui_role = Role
 issue_tracker_ui_categories_help = Categories used to classify issues. At least one category is required.
@@ -889,7 +891,7 @@ issue_tracker_mail_col_resize = Change column width (drag or arrow keys, double-
 issue_tracker_mail_recent_closed = Recently closed
 issue_tracker_mail_recent_closed_title = Topics closed in the last 7 days
 
-# Property bar when creating/editing (beta6)
+# Property bar when creating/editing
 issue_tracker_qbar_label = Topic properties
 issue_tracker_qbar_help = Assignee, status, priority, category and more: these are saved together with the issue.
 issue_tracker_qbar_search = Search …
@@ -898,7 +900,7 @@ issue_tracker_qbar_remove = Remove
 issue_tracker_qbar_done = Done
 issue_tracker_qbar_none = –
 
-# Affected page (beta6)
+# Affected page
 issue_tracker_affected_page = Affected page
 issue_tracker_affected_page_help = On which page does it occur? Choose an article from the structure or enter an address (optional).
 issue_tracker_affected_from_structure = Choose a page from the structure
@@ -911,7 +913,7 @@ issue_tracker_affected_edit = Edit
 issue_tracker_affected_missing = Article {0} no longer exists
 issue_tracker_affected_open_url = Open address
 
-# Quick tagging in the list (beta6)
+# Quick tagging in the list
 issue_tracker_quicktag = Edit tags
 issue_tracker_quicktag_title = Edit tags (key T)
 issue_tracker_quicktag_for = Tags for #{0}
@@ -945,7 +947,7 @@ issue_tracker_mail_empty_assigned = No open issue is assigned to you right now.
 issue_tracker_mail_empty_created = You have not created any open issue yet.
 issue_tracker_affected_clear = No page
 
-# Full-screen app (2.0.0-beta7)
+# Full-screen app
 issue_tracker_app_title = Issue Tracker
 issue_tracker_app_close = Close
 issue_tracker_app_close_hint = Close the Issue Tracker and return to the previous page (Esc)

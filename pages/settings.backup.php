@@ -109,8 +109,8 @@ if (rex_post('import', 'int', 0) === 1 && !empty($_FILES['import_file']['tmp_nam
                     $commentSql->setValue('created_at', $commentData['created_at']);
                     $commentSql->setValue('updated_at', $commentData['updated_at'] ?? null);
                     
-                    // Parent-ID wird später gesetzt
-                    $commentSql->setValue('parent_id', null);
+                    // Antwort-Bezug (parent_comment_id) wird nach dem Import aller Kommentare gesetzt
+                    $commentSql->setValue('parent_comment_id', null);
                     $commentSql->insert();
                     
                     $commentIdMap[$commentData['id']] = (int) $commentSql->getLastId();
@@ -125,7 +125,7 @@ if (rex_post('import', 'int', 0) === 1 && !empty($_FILES['import_file']['tmp_nam
                         $updateSql = rex_sql::factory();
                         $updateSql->setTable(rex::getTable('issue_tracker_comments'));
                         $updateSql->setWhere(['id' => $newCommentId]);
-                        $updateSql->setValue('parent_id', $newParentId);
+                        $updateSql->setValue('parent_comment_id', $newParentId);
                         $updateSql->update();
                     }
                 }
@@ -269,7 +269,8 @@ if (rex_request('export', 'string', '') === 'json') {
                 'is_internal' => (bool) $commentRow->getValue('is_internal'),
                 'is_pinned' => (bool) $commentRow->getValue('is_pinned'),
                 'is_solution' => (bool) $commentRow->getValue('is_solution'),
-                'parent_id' => $commentRow->getValue('parent_id') ? (int) $commentRow->getValue('parent_id') : null,
+                // Schlüssel „parent_id“ im JSON bleibt (Format früherer Sicherungen), Spalte heißt parent_comment_id
+                'parent_id' => $commentRow->getValue('parent_comment_id') ? (int) $commentRow->getValue('parent_comment_id') : null,
                 'created_by' => (int) $commentRow->getValue('created_by'),
                 'created_at' => $commentRow->getValue('created_at'),
                 'updated_at' => $commentRow->getValue('updated_at'),

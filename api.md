@@ -51,7 +51,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
     "installation": {
         "name": "Kunde XY Website",
         "url": "https://example.com/",
-        "version": "1.0.0-beta1"
+        "version": "2.0.0"
     },
     "stats": {
         "issues": {

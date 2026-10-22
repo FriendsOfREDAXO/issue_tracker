@@ -470,10 +470,14 @@
         navigate(target);
     });
 
-    // Formulare in der App: GET als Adresse, POST (auch mit Dateien) als FormData – die Antwort landet in der Ebene
-    document.addEventListener('submit', function (e) {
+    // Formulare in der App: GET als Adresse, POST (auch mit Dateien) als FormData – die Antwort landet in der Ebene.
+    // Auf window (nicht document): Die Rückfrage von REDAXO (form[data-confirm], jQuery an document) läuft zuerst und
+    // kann abbrechen – auch wenn dieses Skript im <head> vor jQuery-ready geladen wurde (direkter Aufruf, Neuladen).
+    // Fenster (Bootstrap-Modal) werden an <body> gehängt (data-it-moved), gehören aber weiter zur App.
+    window.addEventListener('submit', function (e) {
         var form = e.target;
-        if (!st.open || !st.app || e.defaultPrevented || !form || !st.app.contains(form)) { return; }
+        if (!st.open || !st.app || e.defaultPrevented || !form || !form.closest) { return; }
+        if (!st.app.contains(form) && !form.closest('body > .modal[data-it-moved]')) { return; }
         if ((form.target && form.target !== '_self') || form.hasAttribute('data-it-nopjax')) { return; }
         var actionAttr = form.getAttribute('action');
         var u = parseUrl(actionAttr === null || actionAttr === '' ? window.location.href : actionAttr);

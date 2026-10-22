@@ -2,6 +2,43 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [2.0.0] – unveröffentlicht
+
+Version 2.0 ist eine komplett neue Oberfläche für den Issue Tracker. Alle Funktionen, Rechte, Daten und Links aus E-Mails bleiben erhalten. Die Einzelheiten stehen in den Abschnitten der Vorabversionen (2.0.0-beta1 bis beta11) weiter unten.
+
+### Was 2.0 gegenüber 1.x bringt
+
+- **Wie Mail auf dem Mac**: Links die Postfächer (Mir zugewiesen, Beobachtet, Erwähnt, Überfällig, Status, Projekte, Wissen, Tags, gespeicherte Filter), in der Mitte die Liste mit Vorschau, rechts der Lesebereich mit dem Gesprächsverlauf. Die klassische Tabelle bleibt umschaltbar. Tastatur wie in Mail (↑/↓, R, T, F, U, ? für alle Kürzel), am Handy Schritt für Schritt wie am iPhone, hell und dunkel. Das Dashboard und die einzelnen Unterseiten sind im Postfach aufgegangen.
+- **Eigenes Fenster über dem Backend**: Der Issue Tracker öffnet sich von jeder Backend-Seite aus (Menüpunkt, Knöpfe „Issue Tracker“ und „Neues Thema“ in der Kopfzeile) als Ebene, wahlweise als Fenster oder Vollbild. Seitenwechsel laufen per PJAX ohne Neuladen; Adresse, Zurück/Vor und Neuladen funktionieren, „Schließen“ oder Esc führen zur vorherigen Seite zurück.
+- **Nachrichten** im selben Postfach: Posteingang, Gesendet, Antworten direkt unter der Nachricht, Weiterleiten, als ungelesen markieren, alle als gelesen markieren, Rundschreiben.
+- **Kürzlich erledigt**: die in den letzten 7 Tagen erledigten Themen mit eigener Zahl.
+- **Eigenschaften-Leiste** beim Anlegen und Bearbeiten (Zuweisen, Status, Priorität, Kategorie, Projekt, Fälligkeit, Tags, betroffene Seite); im Lesebereich Status und Priorität direkt an der Pill ändern.
+- **Quick-Tags**: Tags direkt in der Liste setzen (Taste T), Admins legen neue Tags gleich dort an.
+- **Betroffene Seite**: Artikel aus der Struktur (Linkmap) oder Adresse; „Neues Thema“ übernimmt die Backend-Seite, von der aus es angelegt wird. Auch in E-Mails, CSV- und PDF-Export.
+- **Schriftgröße** (90–140 %) und **Spaltenbreiten** pro Benutzer einstellbar.
+- **Sicherheit**: Alle Aktionen sind gegen CSRF geschützt (Formulare, Aktions-Links, API-Aufrufe), riskante Aktionen fragen vorher nach.
+
+### Hinweise zum Update von 1.x
+
+- Neue Tabellen und Spalten (u. a. betroffene Seite, Herkunftsseite) werden beim Update automatisch angelegt; Daten bleiben erhalten.
+- Unveränderte Standard-Mailvorlagen werden automatisch um den neuen Platzhalter `{{affected_page}}` ergänzt. **Selbst angepasste Vorlagen bleiben unangetastet** – dort `{{affected_page}}` bei Bedarf von Hand einfügen (Einstellungen → E-Mail-Templates).
+- Die Ebene über dem Backend ist standardmäßig an und lässt sich unter Einstellungen → Allgemein mit **„Als Vollbild öffnen“** abschalten; dann erscheint der Issue Tracker wie bisher innerhalb der REDAXO-Oberfläche.
+- Eigene Stile oder Skripte, die sich auf die Klassen der 1.x-Oberfläche bezogen haben, müssen angepasst werden (neue Klassen mit Präfix `it-`).
+
+### Korrekturen seit 2.0.0-beta11 (Prüfung aller Aktionen)
+
+- Fix: Rückfragen vor riskanten Aktionen wurden beim direkten Aufruf einer Seite (Link aus einer E-Mail, Neuladen) übergangen – „Abbrechen“ führte die Aktion trotzdem aus. Betroffen waren u. a. Kommentar löschen, Backup einspielen, Mailvorlagen zurücksetzen, Projekt archivieren, gespeicherten Filter löschen, Erinnerung senden und „Aus Wissen entfernen“. Die Ebene fängt Formulare jetzt erst nach der Rückfrage ab.
+- Fix: „Filter speichern“ verließ die Ebene und lud die ganze Seite neu; das Fenster bleibt jetzt in der Ebene.
+- Fix: CSV- und PDF-Export brachen für Benutzer ohne Admin-Rechte mit einem Datenbankfehler ab (falscher Spaltenname). Exportiert werden jetzt die Themen, die der Benutzer sehen darf (wie in der Ansicht).
+- Fix: Backup: Antworten auf Kommentare wurden ohne Bezug exportiert, und beim Import scheiterten Kommentare (falscher Spaltenname) – das Thema wurde ohne Kommentare angelegt. Ältere Sicherungen bleiben lesbar.
+- Fix: Projekte ließen sich nicht mehr löschen (keine Schaltfläche, die alte Adresse ohne CSRF-Schutz). Neu: „Projekt löschen“ unten auf der Seite „Projekt bearbeiten“, mit Rückfrage und CSRF-Token; die alte Lösch-Adresse ist entfernt.
+- Fix: „Projekt anlegen“ und „Projekt bearbeiten“ waren für Manager (`issue_tracker[issue_manager]`) gesperrt, obwohl das Menü sie anbot (falsches Recht in `package.yml`).
+- Fix: Checklisten in Beschreibungen und Kommentaren, die der Benutzer nicht bearbeiten darf, wirkten anklickbar, die Änderung ging aber verloren. Sie werden jetzt nur angezeigt.
+- Fix: Beim Löschen eines Kommentars blieben seine Antworten unsichtbar in der Datenbank und seine Anhänge als Dateien zurück; Antworten und Anhänge werden jetzt mitgelöscht.
+- Fix: Im Lesebereich zeigten Verweise wie `#50` in Thema 5 auf Thema 5 (die Adresse wurde beim Umschreiben der Checklisten-Ziele mit ersetzt).
+- Fix: Enthielt ein Kommentar oder eine Beschreibung den Text `_csrf_token`, fehlte dem zugehörigen Formular der Token („CSRF-Token ungültig“).
+- Handbuch (Hilfe), README und Installationsanleitung auf die neue Oberfläche aktualisiert.
+
 ## [2.0.0-beta11] – 2026-10-22
 
 - Fix: Antworten auf eine Nachricht (Antwortfeld unter der Nachricht) scheiterte mit „CSRF-Token ungültig“ – das Formular schickt das Token jetzt mit.

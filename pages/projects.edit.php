@@ -40,6 +40,12 @@ if (rex_post('archive_project', 'int', 0) === 1) {
     rex_response::sendRedirect(rex_url::backendPage('issue_tracker/issues/list', ['filter_status' => '', 'filter_project' => $project->getId()], false));
 }
 
+// Projekt löschen (nur per POST mit CSRF-Token; die Themen bleiben erhalten und verlieren nur die Zuordnung)
+if (rex_post('delete_project', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
+    $project->delete();
+    rex_response::sendRedirect(rex_url::backendPage('issue_tracker/issues/list', ['reset_filter' => 1], false));
+}
+
 // Mitglieder mit Rolle verwalten (früher in der Projektansicht)
 if (rex_request('func', 'string') === 'remove_user' && rex_request('user_id', 'int', 0) > 0 && \FriendsOfREDAXO\IssueTracker\UiHelper::csrfCheck()) {
     $project->removeUser(rex_request('user_id', 'int', 0));
@@ -188,6 +194,21 @@ $roleLabels = ['owner' => $package->i18n('issue_tracker_role_owner'), 'member' =
         </div>
     </div>
     <p class="it-group-note"><?= $package->i18n('issue_tracker_mail_members_help') ?></p>
+</section>
+<section class="it-members" id="it-project-delete">
+    <h3 class="it-group-title"><?= $package->i18n('issue_tracker_ui_delete_project') ?></h3>
+    <div class="it-group">
+        <div class="it-row">
+            <div class="it-row-label"><?= $package->i18n('issue_tracker_ui_delete_project_help') ?></div>
+            <div class="it-row-control">
+                <form method="post" action="<?= rex_url::backendPage('issue_tracker/projects/edit', ['project_id' => $project->getId()]) ?>" data-confirm="<?= rex_escape($package->i18n('issue_tracker_project_delete_confirm')) ?>">
+                    <input type="hidden" name="delete_project" value="1" />
+                    <?= \FriendsOfREDAXO\IssueTracker\UiHelper::csrf()->getHiddenField() ?>
+                    <button type="submit" class="btn btn-default it-btn-danger"><i class="rex-icon fa-trash" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_ui_delete_project') ?></button>
+                </form>
+            </div>
+        </div>
+    </div>
 </section>
 <?php
 echo '</div></section></div>';

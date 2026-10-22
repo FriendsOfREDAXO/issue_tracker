@@ -65,9 +65,10 @@ $viewUrl = rex_url::backendPage('issue_tracker/issues/view', ['issue_id' => $iss
 $listUrl = rex_url::backendPage('issue_tracker/issues/list', ['screen' => 'list']);
 
 // Checklisten im Lesebereich an die aktuelle Seite zurücksenden
-$render = static function (string $text, ?int $commentId = null) use ($issue, $embedded, $viewUrl, $selfUrl): string {
-    $html = ContentRenderer::render($text, $issue->getId(), $commentId);
-    return $embedded ? str_replace(rex_escape($viewUrl), rex_escape($selfUrl), $html) : $html;
+$render = static function (string $text, ?int $commentId = null, bool $interactive = true) use ($issue, $embedded, $viewUrl, $selfUrl): string {
+    $html = ContentRenderer::render($text, $issue->getId(), $commentId, $interactive);
+    // nur die Ziele der Checklisten-Formulare ersetzen – Verweise auf andere Themen (#50 in #5) bleiben unverändert
+    return $embedded ? str_replace('action="' . rex_escape($viewUrl) . '"', 'action="' . rex_escape($selfUrl) . '"', $html) : $html;
 };
 
 $creatorName = UiHelper::userName($createdBy, '–');
@@ -165,7 +166,7 @@ $renderComment = static function ($comment, bool $isReply) use (&$renderComment,
         </div>
         <?php endif; ?>
 
-        <div class="it-msg-body issue-tracker-comment-content" id="comment-content-<?= $cid ?>"><?= $render($comment->getComment(), $cid) ?></div>
+        <div class="it-msg-body issue-tracker-comment-content" id="comment-content-<?= $cid ?>"><?= $render($comment->getComment(), $cid, $currentUser->isAdmin() || $comment->getCreatedBy() === (int) $currentUser->getId()) ?></div>
         <?= $renderAttachments(Attachment::getByComment($cid), 'comment-' . $cid) ?>
 
         <?php if (!$isReply):
@@ -378,7 +379,7 @@ $relatedIssues = $issue->getDuplicates();
                 <progress class="it-progress" max="<?= (int) $clProgress['total'] ?>" value="<?= (int) $clProgress['checked'] ?>"></progress>
             </div>
             <?php endif; ?>
-            <?= $render($issue->getDescription()) ?>
+            <?= $render($issue->getDescription(), null, PermissionService::canEdit($issue)) ?>
         </div>
 
         <?= $renderAttachments($attachments, 'issue-' . $issue->getId()) ?>

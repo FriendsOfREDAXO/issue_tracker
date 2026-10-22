@@ -69,7 +69,8 @@ if ('post' === rex_request_method()) {
 }
 $itWithToken = static function (string $html) use ($itViewToken): string {
     return (string) preg_replace_callback('/<form\b[^>]*\bmethod=["\']post["\'][^>]*>.*?<\/form>/is', static function (array $m) use ($itViewToken): string {
-        if (str_contains($m[0], '_csrf_token')) {
+        // Formular hat schon einen eigenen Token (z. B. Schnellbearbeitung)? Nur echte Felder zählen, kein Text aus Kommentaren
+        if (preg_match('/<input\b[^>]*\bname=["\']_csrf_token["\']/i', $m[0])) {
             return $m[0];
         }
         return (string) preg_replace('/(<form\b[^>]*>)/i', '$1' . $itViewToken->getHiddenField(), $m[0], 1);

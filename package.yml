@@ -50,11 +50,11 @@ page:
                     hidden: true
                 create:
                     title: 'translate:issue_tracker_projects_create'
-                    perm: issue_manager
+                    perm: issue_tracker[issue_manager]
                 edit:
                     title: 'translate:issue_tracker_projects_edit'
                     hidden: true
-                    perm: issue_manager
+                    perm: issue_tracker[issue_manager]
         messages:
             title: 'translate:issue_tracker_messages'
             hidden: true

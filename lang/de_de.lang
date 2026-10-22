@@ -734,6 +734,8 @@ issue_tracker_ui_project_form_intro = Name, Farbe und Mitglieder des neuen Proje
 issue_tracker_ui_group_project = Projekt
 issue_tracker_ui_group_access = Mitglieder und Sichtbarkeit
 issue_tracker_ui_remove_member = Mitglied entfernen
+issue_tracker_ui_delete_project = Projekt löschen
+issue_tracker_ui_delete_project_help = Die Themen des Projekts bleiben erhalten und verlieren nur die Zuordnung zum Projekt.
 issue_tracker_ui_add_member = Mitglied hinzufügen
 issue_tracker_ui_role = Rolle
 issue_tracker_ui_categories_help = Kategorien zur Einordnung der Themen. Mindestens eine Kategorie muss vorhanden sein.
@@ -891,7 +893,7 @@ issue_tracker_mail_col_resize = Spaltenbreite ändern (ziehen oder Pfeiltasten, 
 issue_tracker_mail_recent_closed = Kürzlich erledigt
 issue_tracker_mail_recent_closed_title = In den letzten 7 Tagen erledigte Themen
 
-# Eigenschaften-Leiste beim Anlegen/Bearbeiten (beta6)
+# Eigenschaften-Leiste beim Anlegen/Bearbeiten
 issue_tracker_qbar_label = Eigenschaften des Themas
 issue_tracker_qbar_help = Zuständigkeit, Status, Priorität, Kategorie und mehr: Die Angaben werden zusammen mit dem Thema gespeichert.
 issue_tracker_qbar_search = Suchen …
@@ -900,7 +902,7 @@ issue_tracker_qbar_remove = Entfernen
 issue_tracker_qbar_done = Fertig
 issue_tracker_qbar_none = –
 
-# Betroffene Seite (beta6)
+# Betroffene Seite
 issue_tracker_affected_page = Betroffene Seite
 issue_tracker_affected_page_help = Auf welcher Seite tritt es auf? Wählen Sie einen Artikel aus der Struktur oder geben Sie eine Adresse ein (optional).
 issue_tracker_affected_from_structure = Seite aus der Struktur wählen
@@ -913,7 +915,7 @@ issue_tracker_affected_edit = Bearbeiten
 issue_tracker_affected_missing = Artikel {0} gibt es nicht mehr
 issue_tracker_affected_open_url = Adresse öffnen
 
-# Schnelles Tagging in der Liste (beta6)
+# Schnelles Tagging in der Liste
 issue_tracker_quicktag = Tags bearbeiten
 issue_tracker_quicktag_title = Tags bearbeiten (Taste T)
 issue_tracker_quicktag_for = Tags für #{0}
@@ -947,7 +949,7 @@ issue_tracker_mail_empty_assigned = Ihnen ist gerade kein offenes Thema zugewies
 issue_tracker_mail_empty_created = Sie haben noch kein offenes Thema angelegt.
 issue_tracker_affected_clear = Keine Seite
 
-# Vollbild-App (2.0.0-beta7)
+# Vollbild-App
 issue_tracker_app_title = Issue Tracker
 issue_tracker_app_close = Schließen
 issue_tracker_app_close_hint = Issue Tracker schließen und zur vorherigen Seite zurückkehren (Esc)
