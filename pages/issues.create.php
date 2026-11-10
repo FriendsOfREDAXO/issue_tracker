@@ -227,18 +227,13 @@ if (rex_post('save', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::
         if (!empty($_FILES['attachments']['name'][0])) {
             $uploadedFiles = [];
             $fileCount = count($_FILES['attachments']['name']);
+            $skippedFiles = [];
             
             for ($i = 0; $i < $fileCount; $i++) {
                 if ($_FILES['attachments']['error'][$i] === UPLOAD_ERR_OK) {
                     $extension = strtolower(pathinfo($_FILES['attachments']['name'][$i], PATHINFO_EXTENSION));
-                    $allowedExtensions = ['jpg','jpeg','png','gif','webp','svg','bmp','tiff','ico',
-                        'mp4','mov','avi','mkv','webm','ogg',
-                        'pdf','doc','docx','odt','rtf',
-                        'xls','xlsx','ods','csv',
-                        'ppt','pptx','odp',
-                        'txt','md','json','xml','html','htm','log',
-                        'zip','rar','7z','tar','gz'];
-                    if (!in_array($extension, $allowedExtensions, true)) {
+                    if (!Attachment::isAllowedFile((string) $_FILES['attachments']['name'][$i])) {
+                        $skippedFiles[] = (string) $_FILES['attachments']['name'][$i];
                         continue;
                     }
                     // Eindeutigen Dateinamen generieren
@@ -286,6 +281,9 @@ if (rex_post('save', 'int', 0) === 1 && \FriendsOfREDAXO\IssueTracker\UiHelper::
         
         // Rückmeldung nach der Weiterleitung als Einblendung
         \FriendsOfREDAXO\IssueTracker\UiHelper::flash(rex_i18n::rawMsg($isNew ? 'issue_tracker_flash_created' : 'issue_tracker_flash_updated', $issue->getId()));
+        if (!empty($skippedFiles)) {
+            \FriendsOfREDAXO\IssueTracker\UiHelper::flashWarning(rex_i18n::rawMsg('issue_tracker_flash_files_skipped', implode(', ', $skippedFiles)));
+        }
 
         // Redirect zur Liste
         header('Location: ' . rex_url::backendPage('issue_tracker/issues/list', ['issue_id' => $issue->getId()], false));

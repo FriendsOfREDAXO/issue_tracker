@@ -326,7 +326,7 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
                     <i class="rex-icon fa-paperclip" aria-hidden="true"></i>
                     <span><?= $package->i18n('issue_tracker_mail_add_files') ?></span>
                     <input type="file" id="issue-attachments" name="attachments[]" multiple
-                           accept="image/*,video/*,.pdf,.doc,.docx,.odt,.xls,.xlsx,.ods,.csv,.ppt,.pptx,.odp,.txt,.md,.zip,.rar">
+                           accept="<?= rex_escape(Attachment::acceptAttribute()) ?>">
                 </label>
                 <span class="it-field-help"><?= $package->i18n('issue_tracker_attachments_help') ?></span>
             </div>
