@@ -79,15 +79,31 @@ final class UiHelper
     }
 
     /**
+     * Warnung zur Rückmeldung merken (z. B. nicht angehängte Dateien) – die Einblendung bleibt dann stehen, bis sie geschlossen wird.
+     */
+    public static function flashWarning(string $message): void
+    {
+        rex_set_session(self::FLASH_KEY . '_warning', $message);
+    }
+
+    /**
      * Gemerkte Rückmeldung als Einblendung ausgeben (einmalig).
      */
     public static function flashToast(): string
     {
         $message = rex_session(self::FLASH_KEY, 'string', '');
-        if ('' === $message) {
+        $warning = rex_session(self::FLASH_KEY . '_warning', 'string', '');
+        if ('' === $message && '' === $warning) {
             return '';
         }
         rex_unset_session(self::FLASH_KEY);
+        rex_unset_session(self::FLASH_KEY . '_warning');
+        if ('' !== $warning) {
+            return '<div class="it-toast it-toast--warning" role="alert" data-it-toast data-it-toast-sticky><i class="rex-icon fa-exclamation-triangle" aria-hidden="true"></i> <span>'
+                . ('' !== $message ? rex_escape($message) . '<br>' : '') . rex_escape($warning) . '</span><button'
+                . ' type="button" class="it-toast-close" data-it-toast-close title="' . rex_escape(rex_i18n::msg('issue_tracker_close')) . '">'
+                . '<span aria-hidden="true">&times;</span><span class="sr-only">' . rex_escape(rex_i18n::msg('issue_tracker_close')) . '</span></button></div>';
+        }
         return '<div class="it-toast" role="status" aria-live="polite" data-it-toast><i class="rex-icon fa-check-circle" aria-hidden="true"></i> <span>'
             . rex_escape($message) . '</span><button type="button" class="it-toast-close" data-it-toast-close title="' . rex_escape(rex_i18n::msg('issue_tracker_close')) . '">'
             . '<span aria-hidden="true">&times;</span><span class="sr-only">' . rex_escape(rex_i18n::msg('issue_tracker_close')) . '</span></button></div>';

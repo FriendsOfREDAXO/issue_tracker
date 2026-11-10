@@ -280,19 +280,14 @@ if (rex_post('add_comment', 'int', 0) === 1) {
             if (!empty($_FILES['comment_attachments']['name'][0])) {
                 $uploadedFiles = [];
                 $fileCount = count($_FILES['comment_attachments']['name']);
+                $skippedFiles = [];
                 
                 for ($i = 0; $i < $fileCount; $i++) {
                     if ($_FILES['comment_attachments']['error'][$i] === UPLOAD_ERR_OK) {
                         // Eindeutigen Dateinamen generieren
                         $extension = strtolower(pathinfo($_FILES['comment_attachments']['name'][$i], PATHINFO_EXTENSION));
-                        $allowedExtensions = ['jpg','jpeg','png','gif','webp','svg','bmp','tiff','ico',
-                            'mp4','mov','avi','mkv','webm','ogg',
-                            'pdf','doc','docx','odt','rtf',
-                            'xls','xlsx','ods','csv',
-                            'ppt','pptx','odp',
-                            'txt','md','json','xml','html','htm','log',
-                            'zip','rar','7z','tar','gz'];
-                        if (!in_array($extension, $allowedExtensions, true)) {
+                        if (!Attachment::isAllowedFile((string) $_FILES['comment_attachments']['name'][$i])) {
+                            $skippedFiles[] = (string) $_FILES['comment_attachments']['name'][$i];
                             continue;
                         }
                         $uniqueFilename = uniqid('comment_', true) . '.' . $extension;
@@ -435,6 +430,9 @@ if (rex_post('add_comment', 'int', 0) === 1) {
             }
             
             \FriendsOfREDAXO\IssueTracker\UiHelper::flash(rex_i18n::rawMsg('closed' === $issue->getStatus() && $closeAndComment ? 'issue_tracker_flash_reply_closed' : 'issue_tracker_flash_reply'));
+            if (!empty($skippedFiles)) {
+                \FriendsOfREDAXO\IssueTracker\UiHelper::flashWarning(rex_i18n::rawMsg('issue_tracker_flash_files_skipped', implode(', ', $skippedFiles)));
+            }
 
             // Redirect zur aktuellen Seite mit Anker zum neuen Kommentar
             $redirectUrl = $itSelfUrl . '#comment-' . $comment->getId();

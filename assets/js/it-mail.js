@@ -992,6 +992,8 @@
             toast.addEventListener('focusin', function () { clearTimeout(timer); });
             toast.addEventListener('focusout', arm);
             toast.querySelector('[data-it-toast-close]').addEventListener('click', hide);
+            // Warnungen bleiben stehen, bis sie geschlossen werden
+            if (toast.hasAttribute('data-it-toast-sticky')) { return; }
             arm();
         });
     }

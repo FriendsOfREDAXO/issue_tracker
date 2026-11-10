@@ -29,7 +29,7 @@ Ein vollständiger Issue-Tracker für REDAXO CMS, der es Redakteuren ermöglicht
 - **Versionsverwaltung**: Issues können einer Version zugeordnet werden
 - **Fälligkeitsdatum**: Issues können mit Deadlines versehen werden, überfällige Issues werden markiert
 - **Aktivitätsverlauf**: Vollständiges Tracking aller Änderungen an Issues
-- **Dateianhänge**: Upload von Bildern, Dokumenten und anderen Dateien zu Issues
+- **Dateianhänge**: Upload von Bildern, Videos, Dokumenten, Druckdaten (InDesign `.indd`, `.eps`), Archiven und anderen Dateien zu Issues – die erlaubten Typen stehen in `Attachment::ALLOWED_EXTENSIONS`; abgelehnte Dateien werden mit einer Warnung gemeldet
 - **Lightbox**: Bilder und Videos direkt in einer Lightbox ansehen
 - **Gespeicherte Filter**: Häufig verwendete Filtereinstellungen speichern und als Standard festlegen
 - **Session-Filter**: Filter bleiben während der Sitzung erhalten

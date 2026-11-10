@@ -639,6 +639,8 @@ details.it-mbx-section[open] > summary .it-mbx-seccount { display: none; }
 /* Rückmeldung nach Aktionen (z. B. Thema angelegt, Antwort gespeichert) */
 .it-toast { position: fixed; left: 50%; bottom: 24px; z-index: 1060; display: flex; align-items: center; gap: 10px; max-width: calc(100vw - 32px); padding: 10px 10px 10px 16px; border-radius: 12px; background: #1f2a36; color: #fff; font-size: calc(14px * var(--it-scale, 1)); line-height: 1.4; box-shadow: 0 8px 24px rgba(16, 24, 40, .25); transform: translateX(-50%); transition: opacity .3s, transform .3s; }
 .it-toast .fa-check-circle { color: #7bd88f; }
+.it-toast--warning .fa-exclamation-triangle { color: #f5c451; }
+body.rex-theme-dark .it-toast--warning .fa-exclamation-triangle { color: #8a5a00; }
 .it-toast.is-hiding { opacity: 0; transform: translate(-50%, 12px); }
 .it-toast-close { flex: 0 0 auto; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #fff; font-size: calc(18px * var(--it-scale, 1)); line-height: 1; cursor: pointer; }
 .it-toast-close:hover, .it-toast-close:focus-visible { background: rgba(255, 255, 255, .16); outline: 2px solid #fff; outline-offset: 0; }

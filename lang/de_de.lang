@@ -108,7 +108,8 @@ issue_tracker_edited = bearbeitet am
 
 # Dateianhänge
 issue_tracker_attachments = Dateianhänge
-issue_tracker_attachments_help = Screenshots, Dokumente oder andere Dateien (max. 10 Dateien, max. 20 MB pro Datei)
+issue_tracker_attachments_help = Screenshots, Dokumente, Druckdaten (InDesign, EPS) oder andere Dateien (max. 10 Dateien, max. 20 MB pro Datei)
+issue_tracker_flash_files_skipped = Nicht angehängt (Dateityp nicht erlaubt): {0}. Erlaubt sind Bilder, Videos, PDF, Office-Dateien, InDesign (INDD), EPS, Text und ZIP-Archive.
 issue_tracker_download = Herunterladen
 issue_tracker_no_attachments = Keine Dateianhänge vorhanden
 issue_tracker_attachment_deleted = Dateianhang wurde gelöscht

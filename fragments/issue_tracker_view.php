@@ -588,7 +588,7 @@ $relatedIssues = $issue->getDuplicates();
                             <i class="rex-icon fa-paperclip" aria-hidden="true"></i>
                             <span><?= $package->i18n('issue_tracker_mail_add_files') ?></span>
                             <input type="file" name="comment_attachments[]" multiple
-                                   accept="image/*,video/*,.pdf,.doc,.docx,.odt,.xls,.xlsx,.ods,.csv,.ppt,.pptx,.odp,.txt,.md,.zip,.rar">
+                                   accept="<?= rex_escape(Attachment::acceptAttribute()) ?>">
                         </label>
                         <?php if ($canQuickEdit && !$isDone): ?>
                         <label class="it-check">

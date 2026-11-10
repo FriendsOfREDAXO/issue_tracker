@@ -108,7 +108,8 @@ issue_tracker_edited = edited on
 
 # Attachments
 issue_tracker_attachments = Attachments
-issue_tracker_attachments_help = Screenshots, documents or other files (max. 10 files, max. 20 MB per file)
+issue_tracker_attachments_help = Screenshots, documents, print files (InDesign, EPS) or other files (max. 10 files, max. 20 MB per file)
+issue_tracker_flash_files_skipped = Not attached (file type not allowed): {0}. Allowed are images, videos, PDF, Office files, InDesign (INDD), EPS, text and ZIP archives.
 issue_tracker_download = Download
 issue_tracker_no_attachments = No attachments
 issue_tracker_attachment_deleted = Attachment deleted

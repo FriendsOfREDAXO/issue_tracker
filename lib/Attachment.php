@@ -9,6 +9,39 @@ namespace FriendsOfREDAXO\IssueTracker;
  */
 class Attachment
 {
+    /**
+     * Erlaubte Dateiendungen für Anhänge (Themen und Antworten) – eine Liste für Prüfung und Dateiauswahl.
+     *
+     * @var list<string>
+     */
+    public const ALLOWED_EXTENSIONS = [
+        // Bilder
+        'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff', 'ico',
+        // Grafik & Layout (Druckdaten)
+        'indd', 'eps',
+        // Video
+        'mp4', 'mov', 'avi', 'mkv', 'webm', 'ogg',
+        // Dokumente
+        'pdf', 'doc', 'docx', 'odt', 'rtf',
+        'xls', 'xlsx', 'ods', 'csv',
+        'ppt', 'pptx', 'odp',
+        'txt', 'md', 'json', 'xml', 'html', 'htm', 'log',
+        // Archive
+        'zip', 'rar', '7z', 'tar', 'gz',
+    ];
+
+    /** Ist die Datei (nach Endung) als Anhang erlaubt? */
+    public static function isAllowedFile(string $filename): bool
+    {
+        return in_array(strtolower(pathinfo($filename, PATHINFO_EXTENSION)), self::ALLOWED_EXTENSIONS, true);
+    }
+
+    /** Wert für das accept-Attribut der Dateiauswahl */
+    public static function acceptAttribute(): string
+    {
+        return 'image/*,video/*,' . implode(',', array_map(static fn (string $ext): string => '.' . $ext, self::ALLOWED_EXTENSIONS));
+    }
+
     private ?int $id = null;
     private ?int $issueId = null;
     private ?int $commentId = null;
@@ -327,6 +360,11 @@ class Attachment
             return 'fa-video';
         }
         
+        // Grafik & Layout (InDesign, EPS)
+        if (in_array($extension, ['indd', 'eps'], true)) {
+            return 'fa-file-image';
+        }
+
         // Dokumente
         $docExtensions = ['pdf', 'doc', 'docx', 'odt', 'rtf'];
         if (in_array($extension, $docExtensions, true)) {

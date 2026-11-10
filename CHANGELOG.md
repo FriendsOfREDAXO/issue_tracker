@@ -2,6 +2,17 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [2.1.0] – 2026-11-10
+
+### Neu
+
+- **Druckdaten als Anhang:** InDesign- (`.indd`) und EPS-Dateien (`.eps`) können an Themen und Antworten angehängt werden – mit eigenem Symbol in der Anhangliste.
+
+### Verbessert
+
+- **Rückmeldung bei abgelehnten Dateien:** Dateien mit nicht erlaubtem Typ wurden bisher stillschweigend übersprungen – das Thema bzw. die Antwort wurde gespeichert, der Anhang fehlte einfach. Jetzt erscheint eine Warnung mit den Dateinamen und den erlaubten Typen; sie bleibt stehen, bis man sie schließt.
+- **Eine Liste für erlaubte Dateitypen** (`Attachment::ALLOWED_EXTENSIONS`): Prüfung beim Speichern und die Dateiauswahl im Browser (`accept`) stimmen jetzt überein. Vorher bot die Dateiauswahl z. B. SVG, JSON oder 7z nicht an, obwohl sie erlaubt waren.
+
 ## [2.0.0] – 2026-10-22
 
 Version 2.0 ist eine komplett neue Oberfläche für den Issue Tracker. Alle Funktionen, Rechte, Daten und Links aus E-Mails bleiben erhalten. Die Einzelheiten stehen in den Abschnitten der Vorabversionen (2.0.0-beta1 bis beta11) weiter unten.
