@@ -23,6 +23,7 @@ class Comment
     private bool $isPinned = false;
     private bool $isSolution = false;
     private int $createdBy = 0;
+    private int $guestId = 0;
     private ?DateTime $createdAt = null;
     private ?DateTime $updatedAt = null;
 
@@ -74,6 +75,7 @@ class Comment
         $comment->isPinned = (bool) $sql->getValue('is_pinned');
         $comment->isSolution = (bool) $sql->getValue('is_solution');
         $comment->createdBy = (int) $sql->getValue('created_by');
+        $comment->guestId = $sql->hasValue('guest_id') ? (int) $sql->getValue('guest_id') : 0;
         $comment->createdAt = new DateTime((string) $sql->getValue('created_at'));
         $comment->updatedAt = $sql->getValue('updated_at') ? new DateTime((string) $sql->getValue('updated_at')) : null;
 
@@ -101,6 +103,7 @@ class Comment
             $sql->update();
         } else {
             $sql->setValue('created_by', $this->createdBy);
+            $sql->setValue('guest_id', $this->guestId);
             $sql->setValue('created_at', date('Y-m-d H:i:s'));
             $sql->insert();
             $this->id = (int) $sql->getLastId();
@@ -135,6 +138,26 @@ class Comment
     /**
      * Gibt den Ersteller zurück
      */
+    /** ID des Review-Gasts, der den Eintrag verfasst hat (0 = Backend-Benutzer, siehe created_by) */
+    public function getGuestId(): int
+    {
+        return $this->guestId;
+    }
+
+    public function setGuestId(int $guestId): void
+    {
+        $this->guestId = $guestId;
+    }
+
+    /** Name des Verfassers: Backend-Benutzer oder Review-Gast („Name (Gast)“) */
+    public function getAuthorName(string $fallback = ''): string
+    {
+        if ($this->guestId > 0) {
+            return Review\Participant::displayName($this->guestId, $fallback);
+        }
+        return UiHelper::userName($this->getCreator(), $fallback);
+    }
+
     public function getCreator(): ?rex_user
     {
         return rex_user::get($this->createdBy);

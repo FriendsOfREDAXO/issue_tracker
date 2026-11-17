@@ -9,6 +9,20 @@
 // Media Manager Effect registrieren
 if (rex_addon::get('media_manager')->isAvailable()) {
     rex_media_manager::addEffect('rex_effect_issue_attachment');
+
+    // Anhänge nur für angemeldete Backend-Benutzer, die das Issue sehen dürfen – auch aus dem Cache des Media Managers
+    // (der Effekt selbst läuft bei zwischengespeicherten Dateien nicht mehr)
+    rex_extension::register('MEDIA_MANAGER_BEFORE_SEND', static function (): void {
+        if (!in_array(rex_media_manager::getMediaType(), ['issue_tracker_attachment', 'issue_tracker_thumbnail'], true)) {
+            return;
+        }
+        if (!\FriendsOfREDAXO\IssueTracker\Attachment::canDeliver(rex_media_manager::getMediaFile())) {
+            rex_response::cleanOutputBuffers();
+            rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
+            rex_response::sendContent('Forbidden');
+            exit;
+        }
+    });
 }
 
 // Permissions registrieren
@@ -128,5 +142,10 @@ if (rex::isBackend() && rex::getUser()) {
         }
     });
 }
+// Review im Frontend: Leiste für eingeladene Gäste und Teilnehmer aktiver Runden
+if (rex::isFrontend()) {
+    \FriendsOfREDAXO\IssueTracker\Review\Frontend::boot();
+}
+
 // API-Funktionen registrieren
 rex_api_function::register('issue_tracker_export', 'FriendsOfREDAXO\IssueTracker\rex_api_issue_tracker_export');

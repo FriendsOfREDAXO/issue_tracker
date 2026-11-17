@@ -228,4 +228,14 @@ foreach ($allUsersSql as $row) {
     }
 }
 
-
+// Review im Frontend: Kategorie „Review“ und neu erzeugte Inhalte (Slice-Marker für die Leiste)
+$itCategories = rex_sql::factory()->getArray('SELECT setting_value FROM ' . rex::getTable('issue_tracker_settings') . ' WHERE setting_key = "categories"');
+$itCategoryList = json_decode((string) ($itCategories[0]['setting_value'] ?? '[]'), true) ?: [];
+if (!in_array('Review', $itCategoryList, true)) {
+    $itCategoryList[] = 'Review';
+    rex_sql::factory()->setTable(rex::getTable('issue_tracker_settings'))
+        ->setValue('setting_key', 'categories')
+        ->setValue('setting_value', json_encode($itCategoryList))
+        ->insertOrUpdate();
+}
+rex_delete_cache();

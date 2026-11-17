@@ -253,3 +253,10 @@ a.it-item:focus-visible { outline: 2px solid var(--it-accent); outline-offset: -
     .it-kb .it-item-title strong { flex: 1 1 100%; }
     .it-kb .it-item-title .it-item-date { margin-left: 0; }
 }
+
+/* Review-Runden: Aktionen je Teilnehmer nebeneinander */
+.it-review-actions { white-space: nowrap; }
+.it-review-actions .it-review-inline { display: inline-block; margin: 0 0 4px 4px; }
+.it-review-facts { margin-bottom: 16px; }
+.it-review-facts dt { width: 120px; }
+.it-review-facts dd { margin-left: 140px; }

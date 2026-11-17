@@ -11,12 +11,13 @@ Dieses Handbuch erklärt die Bedienung des Issue Trackers für Redakteure und Ad
 3. [Wissen](#wissen)
 4. [Projekte](#projekte)
 5. [Nachrichten](#nachrichten)
-6. [Filter, Suche und Export](#filter-suche-und-export)
-7. [Ansicht anpassen](#ansicht-anpassen)
-8. [Benachrichtigungen](#benachrichtigungen)
-9. [Einstellungen (nur Admins)](#einstellungen-nur-admins)
-10. [Tastenkürzel und Tipps](#tastenkürzel-und-tipps)
-11. [Berechtigungen](#berechtigungen)
+6. [Review im Frontend](#review-im-frontend)
+7. [Filter, Suche und Export](#filter-suche-und-export)
+8. [Ansicht anpassen](#ansicht-anpassen)
+9. [Benachrichtigungen](#benachrichtigungen)
+10. [Einstellungen (nur Admins)](#einstellungen-nur-admins)
+11. [Tastenkürzel und Tipps](#tastenkürzel-und-tipps)
+12. [Berechtigungen](#berechtigungen)
 
 ---
 
@@ -148,6 +149,45 @@ Mit Nachrichten schreiben sich Benutzer direkt, ohne Thema.
 2. Empfänger wählen: **Nur Issue-Tracker-Benutzer** oder **Alle REDAXO-Benutzer** (nur per E-Mail, da diese keinen Zugang zu den Nachrichten haben).
 3. Versandart wählen: Nachricht im Posteingang, nur E-Mail oder beides.
 4. Betreff und Text eingeben, absenden und bestätigen.
+
+---
+
+## Review im Frontend
+
+Mit dem Review kommentieren Sie die Website direkt dort, wo Ihnen etwas auffällt – zur ganzen Seite oder zu einem
+einzelnen Element. Jede Anmerkung wird ein Thema im Issue Tracker.
+
+### Runde anlegen (Admins und Issue-Manager)
+
+1. **Reviews** in der Kopfleiste des Issue Trackers → **Neue Review-Runde**
+2. Titel, Hinweise für die Teilnehmenden, Projekt, Zuständigkeit, Kategorie, Seiten (leer = ganze Website),
+   Startseite und Ablaufdatum festlegen
+3. In der Runde **Gäste einladen** (Name, E-Mail, optional eine persönliche Nachricht) oder **Backend-Benutzer
+   hinzufügen**
+4. Je Gast: **Erneut einladen**, **Link erzeugen** (wird nur einmal angezeigt), **Mails an/aus**, **Sperren**
+
+### Kommentieren
+
+- **Seite kommentieren** – die Anmerkung gilt für die ganze Seite
+- **Element wählen** – mit der Maus auf das Element zeigen und klicken; ↑/↓ wählt das umgebende bzw. innere Element,
+  Esc bricht ab
+- Art wählen (Anmerkung, Wunsch, Fehler, Frage), Text schreiben – die erste Zeile wird zum Titel –, optional
+  **Bildschirmausschnitt anhängen**, **Absenden**
+- **Anmerkungen** zeigt die Liste dieser Seite oder aller Seiten der Runde; Marker auf der Seite öffnen die Diskussion
+
+### Die Leiste
+
+- Am Griff ⠿ verschieben, über **…** oben oder unten anordnen
+- **Leiste ausblenden** – es bleibt eine kleine Schaltfläche „Review“
+- **Review-Modus beenden** – alles verschwindet. Gäste melden sich damit ab (zum Weitermachen den Link aus der
+  Einladung öffnen); Backend-Benutzer schalten das Review über **Reviews → Im Frontend öffnen** wieder ein
+
+### Im Backend
+
+Anmerkungen aus dem Frontend stehen im Postfach wie jedes andere Thema. Im Thema zeigt der Block
+**Review im Frontend** Runde, Element, **Im Frontend zeigen** (springt zur Stelle) und **Slice bearbeiten**. Antworten
+erscheinen auf der Website im Gesprächsverlauf; Gäste werden per E-Mail benachrichtigt. Interne Kommentare sehen
+Gäste nie.
 
 ---
 

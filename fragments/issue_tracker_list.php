@@ -394,7 +394,7 @@ foreach ($state as $k => $v) {
                 $isSel = $iid === $selectedIssueId;
                 $unread = in_array($iid, $unreadMentionIds, true);
                 $prio = $issue->getPriority();
-                $whoFrom = UiHelper::userName($creator, '–');
+                $whoFrom = $issue->getAuthorName('–');
                 $whoTo = $issue->getAssignedUserId() === null ? $package->i18n('issue_tracker_assigned_all_users') : UiHelper::userName($assigned, '–');
                 $cCount = $commentCounts[$iid] ?? 0;
                 $aCount = $attachmentCounts[$iid] ?? 0;
@@ -558,8 +558,8 @@ foreach ($state as $k => $v) {
                         </td>
                         <td>
                             <?= $issue->getCreatedAt() ? $issue->getCreatedAt()->format('d.m.Y H:i') : '-' ?>
-                            <?php if ($creator): ?>
-                                <br><small class="it-muted-text"><?= $package->i18n('issue_tracker_from') ?> <?= rex_escape($creator->getValue('name')) ?></small>
+                            <?php if ($creator || $issue->getGuestId() > 0): ?>
+                                <br><small class="it-muted-text"><?= $package->i18n('issue_tracker_from') ?> <?= rex_escape($issue->getAuthorName()) ?></small>
                             <?php endif; ?>
                         </td>
                         <td class="it-col-actions">

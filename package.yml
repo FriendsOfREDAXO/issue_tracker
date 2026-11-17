@@ -1,5 +1,5 @@
 package: issue_tracker
-version: '2.1.0'
+version: '3.0.0'
 author: Thomas Skerbis
 supportpage: https://github.com/FriendsOfREDAXO/issue_tracker
 
@@ -81,6 +81,10 @@ page:
             title: 'translate:issue_tracker_preferences'
             hidden: true
             pjax: false
+        reviews:
+            title: 'translate:issue_tracker_reviews'
+            icon: rex-icon fa-comments-o
+            perm: issue_tracker[issue_manager]
         settings:
             title: 'translate:issue_tracker_settings'
             icon: rex-icon fa-wrench
