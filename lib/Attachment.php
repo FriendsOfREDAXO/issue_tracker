@@ -30,6 +30,24 @@ class Attachment
         'zip', 'rar', '7z', 'tar', 'gz',
     ];
 
+    /**
+     * Darf die aktuelle Anfrage die Datei sehen? Angemeldete Backend-Benutzer mit Issue-Tracker-Recht, bei Anhängen
+     * eines Issues nur, wenn sie das Issue sehen dürfen.
+     */
+    public static function canDeliver(string $filename): bool
+    {
+        $user = \rex::getUser() ?? \rex_backend_login::createUser();
+        if (null === $user || !($user->isAdmin() || $user->hasPerm('issue_tracker[]'))) {
+            return false;
+        }
+        $rows = \rex_sql::factory()->getArray('SELECT issue_id FROM ' . \rex::getTable('issue_tracker_attachments') . ' WHERE filename = ?', [$filename]);
+        if ([] === $rows || (int) $rows[0]['issue_id'] <= 0) {
+            return true;
+        }
+        $issue = Issue::get((int) $rows[0]['issue_id']);
+        return null === $issue || PermissionService::canView($issue);
+    }
+
     /** Ist die Datei (nach Endung) als Anhang erlaubt? */
     public static function isAllowedFile(string $filename): bool
     {

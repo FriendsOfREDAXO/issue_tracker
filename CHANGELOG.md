@@ -2,6 +2,33 @@
 
 Alle nennenswerten Änderungen am Issue Tracker AddOn werden hier dokumentiert.
 
+## [3.0.0] – 2026-11-17
+
+### Neu: Review im Frontend
+Redaktion, Kundschaft oder eingeladene Gäste kommentieren die Website direkt im Frontend – zur ganzen Seite oder zu einem ausgewählten Element. Jede Anmerkung wird ein Issue; diskutiert wird im Frontend oder im Issue Tracker.
+
+- **Review-Runden** (Issue Tracker → Reviews, Recht `issue_manager`): Titel, Hinweise, Projekt, Zuständigkeit, Kategorie (Standard „Review“), Seitenumfang, Startseite, Ablaufdatum.
+- **Gäste einladen** per E-Mail mit persönlichem Link (gespeichert wird nur ein Hash, Ablauf, sofort sperrbar). Backend-Benutzer nehmen über ihre Anmeldung teil; Admins und Issue-Manager sehen alle aktiven Runden.
+- **Review-Leiste** als Web Component `<it-review-bar>` (Shadow DOM – Stile der Website wirken nicht hinein): Bar oben oder unten zentriert, frei verschiebbar (auch per Tastatur), ausblendbar; Sidebar als Overlay mit Liste, Diskussion und Formular, auf dem Handy als Blatt von unten. Die Sidebar öffnet auf der dem Element gegenüberliegenden Seite und hält das Element sichtbar.
+- **Element wählen** mit Hervorhebung und Beschriftung, ↑/↓ für umgebendes/inneres Element, Enter/Esc. Nummerierte Marker zeigen die Anmerkungen auf der Seite; „Auf der Seite zeigen“ springt zur Stelle.
+- **Anker**: Slice (unsichtbare Marker nur für Reviewer), CSS-Pfad, Textausschnitt und Position im Element; „Abschnitt seitdem geändert/entfernt“ über eine Prüfsumme des Slices.
+- **Bildschirmausschnitt** optional als Anhang (modern-screenshot, MIT – versteht modernes CSS), Element rot eingerahmt; dazu Ansicht (Fenstergröße) und Browser.
+- **Arten**: Anmerkung, Wunsch, Fehler (Priorität hoch), Frage.
+- **Issue-Ansicht**: Block „Review im Frontend“ mit Runde, Element, „Im Frontend zeigen“ und „Slice bearbeiten“; Gäste erscheinen als „Name (Gast)“.
+- **Benachrichtigungen**: Gäste erhalten Antworten und Statusänderungen per E-Mail mit Link direkt zur Stelle; interne Kommentare sehen Gäste nie.
+- **Schutz**: Kopfzeile + Herkunftsprüfung statt CSRF-Token, Honigtopf, Begrenzung je Person, `no-store`/`noindex` auf Seiten mit Leiste.
+- **Leiste ausblenden** (wird zur kleinen Schaltfläche) oder **Review-Modus beenden**: Gäste werden abgemeldet, Backend-Benutzer blenden alles aus, bis sie „Im Frontend öffnen“ wählen.
+- Seiten ohne URL-Rewriting (`index.php?article_id=…`) werden über `article_id` und `clang` unterschieden.
+- Deutsch und Englisch; die Leiste folgt der Sprache der Seite.
+
+### Verbessert
+- Anzeigenamen von Gästen („Name (Gast)“) in Postfach, Thema, Kommentaren und E-Mails; Initialen ohne Klammerzusätze.
+- Neue Kategorie „Review“ (wird bei Installation und Update ergänzt).
+- README neu mit Screenshots aus einer Demo-Installation.
+
+### Sicherheit
+- **Anhänge** sind nur noch für angemeldete Backend-Benutzer abrufbar, die das Issue sehen dürfen (bisher genügte der Dateiname – auch über den Cache des Media Managers).
+
 ## [2.1.0] – 2026-11-10
 
 ### Neu

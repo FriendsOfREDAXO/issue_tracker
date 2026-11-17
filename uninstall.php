@@ -11,6 +11,13 @@
 // Tabellen in umgekehrter Reihenfolge entfernen (wegen Foreign Keys)
 // Zuerst Tabellen mit Foreign Keys auf andere Tabellen
 
+// Review im Frontend
+foreach (['review_hits', 'review_anchors', 'review_links', 'review_participants', 'review_rounds'] as $itTable) {
+    rex_sql_table::get(rex::getTable('issue_tracker_' . $itTable))->drop();
+}
+// Inhalts-Cache enthält Abfragen der Review-Leiste (Slice-Marker) – neu erzeugen lassen
+rex_delete_cache();
+
 // Projekt-Mitglieder (FK auf projects)
 rex_sql_table::get(rex::getTable('issue_tracker_project_users'))->drop();
 

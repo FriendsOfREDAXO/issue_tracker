@@ -71,7 +71,7 @@ $render = static function (string $text, ?int $commentId = null, bool $interacti
     return $embedded ? str_replace('action="' . rex_escape($viewUrl) . '"', 'action="' . rex_escape($selfUrl) . '"', $html) : $html;
 };
 
-$creatorName = UiHelper::userName($createdBy, '–');
+$creatorName = $issue->getAuthorName('–');
 $assigneeName = $issue->getAssignedUserId() === null ? $package->i18n('issue_tracker_assigned_all_users') : UiHelper::userName($assignedUser, '–');
 $colorVar = static fn (string $c): string => preg_match('/^#[0-9a-f]{3,8}$/i', $c) ? '--c:' . $c : '--c:#7c7c82';
 
@@ -107,7 +107,7 @@ $renderAttachments = static function (array $list, string $group) use ($package)
 $renderComment = static function ($comment, bool $isReply) use (&$renderComment, $package, $issue, $currentUser, $canModerate, $selfAction, $render, $renderAttachments): string {
     $cid = (int) $comment->getId();
     $user = $comment->getCreator();
-    $name = UiHelper::userName($user, 'Unknown');
+    $name = $comment->getAuthorName('Unknown');
     $canEditComment = $currentUser->isAdmin() || $comment->getCreatedBy() === (int) $currentUser->getId();
     $classes = 'it-msg' . ($isReply ? ' it-msg--reply' : '') . ($comment->isSolution() ? ' is-solution' : ($comment->isPinned() ? ' is-pinned' : ''));
 
@@ -413,6 +413,32 @@ $relatedIssues = $issue->getDuplicates();
                 <?php endif; ?>
             </dd></div>
             <?php endif; ?>
+            <?php
+            // Anmerkung aus dem Frontend-Review: Element, Slice, Sprung zur Stelle
+            $reviewAnchor = \FriendsOfREDAXO\IssueTracker\Review\ReviewService::anchor($issue->getId());
+            if (null !== $reviewAnchor):
+                $rvRound = \FriendsOfREDAXO\IssueTracker\Review\Round::get((int) $reviewAnchor['round_id']);
+                $rvSlice = (int) $reviewAnchor['slice_id'];
+                $rvHash = $rvSlice > 0 ? \FriendsOfREDAXO\IssueTracker\Review\ReviewService::sliceHash($rvSlice) : null;
+                $rvUrl = (string) ($reviewAnchor['url'] ?: $issue->getAffectedUrl());
+                $rvKind = (string) $reviewAnchor['kind'];
+            ?>
+            <div class="it-rp-fact--wide it-review-fact"><dt><?= $package->i18n('issue_tracker_review_panel') ?></dt><dd>
+                <span class="it-badge it-badge--info"><?= rex_escape(rex_i18n::msg('issue_tracker_review_js_kind_' . $rvKind)) ?></span>
+                <?php if ($rvRound): ?> <span class="it-muted-text"><?= $package->i18n('issue_tracker_review_panel_round') ?>:</span> <a href="<?= rex_url::backendPage('issue_tracker/reviews', ['func' => 'round', 'round_id' => $rvRound->id]) ?>"><?= rex_escape($rvRound->title) ?></a><?php endif; ?>
+                <?php if ($reviewAnchor['element_label']): ?><br><span class="it-muted-text"><?= $package->i18n('issue_tracker_review_panel_element') ?>:</span> <?= rex_escape((string) $reviewAnchor['element_label']) ?><?php endif; ?>
+                <?php if ($rvSlice > 0 && null === $rvHash): ?> <span class="it-badge it-badge--warn"><?= $package->i18n('issue_tracker_review_panel_gone') ?></span>
+                <?php elseif ($rvSlice > 0 && $rvHash !== $reviewAnchor['slice_hash']): ?> <span class="it-badge it-badge--warn"><?= $package->i18n('issue_tracker_review_panel_changed') ?></span><?php endif; ?>
+                <br>
+                <?php if ('' !== $rvUrl && \FriendsOfREDAXO\IssueTracker\Issue::isValidAffectedUrl($rvUrl)): ?>
+                <a class="it-affected-link" href="<?= rex_escape(\FriendsOfREDAXO\IssueTracker\Review\Links::url($rvUrl, 'on', $issue->getId())) ?>" target="_blank" rel="noopener"><i class="rex-icon fa-crosshairs" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_review_panel_show') ?></a>
+                <?php endif; ?>
+                <?php if ($rvSlice > 0 && null !== $rvHash && $reviewAnchor['article_id']): ?>
+                <a class="it-affected-link" href="<?= rex_url::backendPage('content/edit', ['article_id' => (int) $reviewAnchor['article_id'], 'clang' => (int) $reviewAnchor['clang_id'], 'slice_id' => $rvSlice, 'function' => 'edit', 'mode' => 'edit']) ?>#slice<?= $rvSlice ?>"><i class="rex-icon fa-pencil" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_review_panel_slice') ?></a>
+                <?php endif; ?>
+                <?php if ($reviewAnchor['viewport']): ?><br><span class="it-muted-text"><?= $package->i18n('issue_tracker_review_panel_device') ?>: <?= rex_escape((string) $reviewAnchor['viewport']) ?><?= $reviewAnchor['user_agent'] ? ' · ' . rex_escape(\FriendsOfREDAXO\IssueTracker\Review\ReviewService::browserName((string) $reviewAnchor['user_agent'])) : '' ?></span><?php endif; ?>
+            </dd></div>
+            <?php endif; ?>
             <?php if ($issue->getSourceUrl()):
                 // Backend-Seite, von der aus gemeldet wurde (nur Adressen dieser Installation, beim Speichern geprüft)
                 $srcUrl = (string) $issue->getSourceUrl();
@@ -565,7 +591,7 @@ $relatedIssues = $issue->getDuplicates();
             <div class="it-thread-pinned">
                 <span class="it-rp-label"><i class="rex-icon fa-star" aria-hidden="true"></i> <?= $package->i18n('issue_tracker_highlighted_answers') ?>:</span>
                 <?php foreach ($pinnedComments as $pc): ?>
-                <a href="#comment-<?= $pc->getId() ?>"><?= rex_escape(UiHelper::userName($pc->getCreator(), 'Unknown')) ?> (<?= $package->i18n($pc->isSolution() ? 'issue_tracker_solution' : 'issue_tracker_pinned') ?>)</a>
+                <a href="#comment-<?= $pc->getId() ?>"><?= rex_escape($pc->getAuthorName('Unknown')) ?> (<?= $package->i18n($pc->isSolution() ? 'issue_tracker_solution' : 'issue_tracker_pinned') ?>)</a>
                 <?php endforeach; ?>
             </div>
             <?php endif; ?>

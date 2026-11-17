@@ -46,6 +46,7 @@ class Issue
     private ?string $affectedUrl = null;
     private ?string $sourceUrl = null;
     private ?string $sourceTitle = null;
+    private int $guestId = 0;
 
     /**
      * Lädt ein Issue aus der Datenbank.
@@ -113,6 +114,7 @@ class Issue
         $issue->isPrivate = (bool) $sql->getValue('is_private');
         $issue->notified = (bool) $sql->getValue('notified');
         $issue->createdBy = (int) $sql->getValue('created_by');
+        $issue->guestId = $sql->hasValue('guest_id') ? (int) $sql->getValue('guest_id') : 0;
         $issue->createdAt = new DateTime((string) $sql->getValue('created_at'));
         $issue->updatedAt = new DateTime((string) $sql->getValue('updated_at'));
 
@@ -205,6 +207,7 @@ class Issue
             $sql->update();
         } else {
             $sql->setValue('created_by', $this->createdBy);
+            $sql->setValue('guest_id', $this->guestId);
             $sql->setValue('created_at', date('Y-m-d H:i:s'));
             $sql->insert();
             $this->id = (int) $sql->getLastId();
@@ -246,6 +249,26 @@ class Issue
     /**
      * Gibt den Ersteller zurück.
      */
+    /** ID des Review-Gasts, der den Eintrag verfasst hat (0 = Backend-Benutzer, siehe created_by) */
+    public function getGuestId(): int
+    {
+        return $this->guestId;
+    }
+
+    public function setGuestId(int $guestId): void
+    {
+        $this->guestId = $guestId;
+    }
+
+    /** Name des Verfassers: Backend-Benutzer oder Review-Gast („Name (Gast)“) */
+    public function getAuthorName(string $fallback = ''): string
+    {
+        if ($this->guestId > 0) {
+            return Review\Participant::displayName($this->guestId, $fallback);
+        }
+        return UiHelper::userName($this->getCreator(), $fallback);
+    }
+
     public function getCreator(): ?rex_user
     {
         return rex_user::get($this->createdBy);

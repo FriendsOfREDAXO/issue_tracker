@@ -111,6 +111,8 @@ final class UiHelper
 
     public static function initials(string $name): string
     {
+        // Zusätze in Klammern („Erika Muster (Gast)“) zählen nicht mit
+        $name = trim((string) preg_replace('/\s*\([^)]*\)\s*$/u', '', $name)) ?: $name;
         $parts = preg_split('/[\s._-]+/u', trim($name), -1, PREG_SPLIT_NO_EMPTY) ?: [];
         if ([] === $parts) {
             return '?';

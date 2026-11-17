@@ -102,6 +102,9 @@ class NotificationService
                 self::getNewCommentTemplate($comment, $issue, $creator, $user),
             );
         }
+
+        // Review-Gäste der Anmerkung (eigene Mails mit persönlichem Link)
+        Review\Mailer::commentAdded($comment, $issue);
     }
 
     /**
@@ -126,6 +129,8 @@ class NotificationService
                 self::getStatusChangeTemplate($issue, $oldStatus, $newStatus, $user),
             );
         }
+
+        Review\Mailer::statusChanged($issue, $newStatus);
     }
 
     /**
@@ -771,7 +776,7 @@ class NotificationService
     /**
      * Sendet eine E-Mail.
      */
-    private static function sendMail(string $to, string $subject, string $body): bool
+    public static function sendMail(string $to, string $subject, string $body): bool
     {
         try {
             $mail = new rex_mailer();
@@ -822,7 +827,7 @@ class NotificationService
      */
     private static function getNewIssueTemplate(Issue $issue, ?rex_user $creator, rex_user $recipient): string
     {
-        $creatorName = $creator ? $creator->getValue('name') : 'Unbekannt';
+        $creatorName = $issue->getAuthorName('Unbekannt');
         $token = self::createEmailToken($issue->getId());
         $url = rex::getServer() . 'index.php?rex-api-call=issue_tracker_link&token=' . $token;
 
@@ -846,7 +851,7 @@ class NotificationService
      */
     private static function getNewCommentTemplate(Comment $comment, Issue $issue, ?rex_user $creator, rex_user $recipient): string
     {
-        $creatorName = $creator ? $creator->getValue('name') : 'Unbekannt';
+        $creatorName = $comment->getAuthorName('Unbekannt');
         $token = self::createEmailToken($issue->getId());
         $url = rex::getServer() . 'index.php?rex-api-call=issue_tracker_link&token=' . $token;
 

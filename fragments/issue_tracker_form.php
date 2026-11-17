@@ -460,7 +460,7 @@ $tagApiUrl = PermissionService::canManageTags() ? rex_url::backendPage('issue_tr
                     <?php $creator = $comment->getCreator(); ?>
                     <article class="it-msg">
                         <div class="it-msg-who">
-                            <strong class="it-msg-name"><?= $creator ? rex_escape($creator->getValue('name')) : 'Unbekannt' ?></strong>
+                            <strong class="it-msg-name"><?= rex_escape($comment->getAuthorName('Unbekannt')) ?></strong>
                             <?php if ($comment->isInternal()): ?>
                                 <span class="it-badge it-badge--warn"><?= $package->i18n('issue_tracker_internal') ?></span>
                             <?php endif; ?>
